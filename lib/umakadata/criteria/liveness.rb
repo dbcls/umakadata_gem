@@ -1,5 +1,5 @@
-require "umakadata/http_helper"
-require "umakadata/error_helper"
+require 'umakadata/http_helper'
+require 'umakadata/error_helper'
 
 module Umakadata
   module Criteria
@@ -15,17 +15,32 @@ module Umakadata
       # @param  time_out [Integer]: the period in seconds to wait for a connection
       # @return [Boolean]
       def alive?(uri, time_out)
-        response = http_get(uri, nil, time_out)
-        if !response.is_a? Net::HTTPOK
-          if response.is_a? Net::HTTPResponse
-            set_error(response.code + "\s" + response.message)
-          else
-            set_error(response)
-          end
-          return false
+        query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
+
+        response = nil
+        begin
+          get_uri = URI(URI.encode(uri.to_s + '?query=' + query))
+          response = Net::HTTP.get_response(get_uri)
+        rescue => e
+          response = e.message
         end
-        return true
+        return true if response.is_a?(Net::HTTPSuccess)
+
+        begin
+          response = Net::HTTP.post_form(URI(uri), {'query'=> query})
+        rescue => e
+          response = e.message
+        end
+        return true if response.is_a?(Net::HTTPSuccess)
+
+        if response.is_a? Net::HTTPResponse
+          set_error(response.code + "\s" + response.message)
+        else
+          set_error(response)
+        end
+        return false
       end
+
     end
   end
 end
