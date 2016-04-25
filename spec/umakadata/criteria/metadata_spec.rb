@@ -14,7 +14,7 @@ describe 'Umakadata' do
           @uri = URI('http://example.com')
         end
 
-        it 'should returns empty metadata if failed to retrieve graph list' do
+        it 'should return empty metadata if failed to retrieve graph list' do
           allow(target).to receive(:list_of_graph_uris).and_return([])
 
           metadata = target.metadata(@uri)
@@ -22,7 +22,7 @@ describe 'Umakadata' do
           expect(metadata).to be_empty
         end
 
-        it 'should returns metadata which contains retrieved items for when a graph is retrieved' do
+        it 'should return metadata which contains retrieved items for when a graph is retrieved' do
           allow(target).to receive(:list_of_graph_uris).and_return(['GRAPH1'])
           allow(target).to receive(:classes_on_graph).and_return(['CLASS1'])
           allow(target).to receive(:list_of_labels_of_classes).and_return(['LABEL1'])
@@ -38,7 +38,7 @@ describe 'Umakadata' do
           expect(metadata['GRAPH1'][:properties]).to include('PROPERTY1')
         end
 
-        it 'should returns metadata which contains retrieved items for when multiple graphs are retrieved' do
+        it 'should return metadata which contains retrieved items for when multiple graphs are retrieved' do
           allow(target).to receive(:list_of_graph_uris).and_return(['GRAPH1', 'GRAPH2'])
           allow(target).to receive(:classes_on_graph).with(anything, 'GRAPH1').and_return(['CLASS1'])
           allow(target).to receive(:classes_on_graph).with(anything, 'GRAPH2').and_return([])
@@ -68,7 +68,7 @@ describe 'Umakadata' do
           metadata = target.metadata(@uri)
 
           expect(metadata).to eq Hash.new
-          expect(target.get_error).to eq "Query: SELECT DISTINCT ?g\nWHERE {\n  GRAPH ?g\n  { ?s ?p ?o. }\n}\n, Error: Occured MalformedQuery"
+          expect(target.get_error).to eq '{"error":"graph","reason":"Query: SELECT DISTINCT ?g\nWHERE {\n  GRAPH ?g\n  { ?s ?p ?o. }\n}\n, Error: Occured MalformedQuery"}'
         end
 
       end
