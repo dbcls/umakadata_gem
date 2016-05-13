@@ -1,13 +1,16 @@
 module Umakadata
+
   module Linkset
 
+    # Obtain list of datasets specified by void:Linkset in VoID
+    # @see http://www.w3.org/TR/void/#linkset
     def linksets(triples)
       linksets = []
 
       return linksets if triples.nil?
 
       current = nil
-      triples.each do | subject, predicate, object |
+      triples.each do |subject, predicate, object|
         predicate_is_type = predicate == RDF::URI('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
         object_is_linkset = object == RDF::URI('http://rdfs.org/ns/void#Linkset')
         next if current.nil? && (!predicate_is_type || !object_is_linkset)
@@ -24,8 +27,10 @@ module Umakadata
           next
         end
       end
-      return linksets
+
+      linksets
     end
 
   end
+
 end
