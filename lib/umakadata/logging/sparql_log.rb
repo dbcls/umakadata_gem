@@ -20,7 +20,7 @@ module Umakadata
       end
 
       def to_h
-        {:uri => @uri, :query => @query, :request => Request.new(@request).to_h, :response => Response.new(@response).to_h, :error => Error.new(@error).to_h}
+        {:uri => @uri.to_s, :query => @query, :request => Request.new(@request).to_h, :response => Response.new(@response).to_h, :error => Error.new(@error).to_h}
       end
 
     end
