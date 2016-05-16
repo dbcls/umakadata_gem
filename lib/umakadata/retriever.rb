@@ -19,8 +19,8 @@ module Umakadata
     end
 
     include Umakadata::Criteria::Liveness
-    def alive?(time_out = 30)
-      super(@uri, time_out)
+    def alive?(args = {})
+      super(@uri, args)
     end
 
     include Umakadata::Criteria::ServiceDescription
