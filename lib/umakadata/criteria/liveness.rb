@@ -2,7 +2,9 @@ require 'umakadata/http_helper'
 require 'umakadata/error_helper'
 
 module Umakadata
+
   module Criteria
+
     module Liveness
 
       include Umakadata::HTTPHelper
@@ -12,35 +14,29 @@ module Umakadata
       # A boolan value whether if the SPARQL endpoint is alive.
       #
       # @param  uri [URI]: the target endpoint
-      # @param  time_out [Integer]: the period in seconds to wait for a connection
+      # @param  args [Hash]:
       # @return [Boolean]
-      def alive?(uri, time_out)
+      def alive?(uri, args = {})
         query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
 
-        response = nil
-        begin
-          get_uri = URI(URI.encode(uri.to_s + '?query=' + query))
-          response = Net::HTTP.get_response(get_uri)
-        rescue => e
-          response = e.message
-        end
+        args = {
+          :headers => {
+            # Note: Use single quoted 'Accept', symbol :accept is NOT applicable to net/http
+            'Accept' => [Umakadata::DataFormat::TURTLE, Umakadata::DataFormat::RDFXML].join(',')
+          }
+        }.merge(args)
+
+        response = http_get(URI.encode(uri.to_s + '?query=' + query), args)
         return true if response.is_a?(Net::HTTPSuccess)
 
-        begin
-          response = Net::HTTP.post_form(URI(uri), {'query'=> query})
-        rescue => e
-          response = e.message
-        end
+        response = http_post(uri.to_s, {:query => query}.merge(args), args)
         return true if response.is_a?(Net::HTTPSuccess)
 
-        if response.is_a? Net::HTTPResponse
-          set_error(response.code + "\s" + response.message)
-        else
-          set_error(response)
-        end
-        return false
+        false
       end
 
     end
+
   end
+
 end
