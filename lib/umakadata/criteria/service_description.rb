@@ -23,7 +23,7 @@ module Umakadata
         headers['Accept'] = content_type
         headers['Accept'] ||= SERVICE_DESC_CONTEXT_TYPE.join(',')
 
-        response = http_get(uri, headers, time_out)
+        response = http_get(uri, {:headers => headers, :time_out => time_out})
 
         if !response.is_a?(Net::HTTPSuccess)
           if response.is_a? Net::HTTPResponse
