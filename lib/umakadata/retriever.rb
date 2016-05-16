@@ -51,8 +51,8 @@ module Umakadata
     end
 
     include Umakadata::Criteria::ExecutionTime
-    def execution_time
-      super(@uri)
+    def execution_time(args = {})
+      super(@uri, args)
     end
 
     include Umakadata::Criteria::CoolURI

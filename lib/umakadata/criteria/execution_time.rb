@@ -1,5 +1,6 @@
 require 'umakadata/http_helper'
 require 'umakadata/error_helper'
+require 'umakadata/logging/sparql_log'
 require 'sparql/client'
 require 'rdf/turtle'
 
@@ -34,11 +35,11 @@ SPARQL
         @client = client
       end
 
-      def execution_time(uri)
+      def execution_time(uri, args = {})
         self.prepare(uri)
 
-        base_response_time = self.response_time(BASE_QUERY)
-        target_response_time = self.response_time(TARGET_QUERY)
+        base_response_time = self.response_time(BASE_QUERY, args)
+        target_response_time = self.response_time(TARGET_QUERY, args)
         if base_response_time.nil? || target_response_time.nil?
           return nil
         end
@@ -49,37 +50,29 @@ SPARQL
         return execution_time
       end
 
-      def response_time(sparql_query)
-        start_time = Time.now
+      def response_time(sparql_query, args)
+        log = Umakadata::Logging::SparqlLog.new(@uri.to_s, sparql_query)
+        logger = args[:logger]
+        logger.push log unless logger.nil?
 
+        start_time = Time.now
         begin
           result = @client.query(sparql_query)
           if result.nil?
-            @client.response(sparql_query)
-            set_error('Endpoint URI is different from actual URI in executing query')
+            log.error = 'Empty triples'
             return nil
           end
-        rescue SPARQL::Client::MalformedQuery => e
-          set_error("Query: #{sparql_query}, Error: #{e.message}")
-          return nil
+          log.response = @client.response(sparql_query)
         rescue SPARQL::Client::ClientError, SPARQL::Client::ServerError => e
-          message = e.message.scan(REGEXP)[0]
-          if message.nil?
-            result = e.message.scan(/"datatype":\s"(.*\n)/)[0]
-            if result.nil?
-              message = ''
-            else
-              message = result[0].chomp
-            end
-          end
-          set_error("Query: #{sparql_query}, Error: #{message}")
+          log.error = e
+          return nil
         rescue => e
-          set_error("Query: #{sparql_query}, Error: #{e.to_s}")
+          log.error = e
           return nil
         end
-        end_time = Time.now
-        
-        end_time - start_time
+
+
+        Time.now - start_time
       end
 
     end
