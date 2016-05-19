@@ -32,12 +32,15 @@ module Umakadata
 
     end
 
-    def force_encode(obj)
-      return obj unless obj.is_a? String
-      obj.force_encoding('ASCII-8BIT').encode('UTF-8', :invalid => :replace, :undef => :replace, :replace => '?')
+    module Util
+      def force_encode(obj)
+        return obj unless obj.is_a? String
+        obj.force_encoding('ASCII-8BIT').encode('UTF-8', :invalid => :replace, :undef => :replace, :replace => '?')
+      end
     end
 
     Request = Struct.new(:request) do
+      include Umakadata::Logging::Util
       def to_h
         case request
           when Net::HTTP::Get
@@ -51,6 +54,7 @@ module Umakadata
     end
 
     Response = Struct.new(:response) do
+      include Umakadata::Logging::Util
       def to_h
         case response
           when Net::HTTPResponse
