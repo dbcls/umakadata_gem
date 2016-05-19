@@ -19,8 +19,8 @@ module Umakadata
     end
 
     include Umakadata::Criteria::Liveness
-    def alive?(args = {})
-      super(@uri, args)
+    def alive?(time_out = 30, logger:)
+      super(@uri, time_out, logger: logger)
     end
 
     include Umakadata::Criteria::ServiceDescription
@@ -51,8 +51,8 @@ module Umakadata
     end
 
     include Umakadata::Criteria::ExecutionTime
-    def execution_time(args = {})
-      super(@uri, args)
+    def execution_time(logger:)
+      super(@uri, logger: logger)
     end
 
     include Umakadata::Criteria::CoolURI
