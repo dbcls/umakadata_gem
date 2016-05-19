@@ -16,7 +16,7 @@ module Umakadata
       # @param  uri [URI]: the target endpoint
       # @param  args [Hash]:
       # @return [Boolean]
-      def alive?(uri, time_out, logger:)
+      def alive?(uri, time_out, logger: nil)
         query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
 
         args = {

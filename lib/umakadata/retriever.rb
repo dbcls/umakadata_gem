@@ -19,7 +19,7 @@ module Umakadata
     end
 
     include Umakadata::Criteria::Liveness
-    def alive?(time_out = 30, logger:)
+    def alive?(time_out = 30, logger: nil)
       super(@uri, time_out, logger: logger)
     end
 
@@ -51,7 +51,7 @@ module Umakadata
     end
 
     include Umakadata::Criteria::ExecutionTime
-    def execution_time(logger:)
+    def execution_time(logger: nil)
       super(@uri, logger: logger)
     end
 

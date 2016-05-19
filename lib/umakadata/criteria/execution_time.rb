@@ -35,7 +35,7 @@ SPARQL
         @client = client
       end
 
-      def execution_time(uri, logger:)
+      def execution_time(uri, logger: nil)
         self.prepare(uri)
 
         base_response_time = self.response_time(BASE_QUERY, logger)
