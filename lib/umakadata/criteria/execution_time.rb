@@ -1,7 +1,5 @@
 require 'umakadata/http_helper'
 require 'umakadata/error_helper'
-require 'umakadata/logging/sparql_log'
-require 'rdf/turtle'
 require 'umakadata/sparql_helper'
 
 module Umakadata
@@ -9,7 +7,6 @@ module Umakadata
     module ExecutionTime
 
       include Umakadata::ErrorHelper
-      include Umakadata::SparqlHelper
 
       BASE_QUERY = <<-'SPARQL'
 ASK{}
@@ -40,7 +37,7 @@ SPARQL
 
       def response_time(uri, sparql_query, logger)
         start_time = Time.now
-        response = query(uri, sparql_query, logger: logger)
+        response = Umakadata::SparqlHelper.query(uri, sparql_query, logger: logger)
         return nil if response.nil?
         Time.now - start_time
       end
