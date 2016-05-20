@@ -4,17 +4,8 @@ require 'umakadata/logging/sparql_log'
 module Umakadata
   module SparqlHelper
 
-    def prepare(uri)
-      @client = Umakadata::MySparqlClient.new(uri, {'read_timeout': 5 * 60}) if @uri == uri && @client == nil
-      @uri = uri
-    end
-
-    def set_client(client)
-      @client = client
-    end
-
     def query(uri, query, logger:nil)
-      self.prepare(uri)
+      client = Umakadata::MySparqlClient.new(uri, {'read_timeout': 5 * 60})
 
       sparql_log = Umakadata::Logging::SparqlLog.new(uri, query)
       logger.push sparql_log unless logger.nil?
