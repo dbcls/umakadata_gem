@@ -16,15 +16,17 @@ module Umakadata
       # @param  uri [URI]: the target endpoint
       # @param  args [Hash]:
       # @return [Boolean]
-      def alive?(uri, args = {})
+      def alive?(uri, time_out, logger: nil)
         query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
 
         args = {
           :headers => {
             # Note: Use single quoted 'Accept', symbol :accept is NOT applicable to net/http
-            'Accept' => [Umakadata::DataFormat::TURTLE, Umakadata::DataFormat::RDFXML].join(',')
-          }
-        }.merge(args)
+            'Accept' => [Umakadata::DataFormat::TURTLE, Umakadata::DataFormat::RDFXML].join(','),
+          },
+          :time_out => time_out,
+          :logger => logger
+        }
 
         response = http_get(URI.encode(uri.to_s + '?query=' + query), args)
         return true if response.is_a?(Net::HTTPSuccess)

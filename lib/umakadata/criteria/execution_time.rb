@@ -35,11 +35,11 @@ SPARQL
         @client = client
       end
 
-      def execution_time(uri, args = {})
+      def execution_time(uri, logger: nil)
         self.prepare(uri)
 
-        base_response_time = self.response_time(BASE_QUERY, args)
-        target_response_time = self.response_time(TARGET_QUERY, args)
+        base_response_time = self.response_time(BASE_QUERY, logger)
+        target_response_time = self.response_time(TARGET_QUERY, logger)
         if base_response_time.nil? || target_response_time.nil?
           return nil
         end
@@ -50,27 +50,25 @@ SPARQL
         return execution_time
       end
 
-      def response_time(sparql_query, args)
-        log = Umakadata::Logging::SparqlLog.new(@uri.to_s, sparql_query)
-        logger = args[:logger]
-        logger.push log unless logger.nil?
+      def response_time(sparql_query, logger)
+        sparql_log = Umakadata::Logging::SparqlLog.new(@uri.to_s, sparql_query)
+        logger.push sparql_log unless logger.nil?
 
         start_time = Time.now
         begin
           result = @client.query(sparql_query)
           if result.nil?
-            log.error = 'Empty triples'
+            sparql_log.error = 'Empty triples'
             return nil
           end
-          log.response = @client.response(sparql_query)
+          sparql_log.response = @client.response(sparql_query)
         rescue SPARQL::Client::ClientError, SPARQL::Client::ServerError => e
-          log.error = e
+          sparql_log.error = e
           return nil
         rescue => e
-          log.error = e
+          sparql_log.error = e
           return nil
         end
-
 
         Time.now - start_time
       end
