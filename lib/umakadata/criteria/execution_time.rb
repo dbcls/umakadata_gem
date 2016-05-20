@@ -1,16 +1,15 @@
 require 'umakadata/http_helper'
 require 'umakadata/error_helper'
 require 'umakadata/logging/sparql_log'
-require 'sparql/client'
 require 'rdf/turtle'
+require 'umakadata/sparql_helper'
 
 module Umakadata
   module Criteria
     module ExecutionTime
 
-      REGEXP = /<title>(.*)<\/title>/
-
       include Umakadata::ErrorHelper
+      include Umakadata::SparqlHelper
 
       BASE_QUERY = <<-'SPARQL'
 ASK{}
@@ -26,20 +25,9 @@ WHERE {
 }
 SPARQL
 
-      def prepare(uri)
-        @client = SPARQL::Client.new(uri, {'read_timeout': 5 * 60}) if @uri == uri && @client == nil
-        @uri = uri
-      end
-
-      def set_client(client)
-        @client = client
-      end
-
       def execution_time(uri, logger: nil)
-        self.prepare(uri)
-
-        base_response_time = self.response_time(BASE_QUERY, logger)
-        target_response_time = self.response_time(TARGET_QUERY, logger)
+        base_response_time = self.response_time(uri, BASE_QUERY, logger)
+        target_response_time = self.response_time(uri, TARGET_QUERY, logger)
         if base_response_time.nil? || target_response_time.nil?
           return nil
         end
@@ -50,23 +38,16 @@ SPARQL
         return execution_time
       end
 
-      def response_time(sparql_query, logger)
-        sparql_log = Umakadata::Logging::SparqlLog.new(@uri.to_s, sparql_query)
-        logger.push sparql_log unless logger.nil?
-
+      def response_time(uri, sparql_query, logger)
         start_time = Time.now
+
         begin
-          result = @client.query(sparql_query)
-          if result.nil?
-            sparql_log.error = 'Empty triples'
-            return nil
-          end
-          sparql_log.response = @client.response(sparql_query)
+          response = query(uri, sparql_query, logger: logger)
         rescue SPARQL::Client::ClientError, SPARQL::Client::ServerError => e
-          sparql_log.error = e
+          puts e
           return nil
         rescue => e
-          sparql_log.error = e
+          puts e
           return nil
         end
 
