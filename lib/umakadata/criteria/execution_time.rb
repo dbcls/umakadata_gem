@@ -40,17 +40,8 @@ SPARQL
 
       def response_time(uri, sparql_query, logger)
         start_time = Time.now
-
-        begin
-          response = query(uri, sparql_query, logger: logger)
-        rescue SPARQL::Client::ClientError, SPARQL::Client::ServerError => e
-          puts e
-          return nil
-        rescue => e
-          puts e
-          return nil
-        end
-
+        response = query(uri, sparql_query, logger: logger)
+        return nil if response.nil?
         Time.now - start_time
       end
 
