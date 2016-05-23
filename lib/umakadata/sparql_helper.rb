@@ -1,4 +1,4 @@
-require 'umakadata/my_sparql_client'
+require 'umakadata/sparql_client'
 require 'umakadata/logging/sparql_log'
 
 module Umakadata
@@ -9,7 +9,7 @@ module Umakadata
       logger.push sparql_log unless logger.nil?
 
       begin
-        client = Umakadata::MySparqlClient.new(uri, {'read_timeout': 5 * 60})
+        client = Umakadata::SparqlClient.new(uri, {'read_timeout': 5 * 60})
         response = client.query(query)
         if response.nil?
           sparql_log.error = 'Failed to parse'

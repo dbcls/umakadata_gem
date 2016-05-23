@@ -1,7 +1,7 @@
 require 'sparql/client'
 
 module Umakadata
-  class MySparqlClient < SPARQL::Client
+  class SparqlClient < SPARQL::Client
 
     attr_reader :http_request
     attr_reader :http_response
