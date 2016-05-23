@@ -17,24 +17,9 @@ module Umakadata
       # @param  args [Hash]:
       # @return [Boolean]
       def alive?(uri, time_out, logger: nil)
-        query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
-
-        args = {
-          :headers => {
-            # Note: Use single quoted 'Accept', symbol :accept is NOT applicable to net/http
-            'Accept' => [Umakadata::DataFormat::TURTLE, Umakadata::DataFormat::RDFXML].join(','),
-          },
-          :time_out => time_out,
-          :logger => logger
-        }
-
-        response = http_get(URI.encode(uri.to_s + '?query=' + query), args)
-        return true if response.is_a?(Net::HTTPSuccess)
-
-        response = http_post(uri.to_s, {:query => query}.merge(args), args)
-        return true if response.is_a?(Net::HTTPSuccess)
-
-        false
+        sparql_query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
+        response = Umakadata::SparqlHelper.query(uri, sparql_query, logger: logger)
+        !response.nil?
       end
 
     end
