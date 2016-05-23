@@ -69,7 +69,7 @@ SPARQL
             target.instance_variable_set(:@uri, @uri)
             target.prepare(@uri)
 
-            client = double('client')
+            client = double(SPARQL::Client)
             allow(client).to receive(:query).and_raise(SPARQL::Client::MalformedQuery, 'Occured MalformedQuery')
             target.set_client(client)
 
@@ -80,7 +80,7 @@ SPARQL
            target.instance_variable_set(:@uri, @uri)
            target.prepare(@uri)
 
-           client = double('client', :query => [])
+           client = double(SPARQL::Client, :query => [])
            allow(client).to receive(:response).and_return(String)
            target.set_client(client)
 
