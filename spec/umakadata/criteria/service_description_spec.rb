@@ -23,7 +23,7 @@ describe 'Umakadata' do
         it 'should return service description object when valid response is retrieved of ttl format' do
           valid_ttl = read_file('good_turtle_01.ttl')
           response = double(Net::HTTPResponse)
-          allow(target).to receive(:http_get).with(@uri, anything, 10).and_return(response)
+          allow(target).to receive(:http_get).with(@uri, anything).and_return(response)
           allow(response).to receive(:is_a?).and_return(true)
           allow(response).to receive(:body).and_return(valid_ttl)
           allow(response).to receive(:each_key).and_yield("@prefix rdf").and_yield("@prefix ns1")
@@ -42,7 +42,7 @@ describe 'Umakadata' do
         it 'should return service description object when response is retrieved of xml format' do
           valid_ttl = read_file('good_xml_01.xml')
           response = double(Net::HTTPResponse)
-          allow(target).to receive(:http_get).with(@uri, anything, 10).and_return(response)
+          allow(target).to receive(:http_get).with(@uri, anything).and_return(response)
           allow(response).to receive(:is_a?).and_return(true)
           allow(response).to receive(:body).and_return(valid_ttl)
           allow(response).to receive(:each_key).and_yield("@prefix rdf").and_yield("@prefix ns1")
@@ -61,7 +61,7 @@ describe 'Umakadata' do
         it 'should return service description object when response is retrieved of xml format' do
           valid_ttl = read_file('good_xml_01.xml')
           response = double(Net::HTTPResponse)
-          allow(target).to receive(:http_get).with(@uri, anything, 10).and_return(response)
+          allow(target).to receive(:http_get).with(@uri, anything).and_return(response)
           allow(response).to receive(:is_a?).and_return(true)
           allow(response).to receive(:body).and_return(valid_ttl)
           allow(response).to receive(:each_key)
@@ -77,7 +77,7 @@ describe 'Umakadata' do
         it 'should return false description object when invalid response is retrieved' do
           invalid_ttl = read_file('bad_turtle_01.ttl')
           response = double(Net::HTTPResponse)
-          allow(target).to receive(:http_get).with(@uri, anything, 10).and_return(response)
+          allow(target).to receive(:http_get).with(@uri, anything).and_return(response)
           allow(response).to receive(:is_a?).and_return(true)
           allow(response).to receive(:body).and_return(invalid_ttl)
 
@@ -90,7 +90,7 @@ describe 'Umakadata' do
 
         it 'should return false description object when client error response is retrieved' do
           response = double(Net::HTTPNotFound)
-          allow(target).to receive(:http_get).with(@uri, anything, 10).and_return(response)
+          allow(target).to receive(:http_get).with(@uri, anything).and_return(response)
           allow(response).to receive(:body)
           allow(response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(false)
           allow(response).to receive(:is_a?).with(Net::HTTPResponse).and_return(true)
@@ -104,7 +104,7 @@ describe 'Umakadata' do
 
         it 'should return false description object when server error response is retrieved' do
           response = double(Net::HTTPInternalServerError)
-          allow(target).to receive(:http_get).with(@uri, anything, 10).and_return(response)
+          allow(target).to receive(:http_get).with(@uri, anything).and_return(response)
           allow(response).to receive(:body)
           allow(response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(false)
           allow(response).to receive(:is_a?).with(Net::HTTPResponse).and_return(true)
