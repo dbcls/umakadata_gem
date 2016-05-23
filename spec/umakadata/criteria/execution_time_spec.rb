@@ -22,7 +22,6 @@ SPARQL
           allow(target).to receive(:response_time).with(Umakadata::Criteria::ExecutionTime::TARGET_QUERY)
             .and_return(10000)
           expect(target.execution_time(@uri)).not_to be_nil
-          expect(target.get_error).to eq nil
         end
 
         it 'should return nil when the response time of ask query is nil' do
@@ -75,7 +74,6 @@ SPARQL
             target.set_client(client)
 
             expect(target.response_time(MALFORMED_QUERY)).to eq nil
-            expect(target.get_error).to eq "Query: ASK{\n, Error: Occured MalformedQuery"
           end
 
           it 'should return time when query is correctly' do
@@ -87,7 +85,6 @@ SPARQL
 
            expect(target.response_time(Umakadata::Criteria::ExecutionTime::BASE_QUERY).instance_of?(Float)).to be true
            expect(target.response_time(Umakadata::Criteria::ExecutionTime::TARGET_QUERY).instance_of?(Float)).to be true
-           expect(target.get_error).to eq nil
          end
        end
 
