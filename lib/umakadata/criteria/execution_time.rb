@@ -9,7 +9,7 @@ module Umakadata
       include Umakadata::ErrorHelper
 
       BASE_QUERY = <<-'SPARQL'
-ASK{}
+ASK {}
 SPARQL
 
       TARGET_QUERY = <<-'SPARQL'
