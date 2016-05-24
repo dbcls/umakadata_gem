@@ -6,8 +6,11 @@ module Umakadata
 
     class Log
 
+      attr_writer :criterion
+
       def initialize
         @list = Array.new
+        @criterion = nil
       end
 
       def push(log)
@@ -19,7 +22,7 @@ module Umakadata
         @list.each { |log|
           result.push log.to_h
         }
-        result
+        {'criterion' => @criterion.to_s, 'logs' => result}
       end
 
       def as_json
@@ -27,7 +30,7 @@ module Umakadata
         @list.each { |log|
           result.push log.to_h
         }
-        result.to_json
+        {'criterion' => @criterion.to_s, 'logs' => result}.to_json
       end
 
     end
