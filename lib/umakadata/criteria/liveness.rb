@@ -1,15 +1,10 @@
-require 'umakadata/http_helper'
-require 'umakadata/error_helper'
+require 'umakadata/sparql_helper'
 
 module Umakadata
 
   module Criteria
 
     module Liveness
-
-      include Umakadata::HTTPHelper
-      include Umakadata::ErrorHelper
-
       ##
       # A boolan value whether if the SPARQL endpoint is alive.
       #
