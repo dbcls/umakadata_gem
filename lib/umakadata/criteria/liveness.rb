@@ -14,7 +14,7 @@ module Umakadata
       def alive?(uri, time_out, logger: nil)
         sparql_query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
 
-        [:get, :post].each do |method|
+        [:post, :get].each do |method|
           response = Umakadata::SparqlHelper.query(uri, sparql_query, logger: logger, options: {method: method})
           return true unless response.nil?
         end
