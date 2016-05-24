@@ -13,33 +13,22 @@ describe 'Umakadata' do
           @uri = URI('http://example.com')
         end
 
-        it 'should return true when Net::HTTP.get_response returns Net::HTTPSuccess' do
-          response = double(Net::HTTPResponse)
-          allow(response).to receive(:is_a?).and_return(true)
-          allow(target).to receive(:http_get).and_return(response)
+        it 'should return true when Umakadata::SparqlHelper query function returns HTTPResponse and has options that contains :method key to :get value' do
+          query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
+          allow(Umakadata::SparqlHelper).to receive(:query).and_raise(@uri, query, logger: nil, options: {method: :get}).and_return(Net::HTTPResponse)
           expect(target.alive?(@uri, 10)).to be true
         end
 
-        it 'should return true when Net::HTTP.get_response does not return Net::HTTPSuccess and Net::HTTP.post_form returns Net::HTTPSuccess' do
-          response_get = double(Net::HTTPResponse)
-          allow(response_get).to receive(:is_a?).and_return(false)
-          allow(target).to receive(:http_get).and_return(response_get)
-
-          response_post = double(Net::HTTPResponse)
-          allow(response_post).to receive(:is_a?).and_return(true)
-          allow(target).to receive(:http_post).and_return(response_post)
-
+        it 'should return true when Umakadata::SparqlHelper query function returns HTTPResponse and has options that contains :method key to :post value' do
+          query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
+          allow(Umakadata::SparqlHelper).to receive(:query).and_raise(@uri, query, logger: nil, options: {method: :post}).and_return(Net::HTTPResponse)
           expect(target.alive?(@uri, 10)).to be true
         end
 
-        it 'should return false when Net::HTTP.get_response does not return Net::HTTPSuccess and Net::HTTP.post_form does not return Net::HTTPSuccess' do
-          response_get = double(Net::HTTPResponse)
-          allow(response_get).to receive(:is_a?).and_return(false)
-          allow(target).to receive(:http_get).and_return(response_get)
-
-          response_post = double(Net::HTTPResponse)
-          allow(response_post).to receive(:is_a?).and_return(false)
-          allow(target).to receive(:http_post).and_return(response_post)
+        it 'should return false when Umakadata::SparqlHelper query function returns 200 HTTPResponse' do
+          query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
+          allow(Umakadata::SparqlHelper).to receive(:query).and_raise(@uri, query, logger: nil, options: {method: :get}).and_return(nil)
+          allow(Umakadata::SparqlHelper).to receive(:query).and_raise(@uri, query, logger: nil, options: {method: :post}).and_return(nil)
 
           expect(target.alive?(@uri, 10)).to be false
         end
