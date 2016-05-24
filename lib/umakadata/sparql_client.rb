@@ -8,12 +8,12 @@ module Umakadata
 
     def request(query, headers = {}, &block)
       headers['Accept'] ||= if (query.respond_to?(:expects_statements?) ?
-                                      query.expects_statements? :
-                                      (query =~ /CONSTRUCT|DESCRIBE|DELETE|CLEAR/))
-              GRAPH_ALL
-            else
-              RESULT_ALL
-            end
+                                query.expects_statements? :
+                                (query =~ /CONSTRUCT|DESCRIBE|DELETE|CLEAR/))
+        GRAPH_ALL
+      else
+        RESULT_ALL
+      end
 
       @http_request = send("make_#{request_method(query)}_request", query, headers)
 
@@ -22,7 +22,7 @@ module Umakadata
       @http_response = @http.request(::URI.parse(url.to_s), @http_request)
 
       10.times do
-      if @http_response.kind_of? Net::HTTPRedirection
+        if @http_response.kind_of? Net::HTTPRedirection
           @http_response = @http.request(::URI.parse(@http_response['location']), @http_request)
         else
           return block_given? ? block.call(@http_response) : @http_response
