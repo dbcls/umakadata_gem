@@ -27,8 +27,8 @@ describe 'Umakadata' do
 
         it 'should return false when Umakadata::SparqlHelper query function returns 200 HTTPResponse' do
           query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
-          allow(Umakadata::SparqlHelper).to receive(:query).and_raise(@uri, query, logger: nil, options: {method: :get}).and_return(nil)
-          allow(Umakadata::SparqlHelper).to receive(:query).and_raise(@uri, query, logger: nil, options: {method: :post}).and_return(nil)
+          allow(Umakadata::SparqlHelper).to receive(:query).with(@uri, query, logger: nil, options: {method: :get}).and_return(nil)
+          allow(Umakadata::SparqlHelper).to receive(:query).with(@uri, query, logger: nil, options: {method: :post}).and_return(nil)
 
           expect(target.alive?(@uri, 10)).to be false
         end

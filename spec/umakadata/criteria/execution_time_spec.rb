@@ -71,8 +71,8 @@ SPARQL
           end
 
           it 'should return time when query is correctly' do
-            allow(Umakadata::SparqlHelper).to receive(:query).and_raise(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, logger: nil).and_return(Net::HTTPResponse)
-            allow(Umakadata::SparqlHelper).to receive(:query).and_raise(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, logger: nil).and_return(Net::HTTPResponse)
+            allow(Umakadata::SparqlHelper).to receive(:query).with(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, logger: nil).and_return(Net::HTTPResponse)
+            allow(Umakadata::SparqlHelper).to receive(:query).with(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, logger: nil).and_return(Net::HTTPResponse)
             expect(target.response_time(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, nil).instance_of?(Float)).to be true
             expect(target.response_time(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, nil).instance_of?(Float)).to be true
          end
