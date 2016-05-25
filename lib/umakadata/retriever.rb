@@ -24,8 +24,8 @@ module Umakadata
     end
 
     include Umakadata::Criteria::ServiceDescription
-    def service_description(time_out = 30)
-      super(@uri, time_out)
+    def service_description(time_out = 30, logger: nil)
+      super(@uri, time_out, logger: logger)
     end
 
     include Umakadata::Criteria::LinkedDataRules
