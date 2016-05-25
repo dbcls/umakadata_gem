@@ -13,10 +13,6 @@ module Umakadata
         @result = nil
       end
 
-      def push(log)
-        @list.push log
-      end
-
       def to_h
         logs = Array.new
         @list.each { |log|
