@@ -124,9 +124,19 @@ module Umakadata
         self.score_each_graph(metadata, score_proc)
       end
 
-      def score_vocabularies(metadata)
+      def score_vocabularies(metadata, logger: nil)
         score_proc = lambda do |graph, data|
-          return data[:properties].count
+          graph_log = Umakadata::Logging::CriteriaLog.new unless logger.nil?
+          logger.push graph_log unless graph_log.nil?
+          graph_log.result = "Graph: #{graph}"
+
+          properties_log = data[:properties_log]
+          graph_log.push properties_log unless logger.nil?
+
+          count = data[:properties].count
+          properties_log.result = "Properties count: #{count}"
+
+          return count
         end
         self.score_each_graph(metadata, score_proc)
       end
