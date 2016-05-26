@@ -19,10 +19,10 @@ module Umakadata
           logger.push method_log unless logger.nil?
           response = Umakadata::SparqlHelper.query(uri, sparql_query, logger: method_log, options: {method: method})
           unless response.nil?
-            method_log.criterion = "200 HTTP response"
+            method_log.criterion = "#{method.to_s.capitalize}: 200 HTTP response"
             return true
           end
-          method_log.criterion = "HTTP response errorr"
+          method_log.criterion = "#{method.to_s.capitalize}: HTTP response errorr"
         end
 
         false
