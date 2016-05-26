@@ -79,32 +79,34 @@ SPARQL
         false
       end
 
-      def uri_provides_info?(uri)
-        self.prepare(uri)
-
-        uri = self.get_subject_randomly()
+      def uri_provides_info?(uri, logger: nil)
+        uri = self.get_subject_randomly(uri, logger: logger)
         if uri == nil
           return false
         end
+        log = Umakadata::Logging::CriteriaLog.new
+        logger.push log unless logger.nil?
         begin
-          response = http_get_recursive(URI(uri), {}, 10)
+          response = http_get_recursive(URI(uri), {logger: log}, 10)
         rescue => e
-          puts "INVALID URI: #{uri}"
+          log.result = "INVALID URI: #{uri}"
           return false
         end
 
         if !response.is_a?(Net::HTTPSuccess)
-          if response.is_a? Net::HTTPResponse
-            set_error(response.code + "\s" + response.message)
-          else
-            set_error(response)
-          end
+          log.result = 'URI does not return 200 HTTP response'
           return false
         end
-        return !response.body.empty?
+
+        if !response.body.empty?
+          log.result = "URI returns any data"
+          return true
+        end
+        log.result = 'URI returns emtpy'
+        false
       end
 
-      def get_subject_randomly
+      def get_subject_randomly(uri, logger: nil)
         sparql_query = <<-'SPARQL'
 SELECT
   ?s
@@ -118,12 +120,17 @@ LIMIT 1
 OFFSET 100
 SPARQL
 
-        results = query(sparql_query)
-        if results != nil && results[0] != nil
-          results[0][:s]
-        else
-          nil
+        [:post, :get].each do |method|
+          log = Umakadata::Logging::CriteriaLog.new
+          logger.push log unless logger.nil?
+          results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
+          if results != nil && results[0] != nil
+            log.result = 'URI is found'
+            return results[0][:s]
+          end
+          log.result = 'URI does not find'
         end
+        nil
       end
 
       def contains_links?(uri)
