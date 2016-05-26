@@ -15,8 +15,14 @@ module Umakadata
         sparql_query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
 
         [:post, :get].each do |method|
-          response = Umakadata::SparqlHelper.query(uri, sparql_query, logger: logger, options: {method: method})
-          return true unless response.nil?
+          method_log = Umakadata::Logging::Log.new
+          logger.push method_log unless logger.nil?
+          response = Umakadata::SparqlHelper.query(uri, sparql_query, logger: method_log, options: {method: method})
+          unless response.nil?
+            method_log.criterion = "200 HTTP response"
+            return true
+          end
+          method_log.criterion = "HTTP response errorr"
         end
 
         false
