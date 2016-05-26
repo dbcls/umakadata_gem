@@ -28,10 +28,10 @@ module Umakadata
         response = http_get(uri, args)
 
         if !response.is_a?(Net::HTTPSuccess)
-          criteria_log.result = 'The endpoint does not return 200 HTTP response'
+          criteria_log.result = 'The endpoint could not return 200 HTTP response'
           return nil
         end
-        
+
         sd = Umakadata::ServiceDescription.new(response)
 
         case sd.type
