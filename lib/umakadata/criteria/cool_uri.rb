@@ -14,28 +14,29 @@ module Umakadata
         rate = 0
         if uri.host !~ /\d+\.\d+\.\d+\.\d+/
           rate += 25
-          cool_uri_log.host = 'A host of URI of endpoints does not specified by IP address'
+          cool_uri_log.host = 'Matched rule. plus 25 points'
         else
-          cool_uri_log.host = 'A host of URI of endpoints is specified by IP address'
+          cool_uri_log.host = 'Could not match rule'
         end
         if uri.port == 80
           rate += 25
-          cool_uri_log.port = 'A port of URI of endpoints is 80'
+          cool_uri_log.port = 'Matched rule. plus 25 points'
         else
-          cool_uri_log.port = 'A port of URI of endpoints is not 80'
+          cool_uri_log.port = 'Could not match rule'
         end
         if uri.query.nil?
           rate += 25
-          cool_uri_log.query = 'A URI of endpoints does not contain query parameters'
+          cool_uri_log.query = 'Matched rule. plus 25 points'
         else
-          cool_uri_log.query = 'A URI of endpoints contains query parameters'
+          cool_uri_log.query = 'Could not match rule'
         end
         if uri.to_s.length <= 30
           rate += 25
-          cool_uri_log.length = 'A length of URI of endpoints is lower than 30 characters'
+          cool_uri_log.length = 'Matched rule. plus 25 points'
         else
-          cool_uri_log.length = 'A length of URI of endpoints is higher than 30 characters'
+          cool_uri_log.length = 'Could not match rule'
         end
+
         criteria_log.result = "Cool URI Score is #{rate}"
         return rate
       end
