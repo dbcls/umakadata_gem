@@ -66,8 +66,8 @@ module Umakadata
     end
 
     include Umakadata::Criteria::Metadata
-    def metadata
-      super(@uri)
+    def metadata(logger: nil)
+      super(@uri, logger: logger)
     end
 
     def last_updated

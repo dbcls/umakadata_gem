@@ -2,6 +2,8 @@ require 'json'
 require 'sparql/client'
 require 'umakadata/error_helper'
 require 'umakadata/http_helper'
+require 'umakadata/sparql_helper'
+require 'umakadata/logging/criteria_log'
 
 
 module Umakadata
@@ -31,61 +33,69 @@ module Umakadata
         'http://www.w3.org/2004/02/skos/core',
       ]
 
-      def metadata(uri)
-        metadata_error = {error: nil}
-        errors = nil
-        client = SPARQL::Client.new(uri)
-        graphs = self.list_of_graph_uris(client)
+      def metadata(uri, logger: nil)
+        graphs = self.list_of_graph_uris(uri, logger: logger)
         metadata = {}
         if graphs.empty?
-          metadata_error[:error] = 'graph'
-          metadata_error[:reason] = get_error
-          set_error(metadata_error.to_json)
           return metadata
         end
 
-        errors = {classes: {}, labels: {}, datatypes: {}, properties: {}}
-
         graphs.each do |graph|
-          classes = self.classes_on_graph(client, graph)
-          error = get_error
-          errors[:classes][graph] = error.force_encoding('ISO-8859-1').encode('UTF-8') unless error.nil?
-
-          labels = list_of_labels_of_classes(client, graph, classes)
-          error = get_error
-          errors[:labels][graph] = error.force_encoding('ISO-8859-1').encode('UTF-8') unless error.nil?
-
-          datatypes = self.list_of_datatypes(client, graph)
-          error = get_error
-          errors[:datatypes][graph] = error.force_encoding('ISO-8859-1').encode('UTF-8') unless error.nil?
-
-          properties = self.list_of_properties_on_graph(client, graph)
-          error = get_error
-          errors[:properties][graph] = error.force_encoding('ISO-8859-1').encode('UTF-8') unless error.nil?
+          classes_log = Umakadata::Logging::CriteriaLog.new
+          classes = self.classes_on_graph(uri, graph, logger: classes_log)
+          labels_log = Umakadata::Logging::CriteriaLog.new
+          labels = list_of_labels_of_classes(uri, graph, classes, logger: labels_log)
+          datatypes_log = Umakadata::Logging::CriteriaLog.new
+          datatypes = self.list_of_datatypes(uri, graph, logger: datatypes_log)
+          properties_log = Umakadata::Logging::CriteriaLog.new
+          properties = self.list_of_properties_on_graph(uri, graph, logger: properties_log)
           metadata[graph] = {
             classes: classes,
             labels: labels,
             datatypes: datatypes,
-            properties: properties
+            properties: properties,
+            classes_log: classes_log,
+            labels_log: labels_log,
+            datatypes_log: datatypes_log,
+            properties_log: properties_log
           }
         end
 
-        if errors.values.inject(0) {|count, error| count + error.size} > 0
-          metadata_error[:error] = 'elements'
-          metadata_error[:reason] = errors
-        end
-        set_error(metadata_error.to_json)
         return metadata
       end
 
-      def score_metadata(metadata)
+      def score_metadata(metadata, logger: nil)
         score_proc = lambda do |graph, data|
-          score = 0
-          score += 25 unless data[:classes].empty?
-          score += 25 unless data[:labels].empty?
-          score += 25 unless data[:datatypes].empty?
-          score += 25 unless data[:properties].empty?
-          return score
+          graph_log = Umakadata::Logging::CriteriaLog.new unless logger.nil?
+          logger.push graph_log unless graph_log.nil?
+
+          total_score = 0
+          classes_log = data[:classes_log]
+          graph_log.push classes_log unless logger.nil?
+          score = data[:classes].empty? ? 0 : 25
+          total_score += score
+          classes_log.result = "Classes score: #{score}"
+
+          labels_log = data[:labels_log]
+          graph_log.push labels_log unless logger.nil?
+          score = data[:labels].empty? ? 0 : 25
+          total_score += score
+          labels_log.result = "Labels score: #{score}"
+
+          datatypes_log = data[:datatypes_log]
+          graph_log.push datatypes_log unless logger.nil?
+          score = data[:datatypes].empty? ? 0 : 25
+          total_score += score
+          datatypes_log.result = "Datatypes score: #{score}"
+
+          properties_log = data[:properties_log]
+          graph_log.push properties_log unless logger.nil?
+          score = data[:properties].empty? ? 0 : 25
+          total_score += score
+          properties_log.result = "Properties score: #{score}"
+
+          graph_log.result = "Graph: #{graph}"
+          total_score
         end
         self.score_each_graph(metadata, score_proc)
       end
@@ -133,7 +143,7 @@ module Umakadata
         return score_list.inject(0.0) { |r, i| r += i } / score_list.size
       end
 
-      def list_of_graph_uris(client)
+      def list_of_graph_uris(uri, logger: nil)
         query = <<-SPARQL
 SELECT DISTINCT ?g
 WHERE {
@@ -141,20 +151,20 @@ WHERE {
   { ?s ?p ?o. }
 }
 SPARQL
-        results = self.query_metadata(client, query)
+        results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
         return [] if results.nil?
         results.map { |solution| solution[:g] }
       end
 
-      def classes_on_graph(client, graph)
+      def classes_on_graph(uri, graph, logger: nil)
         classes = []
-        classes += self.list_of_classes_on_graph(client, graph)
-        classes += self.list_of_classes_having_instances(client, graph)
+        classes += self.list_of_classes_on_graph(uri, graph, logger: logger)
+        classes += self.list_of_classes_having_instances(uri, graph, logger: logger)
         classes.uniq!
         return classes
       end
 
-      def list_of_classes_on_graph(client, graph)
+      def list_of_classes_on_graph(uri, graph, logger: nil)
         query = <<-SPARQL
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -175,19 +185,19 @@ WHERE {
 }
 LIMIT 100
 SPARQL
-        results = self.query_metadata(client, query)
+        results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
         return [] if results.nil?
         results.map { |solution| solution[:c] }
       end
 
-      def list_of_classes_having_instances(client, graph)
+      def list_of_classes_having_instances(uri, graph, logger: nil)
         query = <<-SPARQL
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 SELECT DISTINCT ?c
 FROM <#{graph}>
 WHERE { [] rdf:type ?c. }
 SPARQL
-        results = self.query_metadata(client, query)
+        results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
         return [] if results.nil?
         results.map { |solution| solution[:c] }
       end
@@ -204,7 +214,7 @@ SPARQL
         results.map { |solution| solution[:label] }
       end
 
-      def list_of_labels_of_classes(client, graph, classes)
+      def list_of_labels_of_classes(uri, graph, classes, logger: nil)
         query = <<-SPARQL
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT DISTINCT ?c ?label
@@ -217,7 +227,7 @@ WHERE {
     }
 }
 SPARQL
-        results = self.query_metadata(client, query)
+        results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
         return [] if results.nil?
         results.map { |solution| solution[:label] }
       end
@@ -241,7 +251,7 @@ SPARQL
         return results[0][:num]
       end
 
-      def list_of_properties_on_graph(client, graph)
+      def list_of_properties_on_graph(uri, graph, logger: nil)
         query = <<-SPARQL
 SELECT DISTINCT ?p
         FROM <#{graph}>
@@ -249,7 +259,7 @@ WHERE{
         ?s ?p ?o.
 }
 SPARQL
-        results = self.query_metadata(client, query)
+        results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
         return [] if results.nil?
         results.map { |solution| solution[:p] }
       end
@@ -432,7 +442,7 @@ SPARQL
         results.map { |solution| [ solution[:p], solution[:d], solution[:r] ] }
       end
 
-      def list_of_datatypes(client, graph)
+      def list_of_datatypes(uri, graph, logger: nil)
         query = <<-SPARQL
 SELECT DISTINCT (datatype(?o) AS ?ldt)
 FROM <#{graph}>
@@ -441,7 +451,7 @@ WHERE{
   FILTER(isLiteral(?o))
 }
 SPARQL
-        results = self.query_metadata(client, query)
+        results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
         return [] if results.nil?
         results.map { |solution| solution[:ldt] }
       end
