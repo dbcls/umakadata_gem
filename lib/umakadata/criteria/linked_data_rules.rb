@@ -94,7 +94,7 @@ SPARQL
         end
 
         if !response.is_a?(Net::HTTPSuccess)
-          log.result = 'URI does not return 200 HTTP response'
+          log.result = 'URI could not return 200 HTTP response'
           return false
         end
 
@@ -128,18 +128,16 @@ SPARQL
             log.result = 'URI is found'
             return results[0][:s]
           end
-          log.result = 'URI does not find'
+          log.result = 'URI could not find'
         end
         nil
       end
 
-      def contains_links?(uri)
-        self.prepare(uri)
-
-        self.contains_same_as?() || self.contains_see_also?()
+      def contains_links?(uri, logger: nil)
+        self.contains_same_as?(uri, logger: logger) || self.contains_see_also?(uri, logger: logger)
       end
 
-      def contains_same_as?
+      def contains_same_as?(uri, logger: nil)
         sparql_query = <<-'SPARQL'
 PREFIX owl:<http://www.w3.org/2002/07/owl#>
 SELECT
@@ -149,11 +147,21 @@ WHERE {
 }
 LIMIT 1
 SPARQL
-        results = query(sparql_query)
-        return results != nil && results.count > 0
+
+        [:post, :get].each do |method|
+          log = Umakadata::Logging::CriteriaLog.new
+          logger.push log unless logger.nil?
+          results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
+          if results != nil && results.count > 0
+            log.result = 'The owl:sameAs statement is found'
+            return true
+          end
+          log.result = 'The owl:sameAs statement could not find'
+        end
+        false
       end
 
-      def contains_see_also?
+      def contains_see_also?(uri, logger: nil)
         sparql_query = <<-'SPARQL'
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT
@@ -163,38 +171,18 @@ WHERE {
 }
 LIMIT 1
 SPARQL
-        results = query(sparql_query)
-        return results != nil && results.count > 0
-      end
 
-      def query(sparql_query)
-        begin
-          results = @client.query(sparql_query)
-          if results.nil?
-            @client.response(sparql_query)
-            set_error('Endpoint URI is different from actual URI in executing query')
-            return nil
+        [:post, :get].each do |method|
+          log = Umakadata::Logging::CriteriaLog.new
+          logger.push log unless logger.nil?
+          results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
+          if results != nil && results.count > 0
+            log.result = 'The rdfs:seeAlso statement is found'
+            return true
           end
-        rescue SPARQL::Client::MalformedQuery => e
-          set_error("Query: #{sparql_query}, Error: #{e.message}")
-          return nil
-        rescue SPARQL::Client::ClientError, SPARQL::Client::ServerError => e
-          message = e.message.scan(REGEXP)[0]
-          if message.nil?
-            result = e.message.scan(/"datatype":\s"(.*\n)/)[0]
-            if result.nil?
-              message = ''
-            else
-              message = result[0].chomp
-            end
-          end
-          set_error("Query: #{sparql_query}, Error: #{message}")
-        rescue => e
-          set_error("Query: #{sparql_query}, Error: #{e.to_s}")
-          return nil
+          log.result = 'The rdfs:seeAlso statement could not find'
         end
-
-        return results
+        false
       end
 
     end

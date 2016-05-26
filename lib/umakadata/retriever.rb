@@ -38,8 +38,8 @@ module Umakadata
     def uri_provides_info?(logger: nil)
       super(@uri, logger: logger)
     end
-    def contains_links?
-      super(@uri)
+    def contains_links?(logger: nil)
+      super(@uri, logger: logger)
     end
 
     include Umakadata::Criteria::VoID
