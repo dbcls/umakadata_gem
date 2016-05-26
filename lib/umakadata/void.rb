@@ -1,13 +1,12 @@
 require 'rdf/turtle'
 require 'umakadata/data_format'
-require 'umakadata/error_helper'
+require 'umakadata/logging/criteria_log'
 
 module Umakadata
 
   class VoID
 
     include Umakadata::DataFormat
-    include Umakadata::ErrorHelper
 
     ##
     # return the VoID as string
@@ -33,11 +32,18 @@ module Umakadata
     # @return [String]
     attr_reader :modified
 
-    def initialize(http_response)
+    def initialize(http_response, logger: nil)
       body = http_response.body
       data = triples(body, TURTLE)
+      logger.result = 'VoID can be retrieved Turtle format' unless data.nil?
+
       data = triples(body, RDFXML) if data.nil?
-      return if data.nil?
+      logger.result = 'VoID can be retrieved RDF/XML format' unless data.nil?
+
+      if data.nil?
+        logger.result = 'VoID can not be retrieved Turtle and RDF/XML format' if data.nil?
+        return
+      end
 
       @text = body
       @license = []

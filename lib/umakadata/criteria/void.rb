@@ -1,7 +1,7 @@
 require 'umakadata/data_format'
 require 'umakadata/http_helper'
 require 'umakadata/void'
-require 'umakadata/error_helper'
+require 'umakadata/logging/criteria_log'
 require 'uri/http'
 
 module Umakadata
@@ -10,7 +10,6 @@ module Umakadata
 
       include Umakadata::DataFormat
       include Umakadata::HTTPHelper
-      include Umakadata::ErrorHelper
 
       WELL_KNOWN_VOID_PATH = "/.well-known/void".freeze
 
@@ -18,23 +17,21 @@ module Umakadata
         URI::HTTP.build({:host => uri.host, :path => WELL_KNOWN_VOID_PATH})
       end
 
-      def void_on_well_known_uri(uri, time_out = 10)
-        response = http_get_recursive(well_known_uri, {}, time_out)
+      def void_on_well_known_uri(uri, time_out = 10, logger: nil)
+        log = Umakadata::Logging::CriteriaLog.new
+        logger.push log unless logger.nil?
+        args = {
+          :time_out => time_out,
+          :logger => log
+        }
+        response = http_get_recursive(well_known_uri, args)
 
         if !response.is_a?(Net::HTTPSuccess)
-          if response.is_a? Net::HTTPResponse
-            set_error(response.code + "\s" + response.message)
-          else
-            set_error(response)
-          end
+          log.result = 'The endpoint could not return 200 HTTP response'
           return nil
         end
 
-        void = Umakadata::VoID.new(response)
-
-        if void.text.nil?
-          set_error("Neither turtle nor rdfxml format")
-        end
+        void = Umakadata::VoID.new(response, logger: log)
         return void
       end
 

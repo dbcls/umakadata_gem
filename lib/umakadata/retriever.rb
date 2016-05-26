@@ -46,8 +46,8 @@ module Umakadata
     def well_known_uri
       super(@uri)
     end
-    def void_on_well_known_uri(time_out = 30)
-      super(@uri, time_out)
+    def void_on_well_known_uri(time_out = 30, logger: nil)
+      super(@uri, time_out, logger: logger)
     end
 
     include Umakadata::Criteria::ExecutionTime
