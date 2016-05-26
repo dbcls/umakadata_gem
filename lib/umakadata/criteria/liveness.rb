@@ -23,7 +23,7 @@ module Umakadata
             request_log.result = "#{method.to_s.capitalize}: 200 HTTP response"
             return true
           end
-          request_log.result = "#{method.to_s.capitalize}: HTTP response errorr"
+          request_log.result = "#{method.to_s.capitalize}: HTTP response error"
         end
 
         false
