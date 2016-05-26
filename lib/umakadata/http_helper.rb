@@ -15,7 +15,9 @@ module Umakadata
       http = Net::HTTP.new(uri.host, uri.port)
       http.open_timeout = args[:time_out]
 
-      request = Net::HTTP::Get.new(uri.path.empty? ? '/' : uri.path, args[:headers])
+      path = uri.path.empty? ? '/' : uri.path
+      path += '?' + uri.query unless uri.query.nil?
+      request = Net::HTTP::Get.new(path, args[:headers])
 
       http_log = Umakadata::Logging::HttpLog.new(uri, request)
 
@@ -59,9 +61,6 @@ module Umakadata
     def http_get_recursive(uri, args = {}, limit = 10)
       raise RuntimeError, 'HTTP redirect too deep' if limit == 0
 
-      resource = uri.path
-      resource += "?" + uri.query unless uri.query.nil?
-      uri = URI.join(uri.to_s, resource)
       response = http_get(uri, args)
 
       return http_get_recursive(URI(response['location']), args, limit - 1) if response.is_a? Net::HTTPRedirection
