@@ -32,8 +32,8 @@ module Umakadata
     def uri_subject?(logger: nil)
       super(@uri, logger: logger)
     end
-    def http_subject?
-      super(@uri)
+    def http_subject?(logger: nil)
+      super(@uri, logger: logger)
     end
     def uri_provides_info?
       super(@uri)

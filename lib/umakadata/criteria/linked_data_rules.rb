@@ -47,9 +47,7 @@ SPARQL
         false
       end
 
-      def http_subject?(uri)
-        self.prepare(uri)
-
+      def http_subject?(uri, logger: nil)
         sparql_query = <<-'SPARQL'
 SELECT
   *
@@ -62,8 +60,23 @@ WHERE {
 LIMIT 1
 SPARQL
 
-        results = query(sparql_query)
-        return results != nil && results.count == 0
+        [:post, :get].each do |method|
+          log = Umakadata::Logging::CriteriaLog.new
+          logger.push log unless logger.nil?
+          results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
+          if results != nil
+            if results.count == 0
+              log.result = 'Nothing is found'
+              return true
+            else
+              log.result = 'The non-HTTP-URI subjects is found'
+              return false
+            end
+          else
+            log.result = 'An error occured in searching'
+          end
+        end
+        false
       end
 
       def uri_provides_info?(uri)
