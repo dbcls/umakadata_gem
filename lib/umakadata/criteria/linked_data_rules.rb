@@ -1,12 +1,12 @@
 require 'umakadata/http_helper'
-require 'umakadata/error_helper'
+require 'umakadata/sparql_helper'
+require 'umakadata/logging/criteria_log'
 
 module Umakadata
   module Criteria
     module LinkedDataRules
 
       include Umakadata::HTTPHelper
-      include Umakadata::ErrorHelper
 
       REGEXP = /<title>(.*)<\/title>/
 
@@ -15,9 +15,7 @@ module Umakadata
         @uri = uri
       end
 
-      def uri_subject?(uri)
-        self.prepare(uri)
-
+      def uri_subject?(uri, logger: nil)
         sparql_query = <<-'SPARQL'
 SELECT
   *
@@ -30,8 +28,23 @@ GRAPH ?g { ?s ?p ?o } .
 LIMIT 1
 SPARQL
 
-        results = query(sparql_query)
-        return results != nil && results.count == 0
+        [:post, :get].each do |method|
+          log = Umakadata::Logging::CriteriaLog.new
+          logger.push log unless logger.nil?
+          results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
+          if results != nil
+            if results.count == 0
+              log.result = 'Nothing is found'
+              return true
+            else
+              log.result = 'The non-URI subjects is found'
+              return false
+            end
+          else
+            log.result = 'An error occured in searching'
+          end
+        end
+        false
       end
 
       def http_subject?(uri)
