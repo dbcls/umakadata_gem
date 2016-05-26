@@ -36,12 +36,12 @@ module Umakadata
       body = http_response.body
       data = triples(body, TURTLE)
       logger.result = 'VoID can be retrieved Turtle format' unless data.nil?
-
-      data = triples(body, RDFXML) if data.nil?
-      logger.result = 'VoID can be retrieved RDF/XML format' unless data.nil?
-
       if data.nil?
-        logger.result = 'VoID can not be retrieved Turtle and RDF/XML format' if data.nil?
+        data = triples(body, RDFXML)
+        logger.result = 'VoID can be retrieved RDF/XML format' unless data.nil?
+      end
+      if data.nil?
+        logger.result = 'VoID can not be retrieved Turtle and RDF/XML format'
         return
       end
 
