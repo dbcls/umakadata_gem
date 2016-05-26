@@ -100,12 +100,26 @@ module Umakadata
         self.score_each_graph(metadata, score_proc)
       end
 
-      def score_ontologies(metadata)
+      def score_ontologies(metadata, logger: nil)
         score_proc = lambda do |graph, data|
-          return 0 if data[:properties].empty?
+          graph_log = Umakadata::Logging::CriteriaLog.new unless logger.nil?
+          logger.push graph_log unless graph_log.nil?
+
+          properties_log = data[:properties_log]
+          graph_log.push properties_log unless logger.nil?
+          graph_log.result = "Graph: #{graph}"
+
+          if data[:properties].empty?
+            score =  0
+            properties_log.result = "Properties score: #{score}"
+            return score
+          end
           ontologies = self.ontologies(data[:properties])
           commons = ontologies.count{ |ontology| COMMON_ONTOLOGIES.include?(ontology) }
-          return commons.to_f / ontologies.count.to_f * 100.0
+
+          score = commons.to_f / ontologies.count.to_f * 100.0
+          properties_log.result = "Properties score: #{score} (#{commons} / #{ontologies.count} * 100)"
+          return score
         end
         self.score_each_graph(metadata, score_proc)
       end
