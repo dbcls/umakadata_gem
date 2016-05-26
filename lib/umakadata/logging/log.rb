@@ -19,7 +19,7 @@ module Umakadata
         @list.each { |log|
           result.push log.to_h
         }
-        result.to_json
+        result
       end
 
       def as_json
