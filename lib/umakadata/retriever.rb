@@ -56,8 +56,8 @@ module Umakadata
     end
 
     include Umakadata::Criteria::CoolURI
-    def cool_uri_rate
-      super(@uri)
+    def cool_uri_rate(logger: nil)
+      super(@uri, logger: logger)
     end
 
     include Umakadata::Criteria::ContentNegotiation
