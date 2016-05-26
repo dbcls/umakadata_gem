@@ -61,8 +61,8 @@ module Umakadata
     end
 
     include Umakadata::Criteria::ContentNegotiation
-    def check_content_negotiation(content_type)
-      super(@uri, content_type)
+    def check_content_negotiation(content_type, logger: nil)
+      super(@uri, content_type, logger: logger)
     end
 
     include Umakadata::Criteria::Metadata

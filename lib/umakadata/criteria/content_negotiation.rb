@@ -1,14 +1,13 @@
 require 'umakadata/http_helper'
-require 'umakadata/error_helper'
+require 'umakadata/logging/criteria_log'
 
 module Umakadata
   module Criteria
     module ContentNegotiation
 
       include Umakadata::HTTPHelper
-      include Umakadata::ErrorHelper
 
-      def check_content_negotiation(uri, content_type)
+      def check_content_negotiation(uri, content_type, logger: nil)
         query = <<-'SPARQL'
 SELECT
   *
@@ -18,22 +17,26 @@ WHERE {
 LIMIT 1
 SPARQL
 
-        headers = {}
-        headers['Accept'] = content_type
-        request =  URI(uri.to_s + "?query=" + query)
+        log = Umakadata::Logging::CriteriaLog.new
+        logger.push log unless log.nil?
 
-        response = http_get_recursive(request, headers)
+
+        args = {:headers => {'Accept' => content_type}, :logger => log}
+        request = URI(uri.to_s + "?query=" + query)
+
+        response = http_get_recursive(request, args, logger: log)
         if !response.is_a?(Net::HTTPSuccess)
-          if response.is_a? Net::HTTPResponse
-            set_error(response.code + "\s" + response.message)
-          else
-            set_error(response)
-          end
+          log.result = 'The endpoint could not return 200 HTTP response'
           return false
         end
 
-        return response.content_type == content_type
-
+        result = response.content_type == content_type
+        if result
+          log.result = "The endpoint supports #{content_type} format by content_negotiation"
+        else
+          log.result = "The endpoint could not support #{content_type} format by content_negotiation"
+        end
+        result
       end
     end
   end
