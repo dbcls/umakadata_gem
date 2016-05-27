@@ -7,7 +7,6 @@ require "umakadata/criteria/cool_uri"
 require "umakadata/criteria/content_negotiation"
 require "umakadata/criteria/metadata"
 require "umakadata/criteria/basic_sparql"
-require "umakadata/error_helper"
 
 module Umakadata
   class Retriever
@@ -83,24 +82,17 @@ module Umakadata
     def count_first_last
       sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
       count = sparql.count_statements
-      set_error(sparql.get_error) if count.nil?
 
       return { count: nil, first: nil, last: nil } if count.nil?
 
       first = sparql.nth_statement(0)
-      set_error(sparql.get_error) if first.nil?
-
       last  = sparql.nth_statement(count - 1)
-      set_error(sparql.get_error) if last.nil?
-
       return { count: count, first: first, last: last }
     end
 
-    def number_of_statements
+    def number_of_statements(logger: nil)
       sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
-      v = sparql.count_statements
-      set_error(sparql.get_error) if v.nil?
-      return v
+      return sparql.count_statements(logger: logger)
     end
 
   end
