@@ -36,11 +36,11 @@ module Umakadata
 
         case sd.type
         when Umakadata::DataFormat::UNKNOWN
-          criteria_log.result = 'ServiceDescription can not be retrieved Turtle and RDF/XML format'
+          criteria_log.result = 'ServiceDescription can not be retrieved in Turtle and RDF/XML format'
         when Umakadata::DataFormat::TURTLE
-          criteria_log.result = 'ServiceDescription can be retrieved Turtle format'
+          criteria_log.result = 'ServiceDescription can be retrieved in Turtle format'
         when Umakadata::DataFormat::RDFXML
-          criteria_log.result = 'ServiceDescription can be retrieved RDF/XML format'
+          criteria_log.result = 'ServiceDescription can be retrieved in RDF/XML format'
         end
 
         sd
