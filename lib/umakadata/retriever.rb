@@ -7,7 +7,6 @@ require "umakadata/criteria/cool_uri"
 require "umakadata/criteria/content_negotiation"
 require "umakadata/criteria/metadata"
 require "umakadata/criteria/basic_sparql"
-require "umakadata/error_helper"
 
 module Umakadata
   class Retriever
@@ -96,11 +95,9 @@ module Umakadata
       return { count: count, first: first, last: last }
     end
 
-    def number_of_statements
+    def number_of_statements(logger: nil)
       sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
-      v = sparql.count_statements
-      set_error(sparql.get_error) if v.nil?
-      return v
+      return sparql.count_statements(logger: logger)
     end
 
   end
