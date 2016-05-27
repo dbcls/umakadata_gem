@@ -18,7 +18,7 @@ LIMIT 1
 SPARQL
 
         log = Umakadata::Logging::CriteriaLog.new
-        logger.push log unless log.nil?
+        logger.push log unless log.nil? unless logger.nil?
 
 
         args = {:headers => {'Accept' => content_type}, :logger => log}
