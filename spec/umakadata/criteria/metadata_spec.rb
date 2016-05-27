@@ -39,15 +39,15 @@ describe 'Umakadata' do
         end
 
         it 'should return metadata which contains retrieved items for when multiple graphs are retrieved' do
-          allow(target).to receive(:list_of_graph_uris).and_return(['GRAPH1', 'GRAPH2'])
-          allow(target).to receive(:classes_on_graph).with(anything, 'GRAPH1').and_return(['CLASS1'])
-          allow(target).to receive(:classes_on_graph).with(anything, 'GRAPH2').and_return([])
-          allow(target).to receive(:list_of_labels_of_classes).with(anything, 'GRAPH1', ['CLASS1']).and_return(['LABEL1'])
-          allow(target).to receive(:list_of_labels_of_classes).with(anything, 'GRAPH2', []).and_return([])
-          allow(target).to receive(:list_of_datatypes).with(anything, 'GRAPH1').and_return(['DATATYPE1'])
-          allow(target).to receive(:list_of_datatypes).with(anything, 'GRAPH2').and_return([])
-          allow(target).to receive(:list_of_properties_on_graph).with(anything, 'GRAPH1').and_return(['PROPERTY1'])
-          allow(target).to receive(:list_of_properties_on_graph).with(anything, 'GRAPH2').and_return([])
+          allow(target).to receive(:list_of_graph_uris).and_return(['GRAPH1', 'GRAPH2'], anything)
+          allow(target).to receive(:classes_on_graph).with(anything, 'GRAPH1', anything).and_return(['CLASS1'])
+          allow(target).to receive(:classes_on_graph).with(anything, 'GRAPH2', anything).and_return([])
+          allow(target).to receive(:list_of_labels_of_classes).with(anything, 'GRAPH1', ['CLASS1'], anything).and_return(['LABEL1'])
+          allow(target).to receive(:list_of_labels_of_classes).with(anything, 'GRAPH2', [], anything).and_return([])
+          allow(target).to receive(:list_of_datatypes).with(anything, 'GRAPH1', anything).and_return(['DATATYPE1'])
+          allow(target).to receive(:list_of_datatypes).with(anything, 'GRAPH2', anything).and_return([])
+          allow(target).to receive(:list_of_properties_on_graph).with(anything, 'GRAPH1', anything).and_return(['PROPERTY1'])
+          allow(target).to receive(:list_of_properties_on_graph).with(anything, 'GRAPH2', anything).and_return([])
 
           metadata = target.metadata(@uri)
 
@@ -63,12 +63,11 @@ describe 'Umakadata' do
         end
 
         it 'should return error message when sparql query is malformed' do
-          allow_any_instance_of(SPARQL::Client).to receive(:query).and_raise(SPARQL::Client::MalformedQuery, 'Occured MalformedQuery')
+          allow_any_instance_of(Umakadata::SparqlHelper).to receive(:query).and_raise(SPARQL::Client::MalformedQuery, 'Occured MalformedQuery')
 
           metadata = target.metadata(@uri)
 
           expect(metadata).to eq Hash.new
-          expect(target.get_error).to eq '{"error":"graph","reason":"Query: SELECT DISTINCT ?g\nWHERE {\n  GRAPH ?g\n  { ?s ?p ?o. }\n}\n, Error: Occured MalformedQuery"}'
         end
 
       end

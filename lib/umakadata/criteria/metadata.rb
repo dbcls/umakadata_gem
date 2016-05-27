@@ -66,35 +66,45 @@ module Umakadata
 
       def score_metadata(metadata, logger: nil)
         score_proc = lambda do |graph, data|
-          graph_log = Umakadata::Logging::CriteriaLog.new unless logger.nil?
-          logger.push graph_log unless graph_log.nil?
+          unless logger.nil?
+            graph_log = Umakadata::Logging::CriteriaLog.new
+            logger.push graph_log
+            graph_log.result = "Graph: #{graph}"
+          end
 
           total_score = 0
-          classes_log = data[:classes_log]
-          graph_log.push classes_log unless logger.nil?
           score = data[:classes].empty? ? 0 : 25
+          unless logger.nil?
+            classes_log = data[:classes_log]
+            graph_log.push classes_log
+            classes_log.result = "Classes score: #{score}"
+          end
           total_score += score
-          classes_log.result = "Classes score: #{score}"
 
-          labels_log = data[:labels_log]
-          graph_log.push labels_log unless logger.nil?
           score = data[:labels].empty? ? 0 : 25
           total_score += score
-          labels_log.result = "Labels score: #{score}"
+          unless logger.nil?
+            labels_log = data[:labels_log]
+            graph_log.push labels_log
+            labels_log.result = "Labels score: #{score}"
+          end
 
-          datatypes_log = data[:datatypes_log]
-          graph_log.push datatypes_log unless logger.nil?
           score = data[:datatypes].empty? ? 0 : 25
           total_score += score
-          datatypes_log.result = "Datatypes score: #{score}"
+          unless logger.nil?
+            datatypes_log = data[:datatypes_log]
+            graph_log.push datatypes_log
+            datatypes_log.result = "Datatypes score: #{score}"
+          end
 
-          properties_log = data[:properties_log]
-          graph_log.push properties_log unless logger.nil?
           score = data[:properties].empty? ? 0 : 25
           total_score += score
-          properties_log.result = "Properties score: #{score}"
+          unless logger.nil?
+            properties_log = data[:properties_log]
+            graph_log.push properties_log
+            properties_log.result = "Properties score: #{score}"
+          end
 
-          graph_log.result = "Graph: #{graph}"
           total_score
         end
         self.score_each_graph(metadata, score_proc)
@@ -102,23 +112,31 @@ module Umakadata
 
       def score_ontologies(metadata, logger: nil)
         score_proc = lambda do |graph, data|
-          graph_log = Umakadata::Logging::CriteriaLog.new unless logger.nil?
-          logger.push graph_log unless graph_log.nil?
-
-          properties_log = data[:properties_log]
-          graph_log.push properties_log unless logger.nil?
-          graph_log.result = "Graph: #{graph}"
+          unless logger.nil?
+            graph_log = Umakadata::Logging::CriteriaLog.new
+            logger.push graph_log
+            graph_log.result = "Graph: #{graph}"
+          end
 
           if data[:properties].empty?
             score =  0
-            properties_log.result = "Properties score: #{score}"
+            unless logger.nil?
+              properties_log = data[:properties_log]
+              graph_log push properties_log
+              properties_log.result = "Properties score: #{score}"
+            end
             return score
           end
+
           ontologies = self.ontologies(data[:properties])
           commons = ontologies.count{ |ontology| COMMON_ONTOLOGIES.include?(ontology) }
-
           score = commons.to_f / ontologies.count.to_f * 100.0
-          properties_log.result = "Properties score: #{score} (#{commons} / #{ontologies.count} * 100)"
+
+          unless logger.nil?
+            properties_log = data[:properties_log]
+            graph_log.push properties_log
+            properties_log.result = "Properties score: #{score} (#{commons} / #{ontologies.count} * 100)"  unless logger.nil?
+          end
           return score
         end
         self.score_each_graph(metadata, score_proc)
@@ -126,15 +144,18 @@ module Umakadata
 
       def score_vocabularies(metadata, logger: nil)
         score_proc = lambda do |graph, data|
-          graph_log = Umakadata::Logging::CriteriaLog.new unless logger.nil?
-          logger.push graph_log unless graph_log.nil?
-          graph_log.result = "Graph: #{graph}"
-
-          properties_log = data[:properties_log]
-          graph_log.push properties_log unless logger.nil?
+          unless logger.nil?
+            graph_log = Umakadata::Logging::CriteriaLog.new
+            logger.push graph_log
+            graph_log.result = "Graph: #{graph}"
+          end
 
           count = data[:properties].count
-          properties_log.result = "Properties count: #{count}"
+          unless logger.nil?
+            properties_log = data[:properties_log]
+            graph_log.push properties_log
+            properties_log.result = "Properties count: #{count}"
+          end
 
           return count
         end
