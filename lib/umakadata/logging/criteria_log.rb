@@ -1,4 +1,5 @@
 require 'json'
+require 'umakadata/logging/log'
 
 module Umakadata
 
@@ -20,15 +21,6 @@ module Umakadata
         }
 
         {:result => @result, :logs => logs}
-      end
-
-      def as_json
-        logs = Array.new
-        @list.each { |log|
-          logs.push log.to_h
-        }
-
-        {:result => @result, :logs => logs.to_json}
       end
 
     end

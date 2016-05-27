@@ -29,7 +29,6 @@ module Umakadata
         }
         result.to_json
       end
-
     end
 
     module Util

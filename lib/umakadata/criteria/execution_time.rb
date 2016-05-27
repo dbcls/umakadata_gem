@@ -1,6 +1,5 @@
-require 'umakadata/http_helper'
-require 'umakadata/error_helper'
 require 'umakadata/sparql_helper'
+require 'umakadata/logging/criteria_log'
 
 module Umakadata
   module Criteria
@@ -23,16 +22,21 @@ WHERE {
 SPARQL
 
       def execution_time(uri, logger: nil)
-        base_response_time = self.response_time(uri, BASE_QUERY, logger)
-        target_response_time = self.response_time(uri, TARGET_QUERY, logger)
+
+        base_query_log = Umakadata::Logging::CriteriaLog.new
+        logger.push base_query_log unless logger.nil?
+        base_response_time = self.response_time(uri, BASE_QUERY, base_query_log)
+        base_query_log.result = "Most Simple Query: #{base_response_time}"
+
+        target_query_log = Umakadata::Logging::CriteriaLog.new
+        logger.push target_query_log unless logger.nil?
+        target_response_time = self.response_time(uri, TARGET_QUERY, target_query_log)
+        target_query_log.result = "Query for Listing Graphs: #{target_response_time}"
+
         if base_response_time.nil? || target_response_time.nil?
           return nil
         end
-        execution_time = target_response_time - base_response_time
-        if execution_time < 0.0
-          set_error('The response time of listing graph query was faster than the response time of ASK{} query')
-        end
-        return execution_time
+        target_response_time - base_response_time
       end
 
       def response_time(uri, sparql_query, logger)
