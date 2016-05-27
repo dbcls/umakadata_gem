@@ -5,8 +5,6 @@ module Umakadata
   module Criteria
     module ExecutionTime
 
-      include Umakadata::ErrorHelper
-
       BASE_QUERY = <<-'SPARQL'
 ASK {}
 SPARQL
