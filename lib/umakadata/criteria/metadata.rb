@@ -122,7 +122,7 @@ module Umakadata
             score =  0
             unless logger.nil?
               properties_log = data[:properties_log]
-              graph_log push properties_log
+              graph_log.push properties_log
               properties_log.result = "Properties score: #{score}"
             end
             return score
