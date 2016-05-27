@@ -26,9 +26,12 @@ module Umakadata
       end
 
       def nth_statement(offset)
-        result = query("SELECT * WHERE {?s ?p ?o} OFFSET #{offset} LIMIT 1")
-        return nil if result.nil? || result[0].nil?
-        return [ result[0][:s], result[0][:p], result[0][:o] ]
+        sparql_query = "SELECT * WHERE {?s ?p ?o} OFFSET #{offset} LIMIT 1"
+        [:post, :get].each do |method|
+          result = Umakadata::SparqlHelper.query(@uri, sparql_query, logger: nil, options: {method: method})
+          return [ result[0][:s], result[0][:p], result[0][:o] ] unless result.nil? || result[0].nil?
+        end
+        nil
       end
 
     end
