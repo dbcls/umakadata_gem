@@ -24,7 +24,7 @@ SPARQL
         args = {:headers => {'Accept' => content_type}, :logger => log}
         request = URI(uri.to_s + "?query=" + query)
 
-        response = http_get_recursive(request, args, logger: log)
+        response = http_get_recursive(request, args)
         if !response.is_a?(Net::HTTPSuccess)
           log.result = 'The endpoint could not return 200 HTTP response'
           return false
