@@ -1,6 +1,6 @@
 require 'rdf/turtle'
 require 'umakadata/data_format'
-require 'umakadata/logging/criteria_log'
+require 'umakadata/logging/log'
 
 module Umakadata
 

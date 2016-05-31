@@ -3,7 +3,7 @@ require 'sparql/client'
 require 'umakadata/error_helper'
 require 'umakadata/http_helper'
 require 'umakadata/sparql_helper'
-require 'umakadata/logging/criteria_log'
+require 'umakadata/logging/log'
 
 
 module Umakadata
@@ -41,13 +41,13 @@ module Umakadata
         end
 
         graphs.each do |graph|
-          classes_log = Umakadata::Logging::CriteriaLog.new
+          classes_log = Umakadata::Logging::Log.new
           classes = self.classes_on_graph(uri, graph, logger: classes_log)
-          labels_log = Umakadata::Logging::CriteriaLog.new
+          labels_log = Umakadata::Logging::Log.new
           labels = list_of_labels_of_classes(uri, graph, classes, logger: labels_log)
-          datatypes_log = Umakadata::Logging::CriteriaLog.new
+          datatypes_log = Umakadata::Logging::Log.new
           datatypes = self.list_of_datatypes(uri, graph, logger: datatypes_log)
-          properties_log = Umakadata::Logging::CriteriaLog.new
+          properties_log = Umakadata::Logging::Log.new
           properties = self.list_of_properties_on_graph(uri, graph, logger: properties_log)
           metadata[graph] = {
             classes: classes,
@@ -67,7 +67,7 @@ module Umakadata
       def score_metadata(metadata, logger: nil)
         score_proc = lambda do |graph, data|
           unless logger.nil?
-            graph_log = Umakadata::Logging::CriteriaLog.new
+            graph_log = Umakadata::Logging::Log.new
             logger.push graph_log
             graph_log.result = "Graph: #{graph}"
           end
@@ -113,7 +113,7 @@ module Umakadata
       def score_ontologies(metadata, logger: nil)
         score_proc = lambda do |graph, data|
           unless logger.nil?
-            graph_log = Umakadata::Logging::CriteriaLog.new
+            graph_log = Umakadata::Logging::Log.new
             logger.push graph_log
             graph_log.result = "Graph: #{graph}"
           end
@@ -145,7 +145,7 @@ module Umakadata
       def score_vocabularies(metadata, logger: nil)
         score_proc = lambda do |graph, data|
           unless logger.nil?
-            graph_log = Umakadata::Logging::CriteriaLog.new
+            graph_log = Umakadata::Logging::Log.new
             logger.push graph_log
             graph_log.result = "Graph: #{graph}"
           end

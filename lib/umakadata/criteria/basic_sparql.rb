@@ -1,5 +1,5 @@
 require 'umakadata/sparql_helper'
-require 'umakadata/logging/criteria_log'
+require 'umakadata/logging/log'
 
 module Umakadata
   module Criteria
@@ -13,7 +13,7 @@ module Umakadata
         sparql_query = 'SELECT COUNT(*) AS ?c WHERE { ?s ?p ?o }'
 
         [:post, :get].each do |method|
-          log = Umakadata::Logging::CriteriaLog.new
+          log = Umakadata::Logging::Log.new
           logger.push log unless logger.nil?
           result = Umakadata::SparqlHelper.query(@uri, sparql_query, logger: log, options: {method: method})
           unless result.nil?

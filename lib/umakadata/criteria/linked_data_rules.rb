@@ -1,6 +1,6 @@
 require 'umakadata/http_helper'
 require 'umakadata/sparql_helper'
-require 'umakadata/logging/criteria_log'
+require 'umakadata/logging/log'
 
 module Umakadata
   module Criteria
@@ -29,7 +29,7 @@ LIMIT 1
 SPARQL
 
         [:post, :get].each do |method|
-          log = Umakadata::Logging::CriteriaLog.new
+          log = Umakadata::Logging::Log.new
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil
@@ -61,7 +61,7 @@ LIMIT 1
 SPARQL
 
         [:post, :get].each do |method|
-          log = Umakadata::Logging::CriteriaLog.new
+          log = Umakadata::Logging::Log.new
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil
@@ -84,7 +84,7 @@ SPARQL
         if uri == nil
           return false
         end
-        log = Umakadata::Logging::CriteriaLog.new
+        log = Umakadata::Logging::Log.new
         logger.push log unless logger.nil?
         begin
           response = http_get_recursive(URI(uri), {logger: log}, 10)
@@ -121,7 +121,7 @@ OFFSET 100
 SPARQL
 
         [:post, :get].each do |method|
-          log = Umakadata::Logging::CriteriaLog.new
+          log = Umakadata::Logging::Log.new
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results[0] != nil
@@ -149,7 +149,7 @@ LIMIT 1
 SPARQL
 
         [:post, :get].each do |method|
-          log = Umakadata::Logging::CriteriaLog.new
+          log = Umakadata::Logging::Log.new
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results.count > 0
@@ -173,7 +173,7 @@ LIMIT 1
 SPARQL
 
         [:post, :get].each do |method|
-          log = Umakadata::Logging::CriteriaLog.new
+          log = Umakadata::Logging::Log.new
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results.count > 0

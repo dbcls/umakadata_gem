@@ -1,12 +1,12 @@
 require 'umakadata/logging/cool_uri_log'
-require 'umakadata/logging/criteria_log'
+require 'umakadata/logging/log'
 
 module Umakadata
   module Criteria
     module CoolURI
 
       def cool_uri_rate(uri, logger: nil)
-        criteria_log = Umakadata::Logging::CriteriaLog.new
+        criteria_log = Umakadata::Logging::Log.new
         logger.push criteria_log unless logger.nil?
         cool_uri_log = Umakadata::Logging::CoolUriLog.new(uri)
         criteria_log.push cool_uri_log

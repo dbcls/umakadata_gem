@@ -66,7 +66,6 @@ describe 'Umakadata' do
           expect(void.license).to be_nil
           expect(void.publisher).to be_nil
           expect(void.modified).to be_nil
-          expect(logger.to_h[0][:result]).to eq 'VoID can not be retrieved Turtle and RDF/XML format'
         end
 
         it 'should set error message when invalid response is retrieved' do
@@ -82,7 +81,6 @@ describe 'Umakadata' do
           void = target.void_on_well_known_uri(@uri, logger: logger)
 
           expect(void).to be_nil
-          expect(logger.to_h[0][:result]).to eq 'The endpoint could not return 200 HTTP response'
         end
 
       end

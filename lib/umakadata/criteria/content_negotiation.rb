@@ -1,5 +1,5 @@
 require 'umakadata/http_helper'
-require 'umakadata/logging/criteria_log'
+require 'umakadata/logging/log'
 
 module Umakadata
   module Criteria
@@ -17,7 +17,7 @@ WHERE {
 LIMIT 1
 SPARQL
 
-        log = Umakadata::Logging::CriteriaLog.new
+        log = Umakadata::Logging::Log.new
         logger.push log unless log.nil? unless logger.nil?
 
 

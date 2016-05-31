@@ -1,7 +1,7 @@
 require 'umakadata/http_helper'
 require 'umakadata/data_format'
 require 'umakadata/service_description'
-require 'umakadata/logging/criteria_log'
+require 'umakadata/logging/log'
 
 module Umakadata
   module Criteria
@@ -21,7 +21,7 @@ module Umakadata
         headers = {}
         headers['Accept'] = content_type
         headers['Accept'] ||= SERVICE_DESC_CONTEXT_TYPE.join(',')
-        criteria_log = Umakadata::Logging::CriteriaLog.new
+        criteria_log = Umakadata::Logging::Log.new
         logger.push criteria_log unless logger.nil?
         args = {:headers => headers, :time_out => time_out, :logger => criteria_log}
 

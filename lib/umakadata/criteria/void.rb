@@ -1,7 +1,7 @@
 require 'umakadata/data_format'
 require 'umakadata/http_helper'
 require 'umakadata/void'
-require 'umakadata/logging/criteria_log'
+require 'umakadata/logging/log'
 require 'uri/http'
 
 module Umakadata
@@ -18,7 +18,7 @@ module Umakadata
       end
 
       def void_on_well_known_uri(uri, time_out = 10, logger: nil)
-        log = Umakadata::Logging::CriteriaLog.new
+        log = Umakadata::Logging::Log.new
         logger.push log unless logger.nil?
         args = {
           :time_out => time_out,

@@ -1,5 +1,5 @@
 require 'umakadata/sparql_helper'
-require 'umakadata/logging/criteria_log'
+require 'umakadata/logging/log'
 
 module Umakadata
   module Criteria
@@ -21,12 +21,12 @@ SPARQL
 
       def execution_time(uri, logger: nil)
 
-        base_query_log = Umakadata::Logging::CriteriaLog.new
+        base_query_log = Umakadata::Logging::Log.new
         logger.push base_query_log unless logger.nil?
         base_response_time = self.response_time(uri, BASE_QUERY, base_query_log)
         base_query_log.result = "Most Simple Query: #{base_response_time}"
 
-        target_query_log = Umakadata::Logging::CriteriaLog.new
+        target_query_log = Umakadata::Logging::Log.new
         logger.push target_query_log unless logger.nil?
         target_response_time = self.response_time(uri, TARGET_QUERY, target_query_log)
         target_query_log.result = "Query for Listing Graphs: #{target_response_time}"

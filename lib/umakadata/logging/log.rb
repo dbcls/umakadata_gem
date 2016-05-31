@@ -6,11 +6,11 @@ module Umakadata
 
     class Log
 
-      attr_writer :message
+      attr_writer :result
 
       def initialize
         @list = Array.new
-        @message = nil
+        @result = nil
       end
 
       def push(log)
@@ -18,21 +18,21 @@ module Umakadata
       end
 
       def to_h
-        result = Array.new
+        context = Array.new
         @list.each { |log|
-          result.push log.to_h
+          context.push log.to_h
         }
 
-        {:message => @message, :result => result}
+        {:result => @result, :context => context}
       end
 
       def as_json
-        result = Array.new
+        context = Array.new
         @list.each { |log|
-          result.push log.to_h
+          context.push log.to_h
         }
 
-        {:message => @message, :result => result}.to_json
+        {:result => @result, :context => context}.to_json
       end
     end
 
