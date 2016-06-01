@@ -11,17 +11,19 @@ module Umakadata
 
       def count_statements(logger: nil)
         sparql_query = 'SELECT COUNT(*) AS ?c WHERE { ?s ?p ?o }'
-
         [:post, :get].each do |method|
           log = Umakadata::Logging::Log.new
           logger.push log unless logger.nil?
           result = Umakadata::SparqlHelper.query(@uri, sparql_query, logger: log, options: {method: method})
           unless result.nil?
-            log.result = "Statements count: #{result[0][:c]}"
-            return result[0][:c]
+            count = result[0][:c]
+            log.result = "#{method.to_s.capitalize}: Statements count was #{count}"
+            logger.result = "Statements count was #{count}" unless logger.nil?
+            return count
           end
-          log.result = "Statements could not find"
+          log.result = "#{method.to_s.capitalize}: Statements was not found"
         end
+        logger.result = "Statements count was N/A" unless logger.nil?
         nil
       end
 
