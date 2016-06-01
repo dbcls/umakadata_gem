@@ -6,10 +6,8 @@ module Umakadata
     module CoolURI
 
       def cool_uri_rate(uri, logger: nil)
-        criteria_log = Umakadata::Logging::Log.new
-        logger.push criteria_log unless logger.nil?
         cool_uri_log = Umakadata::Logging::CoolUriLog.new(uri)
-        criteria_log.push cool_uri_log
+        logger.push cool_uri_log unless logger.nil?
 
         rate = 0
         if uri.host !~ /\d+\.\d+\.\d+\.\d+/
@@ -37,7 +35,7 @@ module Umakadata
           cool_uri_log.length = 'Could not match rule'
         end
 
-        criteria_log.result = "Cool URI Score is #{rate}"
+        logger.result = "Cool URI Score is #{rate}" unless logger.nil?
         return rate
       end
     end
