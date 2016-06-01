@@ -154,7 +154,24 @@ SPARQL
       end
 
       def contains_links?(uri, logger: nil)
-        self.contains_same_as?(uri, logger: logger) || self.contains_see_also?(uri, logger: logger)
+        same_as_log = Umakadata::Logging::Log.new
+        logger.push same_as_log unless logger.nil?
+        same_as = self.contains_same_as?(uri, logger: same_as_log)
+        if same_as
+          logger.result = "Include links to other URIs" unless logger.nil?
+          return true
+        end
+
+        contains_see_also_log = Umakadata::Logging::Log.new
+        logger.push contains_see_also_log unless logger.nil?
+        see_also = self.contains_see_also?(uri, logger: contains_see_also_log)
+        if see_also
+          logger.result = "Include links to other URIs" unless logger.nil?
+          return true
+        end
+
+        logger.result = "Not include links to other URIs" unless logger.nil?
+        return false
       end
 
       def contains_same_as?(uri, logger: nil)
@@ -173,11 +190,14 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results.count > 0
-            log.result = 'The owl:sameAs statement is found'
+            log.result = "#{method.to_s.capitalize}: The owl:sameAs statement was found"
+            logger.result = "The owl:sameAs statement was found" unless logger.nil?
             return true
           end
-          log.result = 'The owl:sameAs statement could not find'
+          log.result = "#{method.to_s.capitalize}: The owl:sameAs statement was not find"
         end
+
+        logger.result = "The owl:sameAs statement was not found" unless logger.nil?
         false
       end
 
