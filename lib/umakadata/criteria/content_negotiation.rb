@@ -17,24 +17,20 @@ WHERE {
 LIMIT 1
 SPARQL
 
-        log = Umakadata::Logging::Log.new
-        logger.push log unless log.nil? unless logger.nil?
-
-
-        args = {:headers => {'Accept' => content_type}, :logger => log}
+        args = {:headers => {'Accept' => content_type}, :logger => logger}
         request = URI(uri.to_s + "?query=" + query)
 
         response = http_get_recursive(request, args)
         if !response.is_a?(Net::HTTPSuccess)
-          log.result = 'The endpoint could not return 200 HTTP response'
+          logger.result = 'The endpoint could not return 200 HTTP response' unless logger.nil?
           return false
         end
 
         result = response.content_type == content_type
         if result
-          log.result = "The endpoint supports #{content_type} format by content_negotiation"
+          logger.result = "The endpoint supports #{content_type} format by content_negotiation" unless logger.nil?
         else
-          log.result = "The endpoint could not support #{content_type} format by content_negotiation"
+          logger.result = "The endpoint could not support #{content_type} format by content_negotiation" unless logger.nil?
         end
         result
       end
