@@ -88,29 +88,38 @@ SPARQL
       end
 
       def uri_provides_info?(uri, logger: nil)
-        uri = self.get_subject_randomly(uri, logger: logger)
+        get_subject_log = Umakadata::Logging::Log.new
+        logger.push get_subject_log unless logger.nil?
+        uri = self.get_subject_randomly(uri, logger: get_subject_log)
         if uri == nil
+          logger.result = "URI does not provide useful information" unless logger.nil?
           return false
         end
+
         log = Umakadata::Logging::Log.new
         logger.push log unless logger.nil?
         begin
           response = http_get_recursive(URI(uri), {logger: log}, 10)
-        rescue => e
+        rescue
           log.result = "INVALID URI: #{uri}"
+          logger.result = "URI does not provide useful information" unless logger.nil?
           return false
         end
 
         if !response.is_a?(Net::HTTPSuccess)
           log.result = 'URI could not return 200 HTTP response'
+          logger.result = "URI does not provide useful information" unless logger.nil?
           return false
         end
 
         if !response.body.empty?
           log.result = "URI returns any data"
+          logger.result = "URI provide useful information" unless logger.nil?
           return true
         end
         log.result = 'URI returns emtpy'
+        logger.result = "URI does not provide useful information" unless logger.nil?
+
         false
       end
 
@@ -133,11 +142,14 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results[0] != nil
-            log.result = 'URI is found'
+            log.result = "#{method.to_s.capitalize}: URI was found"
+            logger.result = 'URI was found' unless logger.nil?
             return results[0][:s]
           end
-          log.result = 'URI could not find'
+          log.result = "#{method.to_s.capitalize}: URI was not found"
         end
+
+        logger.result = "URI was not found" unless logger.nil?
         nil
       end
 
