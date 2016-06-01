@@ -28,11 +28,12 @@ module Umakadata
 
         if !response.is_a?(Net::HTTPSuccess)
           log.result = 'The endpoint could not return 200 HTTP response'
+          logger.result = 'The endpoint could not return 200 HTTP response'
           return nil
         end
-
-        void = Umakadata::VoID.new(response, logger: log)
-        return void
+        log.result = 'The endpoint returns 200 HTTP response'
+        void = Umakadata::VoID.new(response, logger: logger)
+        void
       end
 
     end
