@@ -34,16 +34,20 @@ SPARQL
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil
             if results.count == 0
-              log.result = 'Nothing is found'
+              log.result = "#{method.to_s.capitalize}: Nothing was found"
+              logger.result = "URIs are used as names" unless logger.nil?
               return true
             else
-              log.result = 'The non-URI subjects is found'
+              log.result = "#{method.to_s.capitalize}: The non-URI subjects was found"
+              logger.result = "URIs are not used as names" unless logger.nil?
               return false
             end
           else
             log.result = 'An error occured in searching'
           end
         end
+        logger.result = "An error occured in searching" unless logger.nil?
+
         false
       end
 
