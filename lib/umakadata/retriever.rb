@@ -69,24 +69,63 @@ module Umakadata
       super(@uri, logger: logger)
     end
 
-    def last_updated
-      sd   = self.service_description
-      return { date: sd.modified, source: 'ServiceDescription' } unless sd.nil? || sd.modified.nil?
+    def last_updated(logger: nil)
+      log = Umakadata::Logging::Log.new
+      logger.push log unless logger.nil?
 
-      void = self.void_on_well_known_uri
-      return { date: void.modified, source: 'VoID' } unless void.nil? || void.modified.nil?
+      sd_log = Umakadata::Logging::Log.new
+      log.push sd_log
+      sd   = self.service_description(logger: sd_log)
+      unless sd.nil? || sd.modified.nil?
+        log.result = 'The literl of dcterms:modified was found by Service Description'
+        sd_log.result = "dcterms:modified is #{sd.modified}"
+        return { date: sd.modified, source: 'ServiceDescription' }
+      end
+      sd_log.result = 'The literl of dcterms:modified was not found by Service Description'
 
-      return nil
+      void_log = Umakadata::Logging::Log.new
+      log.push void_log
+      void = self.void_on_well_known_uri(logger: void_log)
+      unless void.nil? || void.modified.nil?
+        log.result = 'The literl of dcterms:modified was found by VoID'
+        void_log.result = "dcterms:modified is #{sd.modified}"
+        return { date: void.modified, source: 'VoID' }
+      end
+      void_log.result = 'The literl of dcterms:modified was not found by VoID'
+      log.result = 'The literl of dcterms:modified was not found by both of Service Description and VoID'
+      nil
     end
 
-    def count_first_last
+    def count_first_last(logger: nil)
+      count_log = Umakadata::Logging::Log.new
+      logger.push count_log unless logger.nil?
+
       sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
-      count = sparql.count_statements
+      count = sparql.count_statements(logger: count_log)
+      if count.nil?
+        count_log.result = 'The latest Statements was not found'
+        return { count: nil, first: nil, last: nil }
+      end
+      count_log.result = "#{count} statements was found"
 
-      return { count: nil, first: nil, last: nil } if count.nil?
+      first_log = Umakadata::Logging::Log.new
+      logger.push first_log unless logger.nil?
+      first = sparql.nth_statement(0, logger: first_log)
+      if first.nil?
+        first_log.result = 'The first statements was not found'
+      else
+        first_log.result = 'The first statements was found'
+      end
 
-      first = sparql.nth_statement(0)
-      last  = sparql.nth_statement(count - 1)
+      last_log = Umakadata::Logging::Log.new
+      logger.push last_log unless logger.nil?
+      last  = sparql.nth_statement(count - 1, logger: last_log)
+      if last.nil?
+        last_log.result = 'The last statements was not found'
+      else
+        last_log.result = 'The last statements was found'
+      end
+
       return { count: count, first: first, last: last }
     end
 
