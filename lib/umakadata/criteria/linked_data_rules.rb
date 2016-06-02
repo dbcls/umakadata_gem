@@ -43,7 +43,7 @@ SPARQL
               return false
             end
           else
-            log.result = 'An error occured in searching'
+            log.result = "#{method.to_s.capitalize}: An error occured in searching"
           end
         end
         logger.result = "An error occured in searching" unless logger.nil?
@@ -79,7 +79,7 @@ SPARQL
               return false
             end
           else
-            log.result = 'An error occured in searching'
+            log.result = "#{method.to_s.capitalize}: An error occured in searching"
           end
         end
         logger.result = "An error occured in searching" unless logger.nil?
