@@ -217,11 +217,14 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results.count > 0
-            log.result = 'The rdfs:seeAlso statement is found'
+            log.result = "#{method.to_s.capitalize}: The rdfs:seeAlso statement is found"
+            logger.result = "The rdfs:seeAlso statement is found" unless logger.nil?
             return true
           end
-          log.result = 'The rdfs:seeAlso statement could not find'
+          log.result = "#{method.to_s.capitalize}: The rdfs:seeAlso statement could not find"
         end
+
+        logger.result = "The rdfs:seeAlso statement could not find" unless logger.nil?
         false
       end
 
