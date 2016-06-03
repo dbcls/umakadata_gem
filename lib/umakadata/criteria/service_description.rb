@@ -28,8 +28,8 @@ module Umakadata
         response = http_get(uri, args)
 
         if !response.is_a?(Net::HTTPSuccess)
-          log.result = 'The endpoint could not return 200 HTTP response'
-          logger.result = 'The endpoint could not return 200 HTTP response' unless logger.nil?
+          log.result = "Get: #{response.code} HTTP response"
+          logger.result = 'The endpoint does not return 200 HTTP response' unless logger.nil?
           return nil
         end
 
@@ -38,11 +38,11 @@ module Umakadata
 
         case sd.type
         when Umakadata::DataFormat::UNKNOWN
-          logger.result = 'ServiceDescription can not be retrieved in Turtle and RDF/XML format' unless logger.nil?
+          logger.result = 'Service Description is invalid (valid formats: Turtle or RDF/XML)' unless logger.nil?
         when Umakadata::DataFormat::TURTLE
-          logger.result = 'ServiceDescription can be retrieved in Turtle format' unless logger.nil?
+          logger.result = 'Service Description is in Turtle format' unless logger.nil?
         when Umakadata::DataFormat::RDFXML
-          logger.result = 'ServiceDescription can be retrieved in RDF/XML format' unless logger.nil?
+          logger.result = 'Service Description is in RDF/XML format' unless logger.nil?
         end
 
         sd
