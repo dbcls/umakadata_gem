@@ -34,20 +34,19 @@ SPARQL
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil
             if results.count == 0
-              log.result = "#{method.to_s.capitalize}: Nothing was found"
-              logger.result = "URIs are used as names" unless logger.nil?
+              log.result = "#{method.to_s.capitalize}: 0 non-URI subjects is found"
+              logger.result = 'URIs are used as names' unless logger.nil?
               return true
             else
-              log.result = "#{method.to_s.capitalize}: The non-URI subjects was found"
-              logger.result = "URIs are not used as names" unless logger.nil?
+              log.result = "#{method.to_s.capitalize}: #{results.count} non-URI subjects is found"
+              logger.result = 'URIs are not used as names' unless logger.nil?
               return false
             end
           else
             log.result = "#{method.to_s.capitalize}: An error occured in searching"
           end
         end
-        logger.result = "An error occured in searching" unless logger.nil?
-
+        logger.result = '' unless logger.nil?
         false
       end
 
@@ -70,11 +69,11 @@ SPARQL
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil
             if results.count == 0
-              log.result = "#{method.to_s.capitalize}: Nothing is found"
+              log.result = "#{method.to_s.capitalize}: 0 non-HTTP-URI subjects is found"
               logger.result = "HTTP URIs are used" unless logger.nil?
               return true
             else
-              log.result = "#{method.to_s.capitalize}: The non-HTTP-URI subjects is found"
+              log.result = "#{method.to_s.capitalize}: #{results.count} non-HTTP-URI subjects is found"
               logger.result = "HTTP URIs are not used" unless logger.nil?
               return false
             end
@@ -82,17 +81,15 @@ SPARQL
             log.result = "#{method.to_s.capitalize}: An error occured in searching"
           end
         end
-        logger.result = "An error occured in searching" unless logger.nil?
+        logger.result = '' unless logger.nil?
 
         false
       end
 
       def uri_provides_info?(uri, logger: nil)
-        get_subject_log = Umakadata::Logging::Log.new
-        logger.push get_subject_log unless logger.nil?
-        uri = self.get_subject_randomly(uri, logger: get_subject_log)
+        uri = self.get_subject_randomly(uri, logger: logger)
         if uri == nil
-          logger.result = "URI does not provide useful information" unless logger.nil?
+          logger.result = 'The endpoint does not find any URI' unless logger.nil?
           return false
         end
 
@@ -101,26 +98,26 @@ SPARQL
         begin
           response = http_get_recursive(URI(uri), {logger: log}, 10)
         rescue
-          log.result = "INVALID URI: #{uri}"
-          logger.result = "URI does not provide useful information" unless logger.nil?
+          log.result = "Invalid URI: #{uri}"
+          logger.result = 'An error occurred in searching' unless logger.nil?
           return false
         end
 
         if !response.is_a?(Net::HTTPSuccess)
-          log.result = 'URI could not return 200 HTTP response'
-          logger.result = "URI does not provide useful information" unless logger.nil?
+          log.result = "#{uri} does not return 200 HTTP response"
+          logger.result = "#{uri} does not provide useful information" unless logger.nil?
           return false
         end
 
-        if !response.body.empty?
-          log.result = "URI returns any data"
-          logger.result = "URI provide useful information" unless logger.nil?
-          return true
+        if response.body.empty?
+          log.result = "#{uri} returns empty data"
+          logger.result = "#{uri} does not provide useful information" unless logger.nil?
+          return false
         end
-        log.result = 'URI returns emtpy'
-        logger.result = "URI does not provide useful information" unless logger.nil?
 
-        false
+        log.result = "#{uri} returns any data"
+        logger.result = "#{uri} provides useful information" unless logger.nil?
+        true
       end
 
       def get_subject_randomly(uri, logger: nil)
@@ -142,14 +139,11 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results[0] != nil
-            log.result = "#{method.to_s.capitalize}: URI was found"
-            logger.result = 'URI was found' unless logger.nil?
+            log.result = "#{method.to_s.capitalize}: #{results[0][:s]} is found"
             return results[0][:s]
           end
-          log.result = "#{method.to_s.capitalize}: URI was not found"
+          log.result = "#{method.to_s.capitalize}: a URI is not found"
         end
-
-        logger.result = "URI was not found" unless logger.nil?
         nil
       end
 
@@ -158,7 +152,7 @@ SPARQL
         logger.push same_as_log unless logger.nil?
         same_as = self.contains_same_as?(uri, logger: same_as_log)
         if same_as
-          logger.result = "Include links to other URIs" unless logger.nil?
+          logger.result = "#{uri} includes links to other URIs" unless logger.nil?
           return true
         end
 
@@ -166,12 +160,11 @@ SPARQL
         logger.push contains_see_also_log unless logger.nil?
         see_also = self.contains_see_also?(uri, logger: contains_see_also_log)
         if see_also
-          logger.result = "Include links to other URIs" unless logger.nil?
+          logger.result = "#{uri} includes links to other URIs" unless logger.nil?
           return true
         end
-
-        logger.result = "Not include links to other URIs" unless logger.nil?
-        return false
+        logger.result = "#{uri} does not include links to other URIs" unless logger.nil?
+        false
       end
 
       def contains_same_as?(uri, logger: nil)
@@ -190,14 +183,14 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results.count > 0
-            log.result = "#{method.to_s.capitalize}: The owl:sameAs statement was found"
-            logger.result = "The owl:sameAs statement was found" unless logger.nil?
+            log.result = "#{method.to_s.capitalize}: #{results.count} owl:sameAs statement is found"
+            logger.result = 'The owl:sameAs statement is found' unless logger.nil?
             return true
           end
-          log.result = "#{method.to_s.capitalize}: The owl:sameAs statement was not find"
+          log.result = "#{method.to_s.capitalize}: The owl:sameAs statement is not found"
         end
 
-        logger.result = "The owl:sameAs statement was not found" unless logger.nil?
+        logger.result = 'The owl:sameAs statement is not found' unless logger.nil?
         false
       end
 
@@ -217,14 +210,14 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results.count > 0
-            log.result = "#{method.to_s.capitalize}: The rdfs:seeAlso statement is found"
-            logger.result = "The rdfs:seeAlso statement is found" unless logger.nil?
+            log.result = "#{method.to_s.capitalize}: #{results.count} rdfs:seeAlso statement is found"
+            logger.result = 'The rdfs:seeAlso statement is found' unless logger.nil?
             return true
           end
-          log.result = "#{method.to_s.capitalize}: The rdfs:seeAlso statement could not find"
+          log.result = "#{method.to_s.capitalize}: The rdfs:seeAlso statement is not find"
         end
 
-        logger.result = "The rdfs:seeAlso statement could not find" unless logger.nil?
+        logger.result = 'The rdfs:seeAlso statement is not find' unless logger.nil?
         false
       end
 
