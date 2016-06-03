@@ -28,7 +28,7 @@ module Umakadata
 
         if !response.is_a?(Net::HTTPSuccess)
           log.result = 'The endpoint could not return 200 HTTP response'
-          logger.result = 'The endpoint could not return 200 HTTP response'
+          logger.result = 'The endpoint could not return 200 HTTP response' unless logger.nil?
           return nil
         end
         log.result = 'The endpoint returns 200 HTTP response'
