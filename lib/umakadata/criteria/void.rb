@@ -27,10 +27,11 @@ module Umakadata
         response = http_get_recursive(well_known_uri, args)
 
         if !response.is_a?(Net::HTTPSuccess)
-          log.result = 'The endpoint could not return 200 HTTP response'
-          logger.result = 'The endpoint could not return 200 HTTP response' unless logger.nil?
+          log.result = 'The endpoint does not return 200 HTTP response'
+          logger.result = 'The endpoint does not return 200 HTTP response' unless logger.nil?
           return nil
         end
+
         log.result = 'The endpoint returns 200 HTTP response'
         void = Umakadata::VoID.new(response, logger: logger)
         void
