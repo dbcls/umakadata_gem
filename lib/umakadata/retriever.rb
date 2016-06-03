@@ -77,22 +77,22 @@ module Umakadata
       log.push sd_log
       sd   = self.service_description(logger: sd_log)
       unless sd.nil? || sd.modified.nil?
-        log.result = 'The literl of dcterms:modified was found by Service Description'
+        log.result = 'The literal of dcterms:modified is found in Service Description'
         sd_log.result = "dcterms:modified is #{sd.modified}"
         return { date: sd.modified, source: 'ServiceDescription' }
       end
-      sd_log.result = 'The literl of dcterms:modified was not found by Service Description'
+      sd_log.result = 'The literal of dcterms:modified is not found in Service Description'
 
       void_log = Umakadata::Logging::Log.new
       log.push void_log
       void = self.void_on_well_known_uri(logger: void_log)
       unless void.nil? || void.modified.nil?
-        log.result = 'The literl of dcterms:modified was found by VoID'
-        void_log.result = "dcterms:modified is #{sd.modified}"
+        log.result = 'The literal of dcterms:modified is found in VoID'
+        void_log.result = "dcterms:modified is #{void.modified}"
         return { date: void.modified, source: 'VoID' }
       end
-      void_log.result = 'The literl of dcterms:modified was not found by VoID'
-      log.result = 'The literl of dcterms:modified was not found by both of Service Description and VoID'
+      void_log.result = 'The literal of dcterms:modified is not found in VoID'
+      log.result = 'The literal of dcterms:modified is not found in either Service Description or VoID'
       nil
     end
 
@@ -103,27 +103,27 @@ module Umakadata
       sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
       count = sparql.count_statements(logger: count_log)
       if count.nil?
-        count_log.result = 'The latest Statements was not found'
+        count_log.result = 'The latest Statements are not found'
         return { count: nil, first: nil, last: nil }
       end
-      count_log.result = "#{count} statements was found"
+      count_log.result = "#{count} statements are found"
 
       first_log = Umakadata::Logging::Log.new
       logger.push first_log unless logger.nil?
       first = sparql.nth_statement(0, logger: first_log)
       if first.nil?
-        first_log.result = 'The first statements was not found'
+        first_log.result = 'The first statements are not found'
       else
-        first_log.result = 'The first statements was found'
+        first_log.result = 'The first statements are found'
       end
 
       last_log = Umakadata::Logging::Log.new
       logger.push last_log unless logger.nil?
       last  = sparql.nth_statement(count - 1, logger: last_log)
       if last.nil?
-        last_log.result = 'The last statements was not found'
+        last_log.result = 'The last statements are not found'
       else
-        last_log.result = 'The last statements was found'
+        last_log.result = 'The last statements are found'
       end
 
       return { count: count, first: first, last: last }

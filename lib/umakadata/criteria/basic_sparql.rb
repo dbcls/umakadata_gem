@@ -17,13 +17,13 @@ module Umakadata
           result = Umakadata::SparqlHelper.query(@uri, sparql_query, logger: log, options: {method: method})
           unless result.nil?
             count = result[0][:c]
-            log.result = "#{method.to_s.capitalize}: Statements count was #{count}"
-            logger.result = "Statements count was #{count}" unless logger.nil?
+            log.result = "#{method.to_s.capitalize}: The number of statements is #{count}"
+            logger.result = "The number of statements is #{count}" unless logger.nil?
             return count
           end
-          log.result = "#{method.to_s.capitalize}: Statements was not found"
+          log.result = "#{method.to_s.capitalize}: Statements are not found"
         end
-        logger.result = "Statements count was N/A" unless logger.nil?
+        logger.result = "Statements are N/A" unless logger.nil?
         nil
       end
 
@@ -37,7 +37,7 @@ module Umakadata
             log.result = "#{method.to_s.capitalize}: S is #{result[0][:s]}, P is #{result[0][:p]}, O is #{result[0][:o]}"
             return [ result[0][:s], result[0][:p], result[0][:o] ]
           end
-          log.result = "#{method.to_s.capitalize}: Statements was not found"
+          log.result = "#{method.to_s.capitalize}: Statements are not found"
         end
         nil
       end
