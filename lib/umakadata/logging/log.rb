@@ -70,12 +70,12 @@ module Umakadata
     end
 
     Error = Struct.new(:exception) do
-      def to_h
+      def to_s
         case exception
-          when StandardError
-            {:message => exception.message}
-          else
-            {:message => exception.to_s}
+        when StandardError
+          exception.message
+        else
+          exception.to_s
         end
       end
     end
