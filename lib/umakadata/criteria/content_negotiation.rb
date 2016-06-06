@@ -22,15 +22,15 @@ SPARQL
 
         response = http_get_recursive(request, args)
         if !response.is_a?(Net::HTTPSuccess)
-          logger.result = 'The endpoint could not return 200 HTTP response' unless logger.nil?
+          logger.result = 'The endpoint does not return 200 HTTP response' unless logger.nil?
           return false
         end
 
         result = response.content_type == content_type
         if result
-          logger.result = "The endpoint supports #{content_type} format by content_negotiation" unless logger.nil?
+          logger.result = "The endpoint supports #{content_type} in the content negotiation" unless logger.nil?
         else
-          logger.result = "The endpoint could not support #{content_type} format by content_negotiation" unless logger.nil?
+          logger.result = "The endpoint does not support #{content_type} in the content negotiation" unless logger.nil?
         end
         result
       end
