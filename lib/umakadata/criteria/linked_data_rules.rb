@@ -34,19 +34,17 @@ SPARQL
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil
             if results.count == 0
-              log.result = "#{method.to_s.capitalize}: 0 non-URI subjects is found"
+              log.result = 'URI subject is found'
               logger.result = 'URIs are used as names' unless logger.nil?
               return true
             else
-              log.result = "#{method.to_s.capitalize}: #{results.count} non-URI subjects is found"
-              logger.result = 'URIs are not used as names' unless logger.nil?
-              return false
+              log.result = 'Non-URI subjects are found'
             end
           else
-            log.result = "#{method.to_s.capitalize}: An error occured in searching"
+            log.result = 'Sparql query result could not be read in RDF format'
           end
         end
-        logger.result = '' unless logger.nil?
+        logger.result = 'URIs are not used as names' unless logger.nil?
         false
       end
 
@@ -69,27 +67,24 @@ SPARQL
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil
             if results.count == 0
-              log.result = "#{method.to_s.capitalize}: 0 non-HTTP-URI subjects is found"
-              logger.result = "HTTP URIs are used" unless logger.nil?
+              log.result = 'HTTP-URI subject is found'
+              logger.result = 'HTTP URIs are used' unless logger.nil?
               return true
             else
-              log.result = "#{method.to_s.capitalize}: #{results.count} non-HTTP-URI subjects is found"
-              logger.result = "HTTP URIs are not used" unless logger.nil?
-              return false
+              log.result = 'Non-HTTP-URI subjects are found'
             end
           else
-            log.result = "#{method.to_s.capitalize}: An error occured in searching"
+            log.result = 'Sparql query result could not be read in RDF format'
           end
         end
-        logger.result = '' unless logger.nil?
-
+        logger.result = 'HTTP URIs are not used' unless logger.nil?
         false
       end
 
       def uri_provides_info?(uri, logger: nil)
         uri = self.get_subject_randomly(uri, logger: logger)
         if uri == nil
-          logger.result = 'The endpoint does not find any URI' unless logger.nil?
+          logger.result = 'The endpoint does not have information about URI' unless logger.nil?
           return false
         end
 
@@ -97,9 +92,9 @@ SPARQL
         logger.push log unless logger.nil?
         begin
           response = http_get_recursive(URI(uri), {logger: log}, 10)
-        rescue
-          log.result = "Invalid URI: #{uri}"
-          logger.result = 'An error occurred in searching' unless logger.nil?
+        rescue => e
+          log.result = e.message
+          logger.result = 'An error occurred in getting uri recursively' unless logger.nil?
           return false
         end
 
@@ -138,11 +133,16 @@ SPARQL
           log = Umakadata::Logging::Log.new
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
-          if results != nil && results[0] != nil
-            log.result = "#{method.to_s.capitalize}: #{results[0][:s]} is found"
-            return results[0][:s]
+          if results != nil
+            if results[0] != nil
+              log.result = "#{results[0][:s]} subject is found"
+              return results[0][:s]
+            else
+              log.result = 'URI is not found'
+            end
+          else
+            log.result = 'Sparql query result could not be read in RDF format'
           end
-          log.result = "#{method.to_s.capitalize}: a URI is not found"
         end
         nil
       end
@@ -183,14 +183,13 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results.count > 0
-            log.result = "#{method.to_s.capitalize}: #{results.count} owl:sameAs statement is found"
-            logger.result = 'The owl:sameAs statement is found' unless logger.nil?
+            log.result = "#{results.count} owl:sameAs statements are found"
+            logger.result = "#{uri} has statements which contain owl:sameAs" unless logger.nil?
             return true
           end
-          log.result = "#{method.to_s.capitalize}: The owl:sameAs statement is not found"
+          log.result = 'The owl:sameAs statement is not found'
         end
-
-        logger.result = 'The owl:sameAs statement is not found' unless logger.nil?
+        logger.result = "#{uri} The endpoint does not have statements which contain owl:sameAs" unless logger.nil?
         false
       end
 
@@ -210,14 +209,14 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results.count > 0
-            log.result = "#{method.to_s.capitalize}: #{results.count} rdfs:seeAlso statement is found"
-            logger.result = 'The rdfs:seeAlso statement is found' unless logger.nil?
+            log.result = "#{results.count} rdfs:seeAlso statements are found"
+            logger.result = "#{uri} has statements which contain rdfs:seeAlso" unless logger.nil?
             return true
           end
-          log.result = "#{method.to_s.capitalize}: The rdfs:seeAlso statement is not find"
+          log.result = 'The rdfs:seeAlso statement is not found'
         end
 
-        logger.result = 'The rdfs:seeAlso statement is not find' unless logger.nil?
+        logger.result = "#{uri} The endpoint does not have statements which contain rdfs:seeAlso" unless logger.nil?
         false
       end
 
