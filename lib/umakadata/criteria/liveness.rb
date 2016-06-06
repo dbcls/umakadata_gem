@@ -19,14 +19,18 @@ module Umakadata
           request_log = Umakadata::Logging::Log.new
           logger.push request_log unless logger.nil?
           response = Umakadata::SparqlHelper.query(uri, sparql_query, logger: request_log, options: {method: method})
-          unless response.nil?
+          if response.is_a? Net::HTTPOK
             request_log.result = "#{method.to_s.capitalize}: 200 HTTP response"
-            logger.result = "Alive is true" unless logger.nil?
+            logger.result = "The endpoint is alive" unless logger.nil?
             return true
           end
-          request_log.result = "#{method.to_s.capitalize}: HTTP response error"
+          if response.is_a? Net::HTTPResponse
+            request_log.result = "#{method.to_s.capitalize}: #{response.code} HTTP response"
+          else
+            request_log.result = "#{method.to_s.capitalize}: HTTP connection could not be established"
+          end
         end
-        logger.result = "Alive is false" unless logger.nil?
+        logger.result = "The endpoint is down" unless logger.nil?
         false
       end
 
