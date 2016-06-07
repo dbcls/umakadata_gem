@@ -28,7 +28,7 @@ module Umakadata
         response = http_get(uri, args)
 
         if !response.is_a?(Net::HTTPSuccess)
-          log.result = "Get: #{response.code} HTTP response"
+          log.result = "#{response.code} HTTP response"
           logger.result = 'The endpoint does not return 200 HTTP response' unless logger.nil?
           return nil
         end
