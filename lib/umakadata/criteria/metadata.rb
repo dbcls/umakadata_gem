@@ -34,21 +34,38 @@ module Umakadata
       ]
 
       def metadata(uri, logger: nil)
-        graphs = self.list_of_graph_uris(uri, logger: logger)
+        graphs_log = Umakadata::Logging::Log.new
+        logger.push graphs_log unless logger.nil?
+        graphs = self.list_of_graph_uris(uri, logger: graphs_log)
         metadata = {}
         if graphs.empty?
+          graphs_log.result = 'No graphs are found in the endpoint'
           return metadata
         end
+        graphs_log.result = "#{graphs.size} graphs are found in the endpoint"
 
         graphs.each do |graph|
           classes_log = Umakadata::Logging::Log.new
           classes = self.classes_on_graph(uri, graph, logger: classes_log)
+
           labels_log = Umakadata::Logging::Log.new
-          labels = list_of_labels_of_classes(uri, graph, classes, logger: labels_log)
+          labels_search_log = Umakadata::Logging::Log.new
+          labels_log.push labels_search_log
+          labels = list_of_labels_of_classes(uri, graph, classes, logger: labels_search_log)
+          labels_search_log.result = "#{labels.size} lables are found"
+
           datatypes_log = Umakadata::Logging::Log.new
-          datatypes = self.list_of_datatypes(uri, graph, logger: datatypes_log)
+          datatypes_search_log = Umakadata::Logging::Log.new
+          datatypes_log.push datatypes_search_log
+          datatypes = self.list_of_datatypes(uri, graph, logger: datatypes_search_log)
+          datatypes_search_log.result = "#{datatypes.size} datatypes are found"
+
           properties_log = Umakadata::Logging::Log.new
-          properties = self.list_of_properties_on_graph(uri, graph, logger: properties_log)
+          properties_search_log = Umakadata::Logging::Log.new
+          properties_log.push properties_search_log
+          properties = self.list_of_properties_on_graph(uri, graph, logger: properties_search_log)
+          properties_search_log.result = "#{properties.size} properties are found"
+
           metadata[graph] = {
             classes: classes,
             labels: labels,
@@ -66,18 +83,15 @@ module Umakadata
 
       def score_metadata(metadata, logger: nil)
         score_proc = lambda do |graph, data|
-          unless logger.nil?
-            graph_log = Umakadata::Logging::Log.new
-            logger.push graph_log
-            graph_log.result = "Graph: #{graph}"
-          end
+          graph_log = Umakadata::Logging::Log.new
+          logger.push graph_log unless logger.nil?
 
           total_score = 0
           score = data[:classes].empty? ? 0 : 25
           unless logger.nil?
             classes_log = data[:classes_log]
             graph_log.push classes_log
-            classes_log.result = "Classes score: #{score}"
+            classes_log.result = "Classes score is #{score}"
           end
           total_score += score
 
@@ -86,7 +100,7 @@ module Umakadata
           unless logger.nil?
             labels_log = data[:labels_log]
             graph_log.push labels_log
-            labels_log.result = "Labels score: #{score}"
+            labels_log.result = "Labels score is #{score}"
           end
 
           score = data[:datatypes].empty? ? 0 : 25
@@ -94,7 +108,7 @@ module Umakadata
           unless logger.nil?
             datatypes_log = data[:datatypes_log]
             graph_log.push datatypes_log
-            datatypes_log.result = "Datatypes score: #{score}"
+            datatypes_log.result = "Datatypes score is #{score}"
           end
 
           score = data[:properties].empty? ? 0 : 25
@@ -102,29 +116,28 @@ module Umakadata
           unless logger.nil?
             properties_log = data[:properties_log]
             graph_log.push properties_log
-            properties_log.result = "Properties score: #{score}"
+            properties_log.result = "Properties score is #{score}"
           end
 
+          graph_log.result = "Score for #{graph} is #{total_score}"
           total_score
         end
-        self.score_each_graph(metadata, score_proc)
+        metadata_score = self.score_each_graph(metadata, score_proc)
+        logger.result = "Metadata score is #{metadata_score}" unless logger.nil?
+        metadata_score
       end
 
       def score_ontologies(metadata, logger: nil)
         score_proc = lambda do |graph, data|
-          unless logger.nil?
-            graph_log = Umakadata::Logging::Log.new
-            logger.push graph_log
-            graph_log.result = "Graph: #{graph}"
-          end
+          graph_log = Umakadata::Logging::Log.new
+          logger.push graph_log unless logger.nil?
 
           if data[:properties].empty?
             score =  0
-            unless logger.nil?
-              properties_log = data[:properties_log]
-              graph_log.push properties_log
-              properties_log.result = "Properties score: #{score}"
-            end
+            properties_log = data[:properties_log]
+            graph_log.push properties_log
+            properties_log.result = '0 ontologies are found'
+            logger.result = 'Ontology score is 0'
             return score
           end
 
@@ -132,34 +145,33 @@ module Umakadata
           commons = ontologies.count{ |ontology| COMMON_ONTOLOGIES.include?(ontology) }
           score = commons.to_f / ontologies.count.to_f * 100.0
 
-          unless logger.nil?
-            properties_log = data[:properties_log]
-            graph_log.push properties_log
-            properties_log.result = "Properties score: #{score} (#{commons} / #{ontologies.count} * 100)"  unless logger.nil?
-          end
+          properties_log = data[:properties_log]
+          graph_log.push properties_log
+          properties_log.result = "#{ontologies.count} ontologies are found and #{commons} common ontologies has been used" unless logger.nil?
+          graph_log.result = "Score for #{graph} is #{score}"
           return score
         end
-        self.score_each_graph(metadata, score_proc)
+        ontology_score = self.score_each_graph(metadata, score_proc)
+        logger.result = "Ontology score is #{ontology_score}" unless logger.nil?
+        ontology_score
       end
 
       def score_vocabularies(metadata, logger: nil)
         score_proc = lambda do |graph, data|
-          unless logger.nil?
-            graph_log = Umakadata::Logging::Log.new
-            logger.push graph_log
-            graph_log.result = "Graph: #{graph}"
-          end
+          graph_log = Umakadata::Logging::Log.new
+          logger.push graph_log unless logger.nil?
 
           count = data[:properties].count
-          unless logger.nil?
-            properties_log = data[:properties_log]
-            graph_log.push properties_log
-            properties_log.result = "Properties count: #{count}"
-          end
-
+          properties_log = data[:properties_log]
+          graph_log.push properties_log
+          properties_log.result = "#{count} properties are found"
+          graph_log.result = "Score for #{graph} is #{count}"
           return count
         end
-        self.score_each_graph(metadata, score_proc)
+
+        vocabulary_score = self.score_each_graph(metadata, score_proc)
+        logger.result = "Vocabulary score is #{vocabulary_score}" unless logger.nil?
+        vocabulary_score
       end
 
       def ontologies(properties)
@@ -203,8 +215,18 @@ SPARQL
 
       def classes_on_graph(uri, graph, logger: nil)
         classes = []
-        classes += self.list_of_classes_on_graph(uri, graph, logger: logger)
-        classes += self.list_of_classes_having_instances(uri, graph, logger: logger)
+
+        classes_on_graph_log = Umakadata::Logging::Log.new
+        logger.push classes_on_graph_log unless logger.nil?
+        classes_on_graph = self.list_of_classes_on_graph(uri, graph, logger: classes_on_graph_log)
+        classes_on_graph_log.result = "#{classes_on_graph.size} lists of classes on graph are found"
+
+        classes_having_instances_log = Umakadata::Logging::Log.new
+        logger.push classes_having_instances_log unless logger.nil?
+        classes_having_instances = self.list_of_classes_having_instances(uri, graph, logger: classes_having_instances_log)
+        classes_having_instances_log.result = "#{classes_having_instances.size} lists of classes having instances are found"
+
+        classes += classes_on_graph += classes_having_instances
         classes.uniq!
         return classes
       end
