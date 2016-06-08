@@ -52,7 +52,7 @@ module Umakadata
           when Net::HTTP::Post
             {:method => 'POST', :header => request.each.to_h, :body => force_encode(request.body)}
           else
-            {:error => "Unknown type #{force_encode(request.inspect)}"}
+            "Unknown type #{force_encode(request.inspect)}"
         end
       end
     end
@@ -64,7 +64,7 @@ module Umakadata
           when Net::HTTPResponse
             {:code => response.code, :header => response.each.to_h, :body => force_encode(response.body)}
           else
-            {:error => "Unknown type #{force_encode(response.inspect)}"}
+            "Unknown type #{force_encode(response.inspect)}"
         end
       end
     end
