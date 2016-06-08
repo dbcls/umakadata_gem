@@ -45,7 +45,7 @@ module Umakadata
 
     Request = Struct.new(:request) do
       include Umakadata::Logging::Util
-      def to_h
+      def build
         case request
           when Net::HTTP::Get
             {:method => 'GET', :header => request.each.to_h}
@@ -59,7 +59,7 @@ module Umakadata
 
     Response = Struct.new(:response) do
       include Umakadata::Logging::Util
-      def to_h
+      def build
         case response
           when Net::HTTPResponse
             {:code => response.code, :header => response.each.to_h, :body => force_encode(response.body)}
@@ -71,7 +71,7 @@ module Umakadata
 
     Error = Struct.new(:exception) do
       include Umakadata::Logging::Util
-      def to_s
+      def build
         case exception
         when StandardError
           force_encode(exception.message)
