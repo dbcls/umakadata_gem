@@ -27,7 +27,7 @@ module Umakadata
         response = http_get_recursive(well_known_uri, args)
 
         if !response.is_a?(Net::HTTPSuccess)
-          log.result = "#{response.code} HTTP response"
+          log.result = "HTTP response is not 2xx Success"
           logger.result = 'The endpoint does not return 200 HTTP response' unless logger.nil?
           return nil
         end
