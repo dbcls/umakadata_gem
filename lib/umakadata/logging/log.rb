@@ -52,7 +52,7 @@ module Umakadata
           when Net::HTTP::Post
             {:method => 'POST', :header => request.each.to_h, :body => force_encode(request.body)}
           else
-            {:error => "Unknown type #{request.inspect}"}
+            {:error => "Unknown type #{force_encode(request.inspect)}"}
         end
       end
     end
@@ -64,18 +64,19 @@ module Umakadata
           when Net::HTTPResponse
             {:code => response.code, :header => response.each.to_h, :body => force_encode(response.body)}
           else
-            {:error => "Unknown type #{response.inspect}"}
+            {:error => "Unknown type #{force_encode(response.inspect)}"}
         end
       end
     end
 
     Error = Struct.new(:exception) do
+      include Umakadata::Logging::Util
       def to_s
         case exception
         when StandardError
-          exception.message
+          force_encode(exception.message)
         else
-          exception.to_s
+          force_encode(exception.to_s)
         end
       end
     end
