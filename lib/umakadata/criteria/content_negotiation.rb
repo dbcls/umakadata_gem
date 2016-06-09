@@ -17,10 +17,10 @@ WHERE {
 LIMIT 1
 SPARQL
 
-        args = {:headers => {'Accept' => content_type}, :logger => logger}
+        args = {:headers => {'Accept' => content_type}}
         request = URI(uri.to_s + "?query=" + query)
 
-        response = http_get_recursive(request, args)
+        response = http_get_recursive(request, args, logger: logger)
         if !response.is_a?(Net::HTTPSuccess)
           logger.result = 'The endpoint does not return 200 HTTP response' unless logger.nil?
           return false

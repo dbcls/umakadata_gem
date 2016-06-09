@@ -58,12 +58,25 @@ module Umakadata
       response
     end
 
-    def http_get_recursive(uri, args = {}, limit = 10)
+    def http_get_recursive(uri, args = {}, limit = 10, logger: nil)
       raise RuntimeError, 'HTTP redirect too deep' if limit == 0
+
+      log = Umakadata::Logging::Log.new
+      logger.push log unless logger.nil?
+      args[:logger] = log
 
       response = http_get(uri, args)
 
-      return http_get_recursive(URI(response['location']), args, limit - 1) if response.is_a? Net::HTTPRedirection
+      if response.is_a? Net::HTTPRedirection
+        log.result = 'HTTP response is 3xx Redirection'
+        return http_get_recursive(URI(response['location']), args, limit - 1, logger: logger)
+      end
+
+      if response.is_a? Net::HTTPResponse
+        log.result = "HTTP response is #{response.code} Response"
+      else
+        log.result = 'An error occurred in getting uri recursively'
+      end
       return response
     end
 

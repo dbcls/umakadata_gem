@@ -88,29 +88,23 @@ SPARQL
           return false
         end
 
-        log = Umakadata::Logging::Log.new
-        logger.push log unless logger.nil?
         begin
-          response = http_get_recursive(URI(uri), {logger: log}, 10)
+          response = http_get_recursive(URI(uri), {}, logger: logger)
         rescue => e
-          log.result = e.message
           logger.result = 'An error occurred in getting uri recursively' unless logger.nil?
           return false
         end
 
         if !response.is_a?(Net::HTTPSuccess)
-          log.result = "#{uri} does not return 200 HTTP response"
-          logger.result = "#{uri} does not provide useful information" unless logger.nil?
+          logger.result = 'HTTP response is not 2xx Success' unless logger.nil?
           return false
         end
 
         if response.body.empty?
-          log.result = "#{uri} returns empty data"
-          logger.result = "#{uri} does not provide useful information" unless logger.nil?
+          logger.result = "#{uri} does not return any data" unless logger.nil?
           return false
         end
 
-        log.result = "#{uri} returns any data"
         logger.result = "#{uri} provides useful information" unless logger.nil?
         true
       end
