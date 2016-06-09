@@ -47,12 +47,12 @@ module Umakadata
       include Umakadata::Logging::Util
       def build
         case request
-          when Net::HTTP::Get
-            {:method => 'GET', :header => request.each.to_h}
-          when Net::HTTP::Post
-            {:method => 'POST', :header => request.each.to_h, :body => force_encode(request.body)}
-          else
-            "The type of request: #{force_encode(request.inspect)}"
+        when Net::HTTP::Get
+          {:method => 'GET', :header => request.each.to_h}
+        when Net::HTTP::Post
+          {:method => 'POST', :header => request.each.to_h, :body => force_encode(request.body)}
+        else
+          "The type of request: #{force_encode(request.inspect)}"
         end
       end
     end
@@ -61,10 +61,10 @@ module Umakadata
       include Umakadata::Logging::Util
       def build
         case response
-          when Net::HTTPResponse
-            {:code => response.code, :header => response.each.to_h, :body => force_encode(response.body)}
-          else
-            "The type of response: #{force_encode(response.inspect)}"
+        when Net::HTTPResponse
+          {:code => response.code, :header => response.each.to_h, :body => force_encode(response.body)}
+        else
+          "The type of response: #{force_encode(response.inspect)}"
         end
       end
     end
