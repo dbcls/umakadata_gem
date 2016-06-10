@@ -18,21 +18,15 @@ module Umakadata
       end
 
       def void_on_well_known_uri(uri, time_out = 10, logger: nil)
-        log = Umakadata::Logging::Log.new
-        logger.push log unless logger.nil?
         args = {
           :time_out => time_out,
-          :logger => log
         }
-        response = http_get_recursive(well_known_uri, args)
+        response = http_get_recursive(well_known_uri, args, logger: logger)
 
         if !response.is_a?(Net::HTTPSuccess)
-          log.result = "HTTP response is not 2xx Success"
           logger.result = 'The endpoint does not return 200 HTTP response' unless logger.nil?
-          return nil
+          return
         end
-
-        log.result = 'The endpoint returns 200 HTTP response'
         void = Umakadata::VoID.new(response, logger: logger)
         void
       end
