@@ -34,6 +34,10 @@ module Umakadata
 
     def initialize(http_response, logger: nil)
       body = http_response.body
+      unless body.nil?
+        body.force_encoding('UTF-8') unless body.encoding == Encoding::UTF_8
+        body = body.encode('UTF-16BE', :invalid => :replace, :undef => :replace, :replace => '?').encode("UTF-8") unless body.valid_encoding?
+      end
       data = triples(body, TURTLE)
       logger.result = 'VoID is in Turtle format' unless logger.nil? || data.nil?
       if data.nil?
