@@ -1,10 +1,12 @@
 require 'umakadata/data_format'
+require 'umakadata/util'
 
 module Umakadata
 
   class ServiceDescription
 
     include Umakadata::DataFormat
+    include Umakadata::Util
     ##
     # return the type of service description
     #
@@ -34,11 +36,7 @@ module Umakadata
       @text = nil
       @modified = nil
       @response_header = ''
-      body = http_response.body
-      unless body.nil?
-        body.force_encoding('UTF-8') unless body.encoding == Encoding::UTF_8
-        body = body.encode('UTF-16BE', :invalid => :replace, :undef => :replace, :replace => '?').encode("UTF-8") unless body.valid_encoding?
-      end
+      body = force_encode(http_response.body)
       data = triples(body, TURTLE)
       if (!data.nil?)
         @text = body
