@@ -1,6 +1,5 @@
 require 'rdf/turtle'
 require 'umakadata/data_format'
-require 'umakadata/util'
 require 'umakadata/logging/log'
 
 module Umakadata
@@ -8,7 +7,6 @@ module Umakadata
   class VoID
 
     include Umakadata::DataFormat
-    include Umakadata::Util
     ##
     # return the VoID as string
     #
@@ -34,7 +32,7 @@ module Umakadata
     attr_reader :modified
 
     def initialize(http_response, logger: nil)
-      body = force_encode(http_response.body)
+      body = http_response.body
       data = triples(body, TURTLE)
       logger.result = 'VoID is in Turtle format' unless logger.nil? || data.nil?
       if data.nil?
