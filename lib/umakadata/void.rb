@@ -7,7 +7,6 @@ module Umakadata
   class VoID
 
     include Umakadata::DataFormat
-
     ##
     # return the VoID as string
     #

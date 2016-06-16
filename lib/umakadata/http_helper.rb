@@ -55,7 +55,7 @@ module Umakadata
       log = args[:logger]
       log.push http_log unless log.nil?
 
-      response
+      force_encode(response)
     end
 
     def http_get_recursive(uri, args = {}, limit = 10, logger: nil)
@@ -76,6 +76,16 @@ module Umakadata
         log.result = "HTTP response is #{response.code} Response"
       else
         log.result = 'An error occurred in getting uri recursively'
+      end
+      return force_encode(response)
+    end
+
+    def force_encode(response)
+      return nil if response.nil?
+      body = response.body
+      unless body.nil?
+        body.force_encoding('UTF-8') unless body.encoding == Encoding::UTF_8
+        response.body = body.encode('UTF-16BE', :invalid => :replace, :undef => :replace, :replace => '?').encode("UTF-8") unless body.valid_encoding?
       end
       return response
     end
