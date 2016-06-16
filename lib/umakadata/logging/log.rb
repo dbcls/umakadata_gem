@@ -38,8 +38,11 @@ module Umakadata
 
     module Util
       def force_encode(obj)
-        return obj unless obj.is_a? String
-        obj.force_encoding('ASCII-8BIT').encode('UTF-8', :invalid => :replace, :undef => :replace, :replace => '?')
+        if obj.is_a? String
+          obj.force_encoding('UTF-8') unless obj.encoding == Encoding::UTF_8
+          obj.encode('UTF-16BE', :invalid => :replace, :undef => :replace, :replace => '?').encode("UTF-8") unless obj.valid_encoding?
+        end
+        return obj
       end
     end
 
