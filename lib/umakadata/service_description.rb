@@ -5,6 +5,9 @@ module Umakadata
   class ServiceDescription
 
     include Umakadata::DataFormat
+
+    SD = 'http://www.w3.org/ns/sparql-service-description'.freeze
+
     ##
     # return the type of service description
     #
@@ -29,11 +32,18 @@ module Umakadata
     # @return [String]
     attr_reader :modified
 
+    ##
+    # return supported language
+    #
+    # @return [String]
+    attr_reader :supported_language
+
     def initialize(http_response)
       @type = UNKNOWN
       @text = nil
       @modified = nil
       @response_header = ''
+      @supported_language = ''
       body = http_response.body
       data = triples(body, TURTLE)
       if (!data.nil?)
@@ -53,6 +63,9 @@ module Umakadata
       data.each do |subject, predicate, object|
         if predicate == RDF::URI("http://purl.org/dc/terms/modified")
           time.push Time.parse(object.to_s) rescue time.push nil
+        end
+        if predicate == RDF::URI("#{SD}#supportedLanguage")
+          @supported_language = object.to_s.sub(/#{SD}#/, '') unless object.nil?
         end
       end
       @modified = time.compact.max
