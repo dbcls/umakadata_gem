@@ -7,7 +7,7 @@ require "umakadata/criteria/cool_uri"
 require "umakadata/criteria/content_negotiation"
 require "umakadata/criteria/metadata"
 require "umakadata/criteria/basic_sparql"
-require 'umakadata/basic_information'
+require 'umakadata/sparql_grammar'
 
 module Umakadata
   class Retriever
@@ -18,7 +18,7 @@ module Umakadata
       @uri = URI(uri)
     end
 
-    include Umakadata::BasicInformation
+    include Umakadata::SparqlGrammar
     def support_graph_clause?
       super(@uri)
     end

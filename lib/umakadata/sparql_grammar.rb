@@ -1,6 +1,6 @@
 module Umakadata
 
-  module BasicInformation
+  module SparqlGrammar
 
     def support_graph_clause?(uri)
       sparql_query = 'SELECT * WHERE {GRAPH ?g {?s ?p ?o}} LIMIT 1'
