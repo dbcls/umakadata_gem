@@ -6,7 +6,7 @@ module Umakadata
 
     class Log
 
-      attr_writer :result
+      attr_accessor :result
 
       def initialize
         @list = Array.new
