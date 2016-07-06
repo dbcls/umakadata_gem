@@ -3,7 +3,7 @@ require 'umakadata/logging/log'
 
 module Umakadata
   module Criteria
-    module NotSupportGraph
+    module SPARQLWithoutGraph
       module ExecutionTime
 
         BASE_QUERY = <<-'SPARQL'

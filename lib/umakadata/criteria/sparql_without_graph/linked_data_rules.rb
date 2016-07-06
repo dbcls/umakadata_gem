@@ -4,7 +4,7 @@ require 'umakadata/logging/log'
 
 module Umakadata
   module Criteria
-    module NotSupportGraph
+    module SPARQLWithoutGraph
       module LinkedDataRules
 
         include Umakadata::HTTPHelper

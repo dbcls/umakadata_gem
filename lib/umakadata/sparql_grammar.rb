@@ -2,7 +2,7 @@ module Umakadata
 
   module SparqlGrammar
 
-    def support_graph_clause?(uri)
+    def self.support_graph_clause?(uri)
       sparql_query = 'SELECT * WHERE {GRAPH ?g {?s ?p ?o}} LIMIT 1'
 
       [:post, :get].each do |method|

@@ -3,7 +3,7 @@ require 'umakadata/logging/log'
 
 module Umakadata
   module Criteria
-    module NotSupportGraph
+    module SPARQLWithoutGraph
       module ContentNegotiation
         include Umakadata::HTTPHelper
 
@@ -24,7 +24,7 @@ SPARQL
             logger.result = 'The endpoint does not return 200 HTTP response' unless logger.nil?
             return false
           end
-          
+
           result = response.content_type == content_type
           if result
             logger.result = "The endpoint supports #{content_type} in the content negotiation" unless logger.nil?

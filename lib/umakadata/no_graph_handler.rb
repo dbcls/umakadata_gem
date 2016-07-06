@@ -1,19 +1,25 @@
-require 'umakadata/retriever'
+require "umakadata/criteria/sparql_without_graph/execution_time"
+require "umakadata/criteria/sparql_without_graph/content_negotiation"
+require "umakadata/criteria/sparql_without_graph/linked_data_rules"
 
 module Umakadata
-  class NotSupportGraphRetriever < Umakadata::Retriever
+  class NoGraphHandler
 
-    include Umakadata::Criteria::NotSupportGraph::ExecutionTime
+    def initialize(uri)
+      @uri = URI(uri)
+    end
+
+    include Umakadata::Criteria::SPARQLWithoutGraph::ExecutionTime
     def execution_time(logger: nil)
       super(@uri, logger: logger)
     end
 
-    include Umakadata::Criteria::NotSupportGraph::ContentNegotiation
+    include Umakadata::Criteria::SPARQLWithoutGraph::ContentNegotiation
     def check_content_negotiation(content_type, logger: nil)
       super(@uri, content_type, logger: logger)
     end
 
-    include Umakadata::Criteria::NotSupportGraph::LinkedDataRules
+    include Umakadata::Criteria::SPARQLWithoutGraph::LinkedDataRules
     def uri_subject?(logger: nil)
       super(@uri, logger: logger)
     end

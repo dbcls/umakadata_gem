@@ -7,20 +7,19 @@ require "umakadata/criteria/cool_uri"
 require "umakadata/criteria/content_negotiation"
 require "umakadata/criteria/metadata"
 require "umakadata/criteria/basic_sparql"
-require 'umakadata/sparql_grammar'
+require "umakadata/sparql_grammar"
 
 module Umakadata
   class Retriever
 
     include ErrorHelper
 
+    attr_reader :support_graph_clause
+
     def initialize(uri)
       @uri = URI(uri)
-    end
-
-    include Umakadata::SparqlGrammar
-    def support_graph_clause?
-      super(@uri)
+      @support_graph_clause = Umakadata::SparqlGrammar.support_graph_clause?(@uri)
+      @handler = @support_graph_clause ? Umakadata::GraphHandler.new(uri) : Umakadata::NoGraphHandler.new(uri)
     end
 
     include Umakadata::Criteria::Liveness
@@ -35,16 +34,16 @@ module Umakadata
 
     include Umakadata::Criteria::LinkedDataRules
     def uri_subject?(logger: nil)
-      super(@uri, logger: logger)
+      @handler.uri_subject?(logger: logger)
     end
     def http_subject?(logger: nil)
-      super(@uri, logger: logger)
+      @handler.http_subject?(logger: logger)
     end
     def uri_provides_info?(logger: nil)
-      super(@uri, logger: logger)
+      @handler.uri_provides_info?(logger: logger)
     end
     def contains_links?(logger: nil)
-      super(@uri, logger: logger)
+      @handler.contains_links?(logger: logger)
     end
 
     include Umakadata::Criteria::VoID
@@ -57,7 +56,7 @@ module Umakadata
 
     include Umakadata::Criteria::ExecutionTime
     def execution_time(logger: nil)
-      super(@uri, logger: logger)
+      @handler.execution_time(logger: logger)
     end
 
     include Umakadata::Criteria::CoolURI
@@ -67,7 +66,7 @@ module Umakadata
 
     include Umakadata::Criteria::ContentNegotiation
     def check_content_negotiation(content_type, logger: nil)
-      super(@uri, content_type, logger: logger)
+      @handler.check_content_negotiation(content_type, logger: logger)
     end
 
     include Umakadata::Criteria::Metadata
