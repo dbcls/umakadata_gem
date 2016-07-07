@@ -1,6 +1,7 @@
 require "umakadata/criteria/sparql_without_graph/execution_time"
 require "umakadata/criteria/sparql_without_graph/content_negotiation"
 require "umakadata/criteria/sparql_without_graph/linked_data_rules"
+require "umakadata/criteria/sparql_without_graph/metadata"
 
 module Umakadata
   class NoGraphHandler
@@ -34,6 +35,20 @@ module Umakadata
 
     def contains_links?(logger: nil)
       super(@uri, logger: logger)
+    end
+
+    include Umakadata::Criteria::SPARQLWithoutGraph::Metadata
+    def metadata(logger: nil)
+      super(@uri, logger: logger)
+    end
+    def score_metadata(metadata, logger: nil)
+      super(metadata, logger: logger)
+    end
+    def score_ontologies(metadata, logger: nil)
+      super(metadata, logger: logger)
+    end
+    def score_vocabularies(metadata, logger: nil)
+      super(metadata, logger: logger)
     end
 
   end
