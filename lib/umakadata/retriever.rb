@@ -83,17 +83,26 @@ module Umakadata
       @handler.score_vocabularies(metadata, logger: logger)
     end
 
-    def last_updated(logger: nil)
+    def last_updated(service_description, logger: nil)
       log = Umakadata::Logging::Log.new
       logger.push log unless logger.nil?
 
       sd_log = Umakadata::Logging::Log.new
       log.push sd_log
-      sd   = self.service_description(logger: sd_log)
-      unless sd.nil? || sd.modified.nil?
-        log.result = 'The literal of dcterms:modified is found in Service Description'
-        sd_log.result = "dcterms:modified is #{sd.modified}"
-        return { date: sd.modified, source: 'ServiceDescription' }
+      sd = triples(service_description)
+      unless sd.nil?
+        time = []
+        sd.each do |subject, predicate, object|
+          if predicate == RDF::URI("http://purl.org/dc/terms/modified")
+            time.push Time.parse(object.to_s) rescue time.push nil
+          end
+        end
+        sd_modified = time.compact.max
+        unless sd_modified.nil?
+          log.result = 'The literal of dcterms:modified is found in Service Description'
+          sd_log.result = "dcterms:modified is #{sd_modified}"
+          return { date: sd_modified, source: 'ServiceDescription' }
+        end
       end
       sd_log.result = 'The literal of dcterms:modified is not found in Service Description'
 
