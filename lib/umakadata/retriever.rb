@@ -56,7 +56,7 @@ module Umakadata
 
     include Umakadata::Criteria::ExecutionTime
     def execution_time(logger: nil)
-      @handler.execution_time(logger: logger)
+      super(@uri, logger: logger)
     end
 
     include Umakadata::Criteria::CoolURI

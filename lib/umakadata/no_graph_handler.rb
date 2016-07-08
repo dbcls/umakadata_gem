@@ -1,4 +1,3 @@
-require "umakadata/criteria/sparql_without_graph/execution_time"
 require "umakadata/criteria/sparql_without_graph/content_negotiation"
 require "umakadata/criteria/sparql_without_graph/linked_data_rules"
 require "umakadata/criteria/sparql_without_graph/metadata"
@@ -8,11 +7,6 @@ module Umakadata
 
     def initialize(uri)
       @uri = URI(uri)
-    end
-
-    include Umakadata::Criteria::SPARQLWithoutGraph::ExecutionTime
-    def execution_time(logger: nil)
-      super(@uri, logger: logger)
     end
 
     include Umakadata::Criteria::SPARQLWithoutGraph::ContentNegotiation
