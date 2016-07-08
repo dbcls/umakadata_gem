@@ -137,7 +137,7 @@ module Umakadata
       sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
       count = sparql.count_statements(logger: count_log)
       if count.nil?
-        count_log.result = 'The latest Statements are not found'
+        count_log.result = 'The latest statements are not found'
         return { count: nil, first: nil, last: nil }
       end
       count_log.result = "#{count} statements are found"
