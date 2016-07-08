@@ -83,7 +83,7 @@ module Umakadata
       @handler.score_vocabularies(metadata, logger: logger)
     end
 
-    def last_updated(service_description, logger: nil)
+    def last_updated(service_description, void, logger: nil)
       log = Umakadata::Logging::Log.new
       logger.push log unless logger.nil?
 
@@ -108,11 +108,22 @@ module Umakadata
 
       void_log = Umakadata::Logging::Log.new
       log.push void_log
-      void = self.void_on_well_known_uri(logger: void_log)
-      unless void.nil? || void.modified.nil?
-        log.result = 'The literal of dcterms:modified is found in VoID'
-        void_log.result = "dcterms:modified is #{void.modified}"
-        return { date: void.modified, source: 'VoID' }
+      unless void == ''
+        void_triples = triples(void)
+        unless void_triples.nil?
+          time = []
+          void_triples.each do |subject, predicate, object|
+            if predicate == RDF::URI('http://purl.org/dc/terms/modified')
+              time.push Time.parse(object.to_s) rescue time.push nil
+            end
+          end
+          void_modified = time.compact.max
+          unless void_modified.nil?
+            log.result = 'The literal of dcterms:modified is found in VoID'
+            void_log.result = "dcterms:modified is #{void_modified}"
+            return { date: void_modified, source: 'VoID' }
+          end
+        end
       end
       void_log.result = 'The literal of dcterms:modified is not found in VoID'
       log.result = 'The literal of dcterms:modified is not found in either Service Description or VoID'
