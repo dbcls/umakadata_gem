@@ -87,45 +87,12 @@ module Umakadata
       log = Umakadata::Logging::Log.new
       logger.push log unless logger.nil?
 
-      sd_log = Umakadata::Logging::Log.new
-      log.push sd_log
-      sd = triples(service_description)
-      unless sd.nil?
-        time = []
-        sd.each do |subject, predicate, object|
-          if predicate == RDF::URI("http://purl.org/dc/terms/modified")
-            time.push Time.parse(object.to_s) rescue time.push nil
-          end
-        end
-        sd_modified = time.compact.max
-        unless sd_modified.nil?
-          log.result = 'The literal of dcterms:modified is found in Service Description'
-          sd_log.result = "dcterms:modified is #{sd_modified}"
-          return { date: sd_modified, source: 'Service Description' }
-        end
-      end
-      sd_log.result = 'The literal of dcterms:modified is not found in Service Description'
+      result = extract_dcterms_modified(service_description, :sd, log)
+      return result unless result.nil?
 
-      void_log = Umakadata::Logging::Log.new
-      log.push void_log
-      unless void == ''
-        void_triples = triples(void)
-        unless void_triples.nil?
-          time = []
-          void_triples.each do |subject, predicate, object|
-            if predicate == RDF::URI('http://purl.org/dc/terms/modified')
-              time.push Time.parse(object.to_s) rescue time.push nil
-            end
-          end
-          void_modified = time.compact.max
-          unless void_modified.nil?
-            log.result = 'The literal of dcterms:modified is found in VoID'
-            void_log.result = "dcterms:modified is #{void_modified}"
-            return { date: void_modified, source: 'VoID' }
-          end
-        end
-      end
-      void_log.result = 'The literal of dcterms:modified is not found in VoID'
+      result = extract_dcterms_modified(void, :void, log)
+      return result unless result.nil?
+
       log.result = 'The literal of dcterms:modified is not found in either Service Description or VoID'
       nil
     end
@@ -166,6 +133,34 @@ module Umakadata
     def number_of_statements(logger: nil)
       sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
       return sparql.count_statements(logger: logger)
+    end
+
+    private
+    def extract_dcterms_modified(str, type, log)
+      s = if type == :sd
+            'Service Description'
+          elsif type == :void
+            'VoID'
+          end
+      local_log = Umakadata::Logging::Log.new
+      log.push local_log
+      statements = triples(str)
+      unless statements.nil?
+        time = []
+        statements.each do |subject, predicate, object|
+          if predicate == RDF::URI("http://purl.org/dc/terms/modified")
+            time.push Time.parse(object.to_s) rescue time.push nil
+          end
+        end
+        dcterms_modified = time.compact.max
+        unless dcterms_modified.nil?
+          log.result = 'The literal of dcterms:modified is found in ' + s
+          local_log.result = "dcterms:modified is #{dcterms_modified}"
+          return { date: dcterms_modified, source: s }
+        end
+      end
+      local_log.result = 'The literal of dcterms:modified is not found in ' + s
+      nil
     end
 
   end
