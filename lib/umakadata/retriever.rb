@@ -101,7 +101,7 @@ module Umakadata
         unless sd_modified.nil?
           log.result = 'The literal of dcterms:modified is found in Service Description'
           sd_log.result = "dcterms:modified is #{sd_modified}"
-          return { date: sd_modified, source: 'ServiceDescription' }
+          return { date: sd_modified, source: 'Service Description' }
         end
       end
       sd_log.result = 'The literal of dcterms:modified is not found in Service Description'
