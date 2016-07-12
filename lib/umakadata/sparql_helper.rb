@@ -12,9 +12,6 @@ module Umakadata
       begin
         client = Umakadata::SparqlClient.new(uri, {'read_timeout': 5 * 60}.merge(options))
         response = client.query(query)
-        if response.nil?
-          sparql_log.error = 'Failed to parse'
-        end
       rescue SPARQL::Client::ClientError, SPARQL::Client::ServerError => e
         sparql_log.error = e
       rescue => e
@@ -22,7 +19,13 @@ module Umakadata
       end
       sparql_log.request = client.http_request
       sparql_log.response = client.http_response
-      return response
+
+      if !response.is_a? Array
+        sparql_log.error ||= 'Failed to parse'
+        return nil
+      end
+
+      response
     end
 
   end

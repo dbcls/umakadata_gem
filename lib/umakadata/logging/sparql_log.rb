@@ -9,7 +9,7 @@ module Umakadata
 
       attr_writer :request
       attr_writer :response
-      attr_writer :error
+      attr_accessor :error
 
       def initialize(uri, query)
         @uri = uri
