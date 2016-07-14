@@ -40,7 +40,7 @@ module Umakadata
       def force_encode(obj)
         if obj.is_a? String
           obj.force_encoding('UTF-8') unless obj.encoding == Encoding::UTF_8
-          obj.scrub!
+          obj = obj.encode('UTF-16BE', :invalid => :replace, :undef => :replace, :replace => '?').encode("UTF-8") unless obj.valid_encoding?
           begin
             obj.to_json
           rescue => e
