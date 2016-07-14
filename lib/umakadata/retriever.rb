@@ -83,29 +83,16 @@ module Umakadata
       @handler.score_vocabularies(metadata, logger: logger)
     end
 
-    def last_updated(logger: nil)
+    def last_updated(service_description, void, logger: nil)
       log = Umakadata::Logging::Log.new
       logger.push log unless logger.nil?
 
-      sd_log = Umakadata::Logging::Log.new
-      log.push sd_log
-      sd   = self.service_description(logger: sd_log)
-      unless sd.nil? || sd.modified.nil?
-        log.result = 'The literal of dcterms:modified is found in Service Description'
-        sd_log.result = "dcterms:modified is #{sd.modified}"
-        return { date: sd.modified, source: 'ServiceDescription' }
-      end
-      sd_log.result = 'The literal of dcterms:modified is not found in Service Description'
+      result = extract_dcterms_modified(service_description, :sd, log)
+      return result unless result.nil?
 
-      void_log = Umakadata::Logging::Log.new
-      log.push void_log
-      void = self.void_on_well_known_uri(logger: void_log)
-      unless void.nil? || void.modified.nil?
-        log.result = 'The literal of dcterms:modified is found in VoID'
-        void_log.result = "dcterms:modified is #{void.modified}"
-        return { date: void.modified, source: 'VoID' }
-      end
-      void_log.result = 'The literal of dcterms:modified is not found in VoID'
+      result = extract_dcterms_modified(void, :void, log)
+      return result unless result.nil?
+
       log.result = 'The literal of dcterms:modified is not found in either Service Description or VoID'
       nil
     end
@@ -117,7 +104,7 @@ module Umakadata
       sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
       count = sparql.count_statements(logger: count_log)
       if count.nil?
-        count_log.result = 'The latest Statements are not found'
+        count_log.result = 'The latest statements are not found'
         return { count: nil, first: nil, last: nil }
       end
       count_log.result = "#{count} statements are found"
@@ -146,6 +133,34 @@ module Umakadata
     def number_of_statements(logger: nil)
       sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
       return sparql.count_statements(logger: logger)
+    end
+
+    private
+    def extract_dcterms_modified(str, type, log)
+      s = if type == :sd
+            'Service Description'
+          elsif type == :void
+            'VoID'
+          end
+      local_log = Umakadata::Logging::Log.new
+      log.push local_log
+      statements = triples(str)
+      unless statements.nil?
+        time = []
+        statements.each do |subject, predicate, object|
+          if predicate == RDF::URI("http://purl.org/dc/terms/modified")
+            time.push Time.parse(object.to_s) rescue time.push nil
+          end
+        end
+        dcterms_modified = time.compact.max
+        unless dcterms_modified.nil?
+          log.result = 'The literal of dcterms:modified is found in ' + s
+          local_log.result = "dcterms:modified is #{dcterms_modified}"
+          return { date: dcterms_modified, source: s }
+        end
+      end
+      local_log.result = 'The literal of dcterms:modified is not found in ' + s
+      nil
     end
 
   end
