@@ -41,6 +41,11 @@ module Umakadata
         if obj.is_a? String
           obj.force_encoding('UTF-8') unless obj.encoding == Encoding::UTF_8
           obj.scrub!
+          begin
+            obj.to_json
+          rescue => e
+            obj = e.message
+          end
         end
         return obj
       end
