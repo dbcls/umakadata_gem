@@ -104,7 +104,7 @@ module Umakadata
             graph_log.result = "Score is #{total_score}"
             total_score
           end
-          metadata_score = self.score_metadata(metadata, score_proc)
+          metadata_score = self.score_without_graph(metadata, score_proc)
           logger.result = "Metadata score is #{metadata_score}" unless logger.nil?
           metadata_score
         end
@@ -131,7 +131,7 @@ module Umakadata
             graph_log.result = "Score is #{score}"
             return score
           end
-          ontology_score = self.score_metadata(metadata, score_proc)
+          ontology_score = self.score_without_graph(metadata, score_proc)
           logger.result = "Ontology score is #{ontology_score}" unless logger.nil?
           ontology_score
         end
@@ -145,7 +145,7 @@ module Umakadata
             return count
           end
 
-          vocabulary_score = self.score_metadata(metadata, score_proc)
+          vocabulary_score = self.score_without_graph(metadata, score_proc)
           logger.result = "Vocabulary score is #{vocabulary_score}" unless logger.nil?
           vocabulary_score
         end
@@ -163,7 +163,7 @@ module Umakadata
           return ontologies.uniq
         end
 
-        def score_metadata(metadata, score_proc)
+        def score_without_graph(metadata, score_proc)
           return 0 if metadata.nil? || metadata.empty?
           return score_proc.call(metadata)
         end
