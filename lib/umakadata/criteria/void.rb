@@ -12,6 +12,7 @@ module Umakadata
       include Umakadata::HTTPHelper
 
       WELL_KNOWN_VOID_PATH = "/.well-known/void".freeze
+      MEDIA_TYPES = [Umakadata::DataFormat::TURTLE, Umakadata::DataFormat::RDFXML].freeze
 
       def well_known_uri(uri)
         URI::HTTP.build({:host => uri.host, :path => WELL_KNOWN_VOID_PATH})
@@ -20,6 +21,7 @@ module Umakadata
       def void_on_well_known_uri(uri, time_out = 10, logger: nil)
         args = {
           :time_out => time_out,
+          :headers => {'Accept' => MEDIA_TYPES.join(', ')}
         }
         response = http_get_recursive(well_known_uri, args, logger: logger)
 
