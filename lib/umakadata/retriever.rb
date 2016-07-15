@@ -97,7 +97,7 @@ module Umakadata
       nil
     end
 
-    def count_first_last(logger: nil)
+    def first_last(logger: nil)
       count_log = Umakadata::Logging::Log.new
       logger.push count_log unless logger.nil?
 
@@ -105,7 +105,7 @@ module Umakadata
       count = sparql.count_statements(logger: count_log)
       if count.nil?
         count_log.result = 'The latest statements are not found'
-        return { count: nil, first: nil, last: nil }
+        return { first: nil, last: nil }
       end
       count_log.result = "#{count} statements are found"
 
@@ -127,7 +127,7 @@ module Umakadata
         last_log.result = 'The last statements are found'
       end
 
-      return { count: count, first: first, last: last }
+      return { first: first, last: last }
     end
 
     def number_of_statements(logger: nil)
