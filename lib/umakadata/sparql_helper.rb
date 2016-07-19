@@ -20,12 +20,12 @@ module Umakadata
       sparql_log.request = client.http_request
       sparql_log.response = client.http_response
 
-      if !response.is_a? Array
-        sparql_log.error ||= 'Failed to parse'
-        return nil
-      end
+      return response if response.is_a?(RDF::Query::Solutions)
+      return response if response.is_a?(TrueClass)
+      return response if response.is_a?(FalseClass)
 
-      response
+      sparql_log.error ||= 'Failed to parse'
+      return nil
     end
 
   end
