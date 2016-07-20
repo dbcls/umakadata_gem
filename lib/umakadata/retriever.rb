@@ -97,12 +97,9 @@ module Umakadata
       nil
     end
 
-    def first_last(logger: nil)
+    def first_last(count, logger: nil)
       count_log = Umakadata::Logging::Log.new
       logger.push count_log unless logger.nil?
-
-      sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
-      count = sparql.count_statements(logger: count_log)
       if count.nil?
         count_log.result = 'The latest statements are not found'
         return { first: nil, last: nil }
@@ -111,6 +108,7 @@ module Umakadata
 
       first_log = Umakadata::Logging::Log.new
       logger.push first_log unless logger.nil?
+      sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
       first = sparql.nth_statement(0, logger: first_log)
       if first.nil?
         first_log.result = 'The first statements are not found'
