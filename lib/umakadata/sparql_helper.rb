@@ -12,6 +12,9 @@ module Umakadata
       begin
         client = Umakadata::SparqlClient.new(uri, {'read_timeout': 5 * 60}.merge(options))
         response = client.query(query)
+      rescue RDF::ReaderError
+        content_type = client.http_response.content_type
+        sparql_log.error = "content-type: #{content_type} is inconsistent with the body of the response"
       rescue SPARQL::Client::ClientError, SPARQL::Client::ServerError => e
         sparql_log.error = e
       rescue => e
