@@ -14,6 +14,11 @@ module Umakadata
 
       http = Net::HTTP.new(uri.host, uri.port)
       http.open_timeout = args[:time_out]
+      if (uri.scheme == 'https')
+        http.use_ssl = true
+        http.ca_file = OpenSSL::X509::DEFAULT_CERT_FILE
+        http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      end
 
       path = uri.path.empty? ? '/' : uri.path
       path += '?' + uri.query unless uri.query.nil?
