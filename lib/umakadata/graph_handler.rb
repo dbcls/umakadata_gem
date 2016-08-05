@@ -15,10 +15,6 @@ module Umakadata
     end
 
     include Umakadata::Criteria::LinkedDataRules
-    def uri_subject?(logger: nil)
-      super(@uri, logger: logger)
-    end
-
     def http_subject?(logger: nil)
       super(@uri, logger: logger)
     end

@@ -16,37 +16,6 @@ module Umakadata
           @uri = uri
         end
 
-        def uri_subject?(uri, logger: nil)
-          sparql_query = <<-'SPARQL'
-SELECT
-  *
-WHERE {
-  { ?s ?p ?o } .
-  filter (!isURI(?s) && !isBLANK(?s))
-}
-LIMIT 1
-SPARQL
-
-          [:post, :get].each do |method|
-            log = Umakadata::Logging::Log.new
-            logger.push log unless logger.nil?
-            results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
-            if results != nil
-              if results.count == 0
-                log.result = 'URI subject is found'
-                logger.result = 'URIs are used as names' unless logger.nil?
-                return true
-              else
-                log.result = 'Non-URI subjects are found'
-              end
-            else
-              log.result = 'Sparql query result could not be read in RDF format'
-            end
-          end
-          logger.result = 'URIs are not used as names' unless logger.nil?
-          false
-        end
-
         def http_subject?(uri, logger: nil)
           sparql_query = <<-'SPARQL'
 SELECT

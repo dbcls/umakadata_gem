@@ -33,9 +33,6 @@ module Umakadata
     end
 
     include Umakadata::Criteria::LinkedDataRules
-    def uri_subject?(logger: nil)
-      @handler.uri_subject?(logger: logger)
-    end
     def http_subject?(logger: nil)
       @handler.http_subject?(logger: logger)
     end
