@@ -98,7 +98,7 @@ module Umakadata
       count_log = Umakadata::Logging::Log.new
       logger.push count_log unless logger.nil?
       if count.nil?
-        count_log.result = 'The latest statements are not found'
+        count_log.result = 'The latest statement is not found'
         return { first: nil, last: nil }
       end
       count_log.result = "#{count} statements are found"
@@ -110,7 +110,7 @@ module Umakadata
       if first.nil?
         first_log.result = 'The first statements are not found'
       else
-        first_log.result = 'The first statements are found'
+        first_log.result = 'The first statement is found'
       end
 
       last_log = Umakadata::Logging::Log.new
@@ -118,9 +118,9 @@ module Umakadata
       n = calc_near_last(count)
       last  = sparql.nth_statement(n, logger: last_log)
       if last.nil?
-        last_log.result = 'The last statements are not found'
+        last_log.result = "The #{n}th statement is not found"
       else
-        last_log.result = 'The last statements are found'
+        last_log.result = "The #{n}th statement is found"
       end
 
       return { first: first, last: last }
