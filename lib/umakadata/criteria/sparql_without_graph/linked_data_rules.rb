@@ -81,7 +81,7 @@ SELECT
   ?s
 WHERE {
   { ?s ?p ?o } .
-  filter (isURI(?s) && !regex (?s, "http://www.openlinksw.com", "i"))
+  filter (isURI(?s) && !regex(?s, "^http://localhost", "i") && !regex (?s, "^http://www.openlinksw.com", "i"))
 }
 LIMIT 1
 OFFSET 100

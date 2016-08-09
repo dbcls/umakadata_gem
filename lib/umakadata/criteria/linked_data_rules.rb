@@ -82,7 +82,7 @@ SELECT
   ?s
 WHERE {
   GRAPH ?g { ?s ?p ?o } .
-  filter (isURI(?s) && ?g NOT IN (
+  filter (isURI(?s) && !regex(?s, "^http://localhost", "i") && ?g NOT IN (
     <http://www.openlinksw.com/schemas/virtrdf#>
   ))
 }
