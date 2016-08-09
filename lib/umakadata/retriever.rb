@@ -108,7 +108,7 @@ module Umakadata
       sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
       first = sparql.nth_statement(0, logger: first_log)
       if first.nil?
-        first_log.result = 'The first statements are not found'
+        first_log.result = 'The first statement is not found'
       else
         first_log.result = 'The first statement is found'
       end
