@@ -22,7 +22,7 @@ SELECT
   *
 WHERE {
   { ?s ?p ?o } .
-  filter (!regex(?s, "http://", "i") && !isBLANK(?s))
+  filter (!regex(?s, "^http://", "i") && !isBLANK(?s))
 }
 LIMIT 1
 SPARQL

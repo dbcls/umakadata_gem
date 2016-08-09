@@ -21,7 +21,7 @@ SELECT
   *
 WHERE {
   GRAPH ?g { ?s ?p ?o } .
-  filter (!regex(?s, "http://", "i") && !isBLANK(?s) && ?g NOT IN (
+  filter (!regex(?s, "^http://", "i") && !isBLANK(?s) && ?g NOT IN (
     <http://www.openlinksw.com/schemas/virtrdf#>
   ))
 }
