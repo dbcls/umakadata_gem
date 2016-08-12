@@ -21,9 +21,9 @@ module Umakadata
             logger.result = "The number of statements is #{count}" unless logger.nil?
             return count
           end
-          log.result = "Statements are not found"
+          log.result = 'Statements are not found'
         end
-        logger.result = "Statements are N/A" unless logger.nil?
+        logger.result = 'Statements are N/A' unless logger.nil?
         nil
       end
 
@@ -37,7 +37,7 @@ module Umakadata
             log.result = "S is #{result[0][:s]}, P is #{result[0][:p]}, O is #{result[0][:o]}"
             return [ result[0][:s], result[0][:p], result[0][:o] ]
           end
-          log.result = "Statements are not found"
+          log.result = 'Statement is not found'
         end
         nil
       end

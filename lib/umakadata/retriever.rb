@@ -108,7 +108,7 @@ module Umakadata
       sparql = Umakadata::Criteria::BasicSPARQL.new(@uri)
       first = sparql.nth_statement(0, logger: first_log)
       if first.nil?
-        first_log.result = 'The first statements are not found'
+        first_log.result = 'The first statement is not found'
       else
         first_log.result = 'The first statement is found'
       end
@@ -116,7 +116,7 @@ module Umakadata
       last_log = Umakadata::Logging::Log.new
       logger.push last_log unless logger.nil?
       n = calc_near_last(count)
-      last  = sparql.nth_statement(n, logger: last_log)
+      last  = sparql.nth_statement(n > 1 ? n - 1 : 1, logger: last_log)
       if last.nil?
         last_log.result = "The #{n}th statement is not found"
       else
