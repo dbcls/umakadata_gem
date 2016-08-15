@@ -4,7 +4,7 @@ module Umakadata
 
     # Obtain list of datasets specified by void:Linkset in VoID
     # @see http://www.w3.org/TR/void/#linkset
-    def linksets(triples)
+    def self.linksets(triples)
       linksets = []
 
       return linksets if triples.nil?

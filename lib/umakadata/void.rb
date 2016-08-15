@@ -1,5 +1,4 @@
 require 'rdf/turtle'
-require 'umakadata/linkset'
 require 'umakadata/data_format'
 require 'umakadata/logging/log'
 
@@ -8,7 +7,6 @@ module Umakadata
   class VoID
 
     include Umakadata::DataFormat
-    include Umakadata::Linkset
     ##
     # return the VoID as string
     #
@@ -26,12 +24,6 @@ module Umakadata
     #
     # @return [Array]
     attr_reader :publisher
-
-    ##
-    # return the linksets of VoID
-    #
-    # @return [Array]
-    attr_reader :linkset
 
     def initialize(http_response, logger: nil)
       body = http_response.body
@@ -53,8 +45,6 @@ module Umakadata
         @license.push object.to_s if predicate == RDF::URI('http://purl.org/dc/terms/license')
         @publisher.push object.to_s if predicate == RDF::URI('http://purl.org/dc/terms/publisher')
       end
-
-      @linkset = self.linksets(data)
     end
   end
 end
