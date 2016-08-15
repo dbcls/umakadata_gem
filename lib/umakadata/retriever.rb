@@ -8,6 +8,7 @@ require "umakadata/criteria/content_negotiation"
 require "umakadata/criteria/metadata"
 require "umakadata/criteria/basic_sparql"
 require "umakadata/sparql_grammar"
+require "umakadata/linkset"
 
 module Umakadata
   class Retriever
@@ -147,6 +148,12 @@ module Umakadata
         supported_language = sl.uniq
       end
       supported_language.to_json
+    end
+
+    include Umakadata::Linkset
+    def linksets(void_ttl)
+      void = triples(void_ttl)
+      super(void).map{|linkset| linkset.to_s}
     end
 
     private
