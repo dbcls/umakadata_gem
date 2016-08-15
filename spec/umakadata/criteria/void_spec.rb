@@ -33,7 +33,6 @@ describe 'Umakadata' do
 
           expect(void.license.include?('http://creativecommons.org/licenses/by/2.1/jp/')).to be true
           expect(void.publisher.include?('http://www.example.org/Publisher')).to be true
-          expect(void.modified).to eq Time.parse("2016-01-01 10:00:00")
         end
 
         it 'should return void object when valid response is retrieved of xml format' do
@@ -48,7 +47,6 @@ describe 'Umakadata' do
 
           expect(void.license.include?('http://creativecommons.org/licenses/by/2.1/jp/')).to be true
           expect(void.publisher.include?('http://www.example.org/Publisher')).to be true
-          expect(void.modified).to eq Time.parse("2016-01-01 10:00:00")
         end
 
         it 'should return false description object when invalid response is retrieved' do
@@ -64,7 +62,6 @@ describe 'Umakadata' do
           expect(void.text).to be_nil
           expect(void.license).to be_nil
           expect(void.publisher).to be_nil
-          expect(void.modified).to be_nil
         end
 
         it 'should set error message when invalid response is retrieved' do
