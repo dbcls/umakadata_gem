@@ -24,18 +24,24 @@ module Umakadata
     # @return [String]
     attr_reader :response_header
 
+    ##
+    # return data
+    #
+    # @return [String]
+    attr_reader :data
+
     def initialize(http_response)
       @type = UNKNOWN
       @text = nil
       @response_header = ''
       body = http_response.body
-      data = triples(body, TURTLE)
-      if (!data.nil?)
+      @data = triples(body, TURTLE)
+      if (!@data.nil?)
         @text = body
         @type = TURTLE
       else
-        data = triples(body, RDFXML)
-        if (!data.nil?)
+        @data = triples(body, RDFXML)
+        if (!@data.nil?)
           @text = body
           @type = RDFXML
         else

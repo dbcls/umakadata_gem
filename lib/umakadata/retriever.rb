@@ -131,6 +131,24 @@ module Umakadata
       return sparql.count_statements(logger: logger)
     end
 
+    SD = 'http://www.w3.org/ns/sparql-service-description'.freeze
+    def supported_language(service_description)
+      supported_language = []
+      data = service_description.data
+      unless data.nil?
+        sl = []
+        data.each do |subject, predicate, object|
+          if subject == RDF::URI(@uri)
+            if predicate == RDF::URI("#{SD}#supportedLanguage")
+              sl.push object.to_s.sub(/#{SD}#/, '') unless object.nil?
+            end
+          end
+        end
+        supported_language = sl.uniq
+      end
+      supported_language.to_json
+    end
+
     private
     def calc_near_last(count)
       tolerance = (count * 0.0005).ceil # 0.05% tolerance is obtained from Virtuoso (Life Science Dictionary)
