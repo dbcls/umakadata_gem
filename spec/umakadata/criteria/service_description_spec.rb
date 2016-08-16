@@ -34,7 +34,6 @@ describe 'Umakadata' do
 
           expect(service_description.type).to eq Umakadata::DataFormat::TURTLE
           expect(service_description.text).to eq valid_ttl
-          expect(service_description.modified).to eq Time.parse('2016-01-01 10:00:00')
           expect(!service_description.response_header.empty?).to be true
         end
 
@@ -52,7 +51,6 @@ describe 'Umakadata' do
 
           expect(service_description.type).to eq Umakadata::DataFormat::RDFXML
           expect(service_description.text).to eq valid_xml
-          expect(service_description.modified).to eq Time.parse("2016-01-01 10:00:00")
           expect(!service_description.response_header.empty?).to be true
         end
 
