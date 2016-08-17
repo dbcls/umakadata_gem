@@ -137,7 +137,6 @@ module Umakadata
             graph_log.push properties_log
             properties_log.result = '0 ontologies are found'
             graph_log.result = "Score for #{graph} is 0"
-            logger.result = 'Ontology score is 0'
             return 0
           end
 
