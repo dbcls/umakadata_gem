@@ -10,13 +10,13 @@ module Umakadata
       end
 
       def count_statements(logger: nil)
-        sparql_query = 'SELECT COUNT(*) WHERE { ?s ?p ?o }'
+        sparql_query = 'SELECT (COUNT(*) AS ?count) WHERE { ?s ?p ?o }'
         [:post, :get].each do |method|
           log = Umakadata::Logging::Log.new
           logger.push log unless logger.nil?
           result = Umakadata::SparqlHelper.query(@uri, sparql_query, logger: log, options: {method: method})
           unless result.nil? || result[0].nil?
-            dummy, count = result[0].to_hash.shift
+            count = result[0][:count]
             log.result = "The number of statements is #{count}"
             logger.result = "The number of statements is #{count}" unless logger.nil?
             return count
