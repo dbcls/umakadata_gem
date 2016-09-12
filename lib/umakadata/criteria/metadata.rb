@@ -207,7 +207,9 @@ WHERE {
   { ?s ?p ?o. }
 }
 SPARQL
-        results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
+        message = "An error occurred in retrieving graph URIs"
+        results = metadata_query(uri, query, message, logger: logger)
+
         return [] if results.nil?
         results.map { |solution| solution[:g] }
       end
@@ -251,7 +253,9 @@ WHERE {
 }
 LIMIT 100
 SPARQL
-        results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
+        message = "An error occurred in retrieving a list of classes"
+        results = metadata_query(uri, query, message, logger: logger)
+
         return [] if results.nil?
         results.map { |solution| solution[:c] }
       end
@@ -263,7 +267,9 @@ SELECT DISTINCT ?c
 FROM <#{graph}>
 WHERE { [] rdf:type ?c. }
 SPARQL
-        results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
+        message = "An error occurred in retrieving the classes having instances"
+        results = metadata_query(uri, query, message, logger: logger)
+
         return [] if results.nil?
         results.map { |solution| solution[:c] }
       end
@@ -293,7 +299,9 @@ WHERE {
     }
 }
 SPARQL
-        results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
+        message = "An error occurred in retrieving a list of labels"
+        results = metadata_query(uri, query, message, logger: logger)
+
         return [] if results.nil?
         results.map { |solution| solution[:label] }
       end
@@ -325,7 +333,9 @@ WHERE{
         ?s ?p ?o.
 }
 SPARQL
-        results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
+        message = "An error occurred in retrieving a list of properties"
+        results = metadata_query(uri, query, message, logger: logger)
+
         return [] if results.nil?
         results.map { |solution| solution[:p] }
       end
@@ -517,7 +527,9 @@ WHERE{
   FILTER(isLiteral(?o))
 }
 SPARQL
-        results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
+        message = "An error occurred in retrieving a list of datatypes"
+        results = metadata_query(uri, query, message, logger: logger)
+
         return [] if results.nil?
         results.map { |solution| solution[:ldt] }
       end
@@ -551,6 +563,21 @@ SPARQL
         end
 
         return results
+      end
+
+      def metadata_query(uri, sparql_query, message, logger: nil)
+        results = nil
+        [:post, :get].each do |method|
+          request_log = Umakadata::Logging::Log.new
+          logger.push request_log unless logger.nil?
+          results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: request_log, options: {method: method})
+          unless results.nil?
+            request_log.result = "200 HTTP response"
+            return results
+          end
+          request_log.result = message
+        end
+        results
       end
 
     end
