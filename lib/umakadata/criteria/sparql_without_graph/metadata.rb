@@ -222,16 +222,8 @@ SPARQL
           results.map { |solution| solution[:c] }
         end
 
-        def list_of_labels_of_a_class(client, graph, cls)
-          query = <<-SPARQL
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT DISTINCT ?label
-FROM <#{graph}>
-WHERE{ <#{cls}> rdfs:label ?label. }
-SPARQL
-          results = self.query_metadata(client, query)
           return [] if results.nil?
-          results.map { |solution| solution[:label] }
+          results.map { |solution| solution[:c] }
         end
 
         def list_of_labels_of_classes(uri, classes, logger: nil)
@@ -245,30 +237,11 @@ WHERE {
       )
 }
 SPARQL
+          message = "An error occurred in retrieving a list of labels"
+          results = metadata_query(uri, query, message, logger: logger)
 
-          results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
           return [] if results.nil?
           results.map { |solution| solution[:label] }
-        end
-
-        def number_of_instances_of_class_on_a_graph(client, graph, cls)
-          query = <<-SPARQL
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-SELECT (count(DISTINCT ?i)  AS ?num)
-  FROM <#{graph}>
-WHERE{
-  { ?i rdf:type <#{cls}>. }
-  UNION
-  { [] ?p ?i. ?p rdfs:range <#{cls}>. }
-  UNION
-  { ?i ?p []. ?p rdfs:domain <#{cls}>. }
-}
-SPARQL
-
-          results = self.query_metadata(client, query)
-          return 0 if results.nil?
-          return results[0][:num]
         end
 
         def list_of_properties(uri, logger: nil)
@@ -282,184 +255,6 @@ SPARQL
           results = Umakadata::SparqlHelper.query(uri, query, logger: logger)
           return [] if results.nil?
           results.map { |solution| solution[:p] }
-        end
-
-        def list_of_domain_classes_of_property_on_graph(client, graph, property)
-          query = <<-SPARQL
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT DISTINCT ?d
-FROM <#{graph}>
-WHERE {
-  <#{property}> rdfs:domain ?d.
-}
-SPARQL
-          results = self.query_metadata(client, query)
-          return [] if results.nil?
-          results.map { |solution| solution[:d] }
-        end
-
-        def list_of_range_classes_of_property_on_graph(client, graph, property)
-          query = <<-SPARQL
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT DISTINCT ?r
-FROM <#{graph}>
-WHERE{
-  <#{property}> rdfs:range ?r.
-}
-SPARQL
-          results = self.query_metadata(client, query)
-          return [] if results.nil?
-          results.map { |solution| solution[:d] }
-        end
-
-        def list_of_class_class_relationships(client, graph, property)
-          query = <<-SPARQL
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-SELECT DISTINCT ?d ?r
-FROM <#{graph}>
-WHERE{
-        ?i <#{property}> ?o.
-        OPTIONAL{ ?i rdf:type ?d.}
-        OPTIONAL{ ?o rdf:type ?r.}
-}
-SPARQL
-          results = self.query_metadata(client, query)
-          return [] if results.nil?
-          results.map { |solution| [ solution[:d], solution[:r] ] }
-        end
-
-        def list_of_class_datatype_relationships(client, graph, property)
-          query = <<-SPARQL
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-SELECT DISTINCT ?d (datatype(?o) AS ?ldt)
-FROM <#{graph}>
-WHERE{
-    ?i <#{property}> ?o.
-    OPTIONAL{ ?i rdf:type ?d.}
-    FILTER(isLiteral(?o))
-}
-SPARQL
-          results = self.query_metadata(client, query)
-          return [] if results.nil?
-          results.map { |solution| [ solution[:d], solution[:ldt] ] }
-        end
-
-        def number_of_elements1(client, graph, property, domain, range)
-          query = <<-SPARQL
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-SELECT (count(?i) AS ?numTriples) (count(DISTINCT ?i) AS ?numDomIns) (count(DISTINCT ?o) AS ?numRanIns)
-FROM <#{graph}>
-WHERE {
-  SELECT DISTINCT ?i ?o WHERE {
-    ?i <#{property}> ?o.
-    ?i rdf:type <#{domain}>.
-    ?o rdf:type <#{range}>.
-  }
-}
-SPARQL
-          results = self.query_metadata(client, query)
-          return nil if results.nil?
-          return [ results[0][:numTriples], results[0][:numDomIns], results[0][:numRanIns] ]
-        end
-
-        def number_of_elements2(client, graph, property, datatype)
-          query = <<-SPARQL
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-SELECT (count(?i) AS ?numTriples) (count(DISTINCT ?i) AS ?numDomIns) (count(DISTINCT ?o) AS ?numRanIns)
-        FROM <#{graph}>
-WHERE{
-  SELECT DISTINCT ?i ?o WHERE{
-    ?i <#{property}> ?o.
-    ?i rdf:type ?d.
-    FILTER( datatype(?o) = <#{datatype}> )
-  }
-}
-SPARQL
-          results = self.query_metadata(client, query)
-          return nil if results.nil?
-          return [ results[0][:numTriples], results[0][:numDomIns], results[0][:numRanIns] ]
-        end
-
-        def number_of_elements3(client, graph, property)
-query = <<-SPARQL
-SELECT (count(?i) AS ?numTriples) (count(DISTINCT ?i) AS ?numDomIns) (count(DISTINCT ?o) AS ?numRanIns)
-FROM <#{graph}>
-WHERE{
-   ?i <#{property}> ?o.
-}
-SPARQL
-          results = self.query_metadata(client, query)
-          return nil if results.nil?
-          return [ results[0][:numTriples], results[0][:numDomIns], results[0][:numRanIns] ]
-        end
-
-        def number_of_elements4(client, graph, property)
-          query = <<-SPARQL
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-SELECT (count(DISTINCT ?i) AS ?numDomIns) (count(?i) AS ?numTriplesWithDom)
-FROM <#{graph}>
-WHERE {
-  SELECT DISTINCT ?i ?o
-  WHERE{
-    ?i <#{property}> ?o.
-    ?i rdf:type ?d.
-  }
-}
-SPARQL
-          results = self.query_metadata(client, query)
-          return nil if results.nil?
-          return [ results[0][:numDomIns], results[0][:numTriplesWithDom] ]
-        end
-
-        def number_of_elements5(client, graph, property)
-          query = <<-SPARQL
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-SELECT (count(DISTINCT ?o) AS ?numRanIns) (count(?o) AS ?numTriplesWithRan)
-FROM <#{graph}>
-WHERE {
-  SELECT DISTINCT ?i ?o
-  WHERE{
-    ?i <#{property}> ?o.
-    ?o rdf:type ?r.
-  }
-}
-SPARQL
-          results = self.query_metadata(client, query)
-          return nil if results.nil?
-          return [ results[0][:numRanIns], results[0][:numTriplesWithRan] ]
-        end
-
-        def number_of_elements6(client, graph, property)
-          query = <<-SPARQL
-SELECT (count(DISTINCT ?o) AS ?numRanIns) (count(?o) AS ?numTriplesWithRan)
-FROM <#{graph}>
-WHERE {
-  SELECT DISTINCT ?i ?o
-  WHERE{
-    ?i <#{property}> ?o.
-    FILTER(isLiteral(?o))
-  }
-}
-SPARQL
-          results = self.query_metadata(client, query)
-          return nil if results.nil?
-          return [ results[0][:numRanIns], results[0][:numTriplesWithRan] ]
-        end
-
-        def list_of_properties_domains_ranges(client, graph)
-          query = <<-SPARQL
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT ?p ?d ?r
-        FROM <#{graph}>
-WHERE{
-  ?p rdfs:domain ?d.
-  ?p rdfs:range ?r.
-}
-SPARQL
-          results = self.query_metadata(client, query)
-          return [] if results.nil?
-          results.map { |solution| [ solution[:p], solution[:d], solution[:r] ] }
         end
 
         def list_of_datatypes(uri, logger: nil)
