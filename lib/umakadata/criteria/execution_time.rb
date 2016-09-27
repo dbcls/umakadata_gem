@@ -10,13 +10,8 @@ ASK {}
 SPARQL
 
       TARGET_QUERY = <<-'SPARQL'
-SELECT DISTINCT
-  ?g
-WHERE {
-  GRAPH ?g {
-    ?s ?p ?o
-  }
-}
+SELECT DISTINCT (COUNT(?class) AS ?c)
+WHERE {[] a ?class .}
 SPARQL
 
       def execution_time(uri, logger: nil)
