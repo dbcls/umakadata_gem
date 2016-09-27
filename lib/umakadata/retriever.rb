@@ -95,7 +95,7 @@ module Umakadata
     def first_last(count, logger: nil)
       count_log = Umakadata::Logging::Log.new
       logger.push count_log unless logger.nil?
-      if count.nil?
+      if count.nil? || count == 0
         count_log.result = 'The latest statement is not found'
         return { first: nil, last: nil }
       end
