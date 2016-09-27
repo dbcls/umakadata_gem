@@ -77,9 +77,6 @@ module Umakadata
     def score_ontologies(metadata, logger: nil)
       @handler.score_ontologies(metadata, logger: logger)
     end
-    def score_vocabularies(metadata, logger: nil)
-      @handler.score_vocabularies(metadata, logger: logger)
-    end
 
     def last_updated(service_description, void, logger: nil)
       log = Umakadata::Logging::Log.new

@@ -37,9 +37,6 @@ module Umakadata
     def score_ontologies(metadata, logger: nil)
       super(metadata, logger: logger)
     end
-    def score_vocabularies(metadata, logger: nil)
-      super(metadata, logger: logger)
-    end
 
   end
 end

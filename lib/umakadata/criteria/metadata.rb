@@ -155,24 +155,6 @@ module Umakadata
         ontology_score
       end
 
-      def score_vocabularies(metadata, logger: nil)
-        score_proc = lambda do |graph, data|
-          graph_log = Umakadata::Logging::Log.new
-          logger.push graph_log unless logger.nil?
-
-          count = data[:properties].count
-          properties_log = data[:properties_log]
-          graph_log.push properties_log
-          properties_log.result = "#{count} properties are found"
-          graph_log.result = "Score for #{graph} is #{count}"
-          return count
-        end
-
-        vocabulary_score = self.score_each_graph(metadata, score_proc)
-        logger.result = "Vocabulary score is #{vocabulary_score}" unless logger.nil?
-        vocabulary_score
-      end
-
       def ontologies(properties)
         ontologies = []
         properties.each do |uri|
