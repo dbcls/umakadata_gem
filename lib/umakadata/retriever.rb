@@ -15,10 +15,11 @@ module Umakadata
 
     include ErrorHelper
 
-    attr_reader :support_graph_clause
+    attr_reader :support_graph_clause, :retrieved_at
 
-    def initialize(uri)
+    def initialize(uri, retrieved_at)
       @uri = URI(uri)
+      @retrieved_at = retrieved_at
       @support_graph_clause = Umakadata::SparqlGrammar.support_graph_clause?(@uri)
       @handler = @support_graph_clause ? Umakadata::GraphHandler.new(uri) : Umakadata::NoGraphHandler.new(uri)
     end
