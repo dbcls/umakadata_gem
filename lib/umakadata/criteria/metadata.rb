@@ -18,21 +18,6 @@ module Umakadata
         'http://www.openlinksw.com/schemas/virtrdf#'
       ]
 
-      COMMON_ONTOLOGIES = [
-        'http://www.w3.org/2000/01/rdf-schema',
-        'http://www.w3.org/1999/02/22-rdf-syntax-ns',
-        'http://www.socrata.com/rdf/terms',
-        'http://www.w3.org/2003/01/geo/wgs84_pos',
-        'http://xmlns.com/foaf/0.1/',
-        'http://www.w3.org/2002/07/owl',
-        'http://purl.org/dc/elements/1.1/',
-        'http://purl.org/dc/terms/',
-        'http://www.w3.org/2000/10/swap/pim/usps',
-        'http://dublincore.org/documents/dcmi-box/',
-        'http://www.territorio.provincia.tn.it/geodati/ontology/',
-        'http://www.w3.org/2004/02/skos/core',
-      ]
-
       def metadata(uri, logger: nil)
         graphs_log = Umakadata::Logging::Log.new
         logger.push graphs_log unless logger.nil?
@@ -127,32 +112,45 @@ module Umakadata
         metadata_score
       end
 
-      def score_ontologies(metadata, logger: nil)
-        score_proc = lambda do |graph, data|
-          graph_log = Umakadata::Logging::Log.new
-          logger.push graph_log unless logger.nil?
+      def score_ontologies_for_endpoints(ontologies, rdf_prefixes, logger: nil)
+        log = Umakadata::Logging::Log.new
+        logger.push log unless logger.nil?
+        used_ontologies = 0
+        ontologies.each do |ontology|
+          includes_ontology_log = Umakadata::Logging::Log.new
+          log.push includes_ontology_log
+          if rdf_prefixes.include?(ontology)
+            used_ontologies += 1
+            includes_ontology_log.result = "#{ontology} is using in some endpoints"
+          else
+            includes_ontology_log.result = "#{ontology} does not use"
+          end
+        end
+        score = ((used_ontologies.to_f / ontologies.count.to_f) * 100) / 2
+        log.result = "#{used_ontologies} ontologies are used while managing some endpoints"
+        logger.result = "score for using ontology in some endpoints is #{score}" unless logger.nil?
+        score < 0 ? 0 : score
+      end
 
-          if data[:properties].empty?
-            properties_log = data[:properties_log]
-            graph_log.push properties_log
-            properties_log.result = '0 ontologies are found'
-            graph_log.result = "Score for #{graph} is 0"
-            return 0
+      def list_ontologies(metadata, logger: nil)
+        list = Array.new
+        metadata.each do |graph, data|
+          next if SKIP_GRAPH_LIST.include?(graph.to_s)
+          properties_log = data[:properties_log]
+          logger.push properties_log unless logger.nil?
+          properties = data[:properties]
+          if properties.empty?
+            properties_log.result = "0 ontologies are found in #{graph}"
+            next
           end
 
-          ontologies = self.ontologies(data[:properties])
-          commons = ontologies.count{ |ontology| COMMON_ONTOLOGIES.include?(ontology) }
-          score = commons.to_f / ontologies.count.to_f * 100.0
-
-          properties_log = data[:properties_log]
-          graph_log.push properties_log
-          properties_log.result = "#{ontologies.count} ontologies are found and #{commons} common ontologies has been used" unless logger.nil?
-          graph_log.result = "Score for #{graph} is #{score}"
-          return score
+          ontologies = self.ontologies(properties)
+          properties_log.result = "#{ontologies.count} ontologies are found in #{graph}"
+          list.push ontologies
         end
-        ontology_score = self.score_each_graph(metadata, score_proc)
-        logger.result = "Ontology score is #{ontology_score}" unless logger.nil?
-        ontology_score
+        list_ontologies = list.flatten.uniq
+        logger.result = "#{list_ontologies.count} ontologies are found in graphs" unless logger.nil?
+        list_ontologies
       end
 
       def ontologies(properties)
