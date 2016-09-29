@@ -74,11 +74,17 @@ module Umakadata
     def list_ontologies(metadata, logger: nil)
       @handler.list_ontologies(metadata, logger: logger)
     end
+    def list_ontologies_in_LOV(metadata, logger: nil)
+      @handler.list_ontologies_in_LOV(metadata, logger: logger)
+    end
     def score_metadata(metadata, logger: nil)
       @handler.score_metadata(metadata, logger: logger)
     end
     def score_ontologies_for_endpoints(metadata, rdf_prefixes, logger: nil)
       @handler.score_ontologies_for_endpoints(metadata, rdf_prefixes, logger: logger)
+    end
+    def score_ontologies_for_LOV(metadata, lov, logger: nil)
+      @handler.score_ontologies_for_LOV(metadata, lov, logger: logger)
     end
 
     def last_updated(service_description, void, logger: nil)
