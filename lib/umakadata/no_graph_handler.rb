@@ -34,9 +34,11 @@ module Umakadata
     def score_metadata(metadata, logger: nil)
       super(metadata, logger: logger)
     end
-    def score_ontologies(metadata, logger: nil)
+    def list_ontologies(metadata, logger: nil)
       super(metadata, logger: logger)
     end
-
+    def score_ontologies_for_endpoints(metadata, rdf_prefixes, logger: nil)
+      super(metadata, rdf_prefixes, logger: logger)
+    end
   end
 end

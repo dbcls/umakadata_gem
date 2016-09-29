@@ -14,21 +14,6 @@ module Umakadata
 
         include Umakadata::ErrorHelper
 
-        COMMON_ONTOLOGIES = [
-          'http://www.w3.org/2000/01/rdf-schema',
-          'http://www.w3.org/1999/02/22-rdf-syntax-ns',
-          'http://www.socrata.com/rdf/terms',
-          'http://www.w3.org/2003/01/geo/wgs84_pos',
-          'http://xmlns.com/foaf/0.1/',
-          'http://www.w3.org/2002/07/owl',
-          'http://purl.org/dc/elements/1.1/',
-          'http://purl.org/dc/terms/',
-          'http://www.w3.org/2000/10/swap/pim/usps',
-          'http://dublincore.org/documents/dcmi-box/',
-          'http://www.territorio.provincia.tn.it/geodati/ontology/',
-          'http://www.w3.org/2004/02/skos/core',
-        ]
-
         def metadata(uri, logger: nil)
           classes_log = Umakadata::Logging::Log.new
           classes = self.obtain_classes(uri, logger: classes_log)
@@ -109,31 +94,41 @@ module Umakadata
           metadata_score
         end
 
-        def score_ontologies(metadata, logger: nil)
-          score_proc = lambda do |data|
-            if data[:properties].empty?
-              score = 0
-              properties_log = data[:properties_log]
-              logger.push properties_log
-              properties_log.result = '0 ontologies are found'
-              return score
+        def score_ontologies_for_endpoints(ontologies, rdf_prefixes, logger: nil)
+          log = Umakadata::Logging::Log.new
+          logger.push log unless logger.nil?
+          used_ontologies = 0
+          ontologies.each do |ontology|
+            include_ontology_log = Umakadata::Logging::Log.new
+            log.push include_ontology_log
+            if rdf_prefixes.include?(ontology)
+              used_ontologies += 1
+              include_ontology_log.result = "#{ontology} is used in this endpoint and in other endpoints"
+            else
+              include_ontology_log.result = "#{ontology} is not used in other endpoints"
             end
-
-            graph_log = Umakadata::Logging::Log.new
-            logger.push graph_log unless logger.nil?
-            ontologies = self.ontologies(data[:properties])
-            commons = ontologies.count{ |ontology| COMMON_ONTOLOGIES.include?(ontology) }
-            score = commons.to_f / ontologies.count.to_f * 100.0
-
-            properties_log = data[:properties_log]
-            graph_log.push properties_log
-            properties_log.result = "#{ontologies.count} ontologies are found and #{commons} common ontologies has been used" unless logger.nil?
-            graph_log.result = "Score is #{score}"
-            return score
           end
-          ontology_score = self.score_without_graph(metadata, score_proc)
-          logger.result = "Ontology score is #{ontology_score}" unless logger.nil?
-          ontology_score
+          score = ((used_ontologies.to_f / ontologies.count.to_f) * 100) / 2
+          total_score = score < 0 ? 0 : score
+          log.result = "#{used_ontologies} ontologies are used in other endpoints"
+          logger.result = "Score which ontologies are used in other endpoints is #{total_score}" unless logger.nil?
+          total_score
+        end
+
+        def list_ontologies(metadata, logger: nil)
+          properties_log = metadata[:properties_log]
+          logger.push properties_log unless logger.nil?
+          properties = metadata[:properties]
+          if properties.empty?
+            properties_log.result = "0 ontologies are found"
+            logger.result = "0 commmon ontologies are found"
+            return Array.new
+          end
+
+          ontologies = self.ontologies(properties)
+          properties_log.result = "#{ontologies.count} ontologies are found"
+          logger.result = "#{ontologies.count} commmon ontologies are found"
+          ontologies
         end
 
         def ontologies(properties)
