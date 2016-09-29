@@ -12,6 +12,8 @@ module Umakadata
 
         REGEXP = /<title>(.*)<\/title>/
 
+        LOV_VOCABULARY = 'http://lov.okfn.org/dataset/lov/api/v2/vocabulary/list'.freeze
+
         include Umakadata::ErrorHelper
 
         def metadata(uri, logger: nil)
@@ -115,6 +117,26 @@ module Umakadata
           total_score
         end
 
+        def score_ontologies_for_LOV(ontologies, lov, logger: nil)
+          log = Umakadata::Logging::Log.new
+          logger.push log unless logger.nil?
+          used_ontologies = 0
+          ontologies.each do |ontology|
+            includes_ontology_log = Umakadata::Logging::Log.new
+            log.push includes_ontology_log
+            if lov.include?(ontology)
+              used_ontologies += 1
+              includes_ontology_log.result = "#{ontology} is listed in LOV"
+            else
+              includes_ontology_log.result = "#{ontology} is not listed in LOV"
+            end
+          end
+          score = ((used_ontologies.to_f / ontologies.count.to_f) * 100) / 2
+          log.result = "#{used_ontologies} / #{ontologies.count} ontologies match vocabularies on LOV"
+          logger.result = "Ontology score (Linked Open Vocabularies) is #{score}" unless logger.nil?
+          score < 0 ? 0 : score
+        end
+
         def list_ontologies(metadata, logger: nil)
           properties_log = metadata[:properties_log]
           logger.push properties_log unless logger.nil?
@@ -129,6 +151,39 @@ module Umakadata
           properties_log.result = "#{ontologies.count} ontologies are found"
           logger.result = "#{ontologies.count} commmon ontologies are found"
           ontologies
+        end
+
+        def list_ontologies_in_LOV(metadata, logger: nil)
+          list = Array.new
+
+          log = Umakadata::Logging::Log.new
+          logger.push log unless logger.nil?
+          args = {:logger => log}
+
+          response = http_get(LOV_VOCABULARY, args)
+
+          if !response.is_a?(Net::HTTPSuccess)
+            log.result = "HTTP response is not 2xx Success"
+            logger.result = "Vocabulary list on LOV is not fetchable" unless logger.nil?
+            return list
+          end
+
+          if response.body.empty?
+            log.result = "LOV API does not return any data"
+            logger.result = "Vocabulary list on LOV is not fetchable" unless logger.nil?
+            return list
+          end
+
+          log.result = 'LOV returns 200 HTTP response'
+
+          json = JSON.parse(response.body)
+          list_ontologies = json.map do |elm|
+            uri = elm['uri']
+            uri.include?('#') ? uri.split('#')[0] : uri
+          end
+          list_ontologies.uniq!
+          logger.result = "#{list_ontologies.count} ontologies are found in LOV" unless logger.nil?
+          list_ontologies
         end
 
         def ontologies(properties)

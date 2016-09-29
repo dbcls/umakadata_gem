@@ -37,8 +37,14 @@ module Umakadata
     def list_ontologies(metadata, logger: nil)
       super(metadata, logger: logger)
     end
+    def list_ontologies_in_LOV(metadata, logger: nil)
+      super(metadata, logger: logger)
+    end
     def score_ontologies_for_endpoints(metadata, rdf_prefixes, logger: nil)
       super(metadata, rdf_prefixes, logger: logger)
+    end
+    def score_ontologies_for_LOV(metadata, lov, logger: nil)
+      super(metadata, lov, logger: logger)
     end
   end
 end
