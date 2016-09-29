@@ -121,14 +121,14 @@ module Umakadata
           log.push includes_ontology_log
           if rdf_prefixes.include?(ontology)
             used_ontologies += 1
-            includes_ontology_log.result = "#{ontology} is using in some endpoints"
+            includes_ontology_log.result = "#{ontology} is used in other endpoints"
           else
-            includes_ontology_log.result = "#{ontology} does not use"
+            includes_ontology_log.result = "#{ontology} is not used in other endpoints"
           end
         end
         score = ((used_ontologies.to_f / ontologies.count.to_f) * 100) / 2
-        log.result = "#{used_ontologies} ontologies are used while managing some endpoints"
-        logger.result = "score for using ontology in some endpoints is #{score}" unless logger.nil?
+        log.result = "#{used_ontologies} ontologies are used in other endpoints"
+        logger.result = "Ontology score (among other endpoints) is #{score}" unless logger.nil?
         score < 0 ? 0 : score
       end
 
