@@ -105,7 +105,7 @@ module Umakadata
             log.push include_ontology_log
             if rdf_prefixes.include?(ontology)
               used_ontologies += 1
-              include_ontology_log.result = "#{ontology} is used in this endpoint and in other endpoints"
+              include_ontology_log.result = "#{ontology} is used in other endpoints"
             else
               include_ontology_log.result = "#{ontology} is not used in other endpoints"
             end
@@ -113,7 +113,7 @@ module Umakadata
           score = ((used_ontologies.to_f / ontologies.count.to_f) * 100) / 2
           total_score = score < 0 ? 0 : score
           log.result = "#{used_ontologies} ontologies are used in other endpoints"
-          logger.result = "Score which ontologies are used in other endpoints is #{total_score}" unless logger.nil?
+          logger.result = "Ontology score (among other endpoints) is #{total_score}" unless logger.nil?
           total_score
         end
 
@@ -149,7 +149,7 @@ module Umakadata
 
           ontologies = self.ontologies(properties)
           properties_log.result = "#{ontologies.count} ontologies are found"
-          logger.result = "#{ontologies.count} commmon ontologies are found"
+          logger.result = "#{ontologies.count} commmon ontologies are found" unless logger.nil?
           ontologies
         end
 
