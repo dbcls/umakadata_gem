@@ -108,10 +108,10 @@ SPARQL
         nil
       end
 
-      def contains_links?(uri, logger: nil)
+      def contains_links?(uri, prefixes, logger: nil)
         same_as_log = Umakadata::Logging::Log.new
         logger.push same_as_log unless logger.nil?
-        same_as = self.contains_same_as?(uri, logger: same_as_log)
+        same_as = self.contains_same_as?(uri, prefixes, logger: same_as_log)
         if same_as
           logger.result = "#{uri} includes links to other URIs" unless logger.nil?
           return true
@@ -119,7 +119,7 @@ SPARQL
 
         contains_see_also_log = Umakadata::Logging::Log.new
         logger.push contains_see_also_log unless logger.nil?
-        see_also = self.contains_see_also?(uri, logger: contains_see_also_log)
+        see_also = self.contains_see_also?(uri, prefixes, logger: contains_see_also_log)
         if see_also
           logger.result = "#{uri} includes links to other URIs" unless logger.nil?
           return true
@@ -128,7 +128,7 @@ SPARQL
         false
       end
 
-      def contains_same_as?(uri, logger: nil)
+      def contains_same_as?(uri, prefixes, logger: nil)
         sparql_query = <<-'SPARQL'
 PREFIX owl:<http://www.w3.org/2002/07/owl#>
 SELECT
@@ -136,7 +136,7 @@ SELECT
 WHERE {
   GRAPH ?g { ?s owl:sameAs ?o } .
 }
-LIMIT 1
+LIMIT 10000
 SPARQL
 
         [:post, :get].each do |method|
@@ -144,17 +144,21 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results.count > 0
-            log.result = "#{results.count} owl:sameAs statements are found"
-            logger.result = "#{uri} has statements which contain owl:sameAs" unless logger.nil?
-            return true
+            result = search_uri_of_subject(prefixes, results)
+            unless result.nil?
+              log.result = "#{results.count} owl:sameAs statements are found"
+              logger.result = "#{uri} has statements which contain owl:sameAs" unless logger.nil?
+              return true
+            end
           end
           log.result = 'The owl:sameAs statement is not found'
         end
+
         logger.result = "#{uri} The endpoint does not have statements which contain owl:sameAs" unless logger.nil?
         false
       end
 
-      def contains_see_also?(uri, logger: nil)
+      def contains_see_also?(uri, prefixes, logger: nil)
         sparql_query = <<-'SPARQL'
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT
@@ -162,7 +166,7 @@ SELECT
 WHERE {
   GRAPH ?g { ?s rdfs:seeAlso ?o } .
 }
-LIMIT 1
+LIMIT 10000
 SPARQL
 
         [:post, :get].each do |method|
@@ -170,9 +174,12 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results.count > 0
-            log.result = "#{results.count} rdfs:seeAlso statements are found"
-            logger.result = "#{uri} has statements which contain rdfs:seeAlso" unless logger.nil?
-            return true
+            result = search_uri_of_subject(prefixes, results)
+            unless result.nil?
+              log.result = "#{results.count} rdfs:seeAlso statements are found"
+              logger.result = "#{uri} has statements which contain rdfs:seeAlso" unless logger.nil?
+              return true
+            end
           end
           log.result = 'The rdfs:seeAlso statement is not found'
         end
