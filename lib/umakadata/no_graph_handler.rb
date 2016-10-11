@@ -23,8 +23,8 @@ module Umakadata
       super(@uri, prefixes, logger: logger)
     end
 
-    def contains_links?(logger: nil)
-      super(@uri, logger: logger)
+    def contains_links?(prefixes, logger: nil)
+      super(@uri, prefixes, logger: logger)
     end
 
     include Umakadata::Criteria::SPARQLWithoutGraph::Metadata
