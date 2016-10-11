@@ -95,16 +95,10 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil
-            subject = nil
-            results.each do |result|
-              prefixes.each do |prefix|
-                subject = result[:s].to_s if result[:s].to_s.match("^#{prefix}")
-                break if subject
-              end
-              unless subject.nil?
-                log.result = "#{subject} subject is found"
-                return subject
-              end
+            subject = search_uri_of_subject(prefixes, results)
+            unless subject.nil?
+              log.result = "#{subject} subject is found"
+              return subject
             end
             log.result = 'URI is not found'
           else
@@ -185,6 +179,31 @@ SPARQL
 
         logger.result = "#{uri} The endpoint does not have statements which contain rdfs:seeAlso" unless logger.nil?
         false
+      end
+
+      def search_uri_of_subject(prefixes, results)
+        prefix_map = make_prefix_map(prefixes)
+        results.each do |result|
+          subject = result[:s].to_s
+          uri = URI(subject)
+          prefix_candidates = prefix_map[uri.host]
+          next if prefix_candidates.nil?
+          prefix_candidates.each do |prefix|
+            return subject if subject.match("^#{prefix}")
+          end
+        end
+        nil
+      end
+
+      def make_prefix_map(prefixes)
+        map = {}
+        prefixes.each do |prefix|
+          uri = URI(prefix)
+          host = uri.host
+          list = map[host] ||= Array.new
+          map[host] = list.push prefix
+        end
+        map
       end
 
     end
