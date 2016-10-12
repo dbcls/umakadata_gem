@@ -124,7 +124,6 @@ WHERE {
   ))
 }
 LIMIT 10000
-OFFSET 100
 SPARQL
 
         [:post, :get].each do |method|
@@ -166,8 +165,41 @@ SPARQL
       end
 
       def contains_same_as?(uri, prefixes, logger: nil)
-        sparql_query = <<-'SPARQL'
+        return contains_same_as_with_filter_condition(uri, prefixes, logger: logger) if prefixes.count <= 30
+        contains_same_as_in_10000_triples(uri, prefixes, logger: logger)
+      end
+
+      def contains_same_as_with_filter_condition(uri, prefixes, logger: nil)
+        conditions = prefixes.map{|prefix| "regex(STR(?s), '^#{prefix}', 'i')"}.join(' || ')
+        sparql_query = <<-SPARQL
 PREFIX owl:<http://www.w3.org/2002/07/owl#>
+SELECT
+  *
+WHERE {
+  GRAPH ?g { ?s owl:sameAs ?o } .
+  filter (#{conditions})
+}
+LIMIT 1
+SPARQL
+
+        [:post, :get].each do |method|
+          log = Umakadata::Logging::Log.new
+          logger.push log unless logger.nil?
+          results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
+          if results != nil && results.count > 0
+            log.result = "#{results.count} owl:sameAs statements are found"
+            logger.result = "#{uri} has statements which contain owl:sameAs" unless logger.nil?
+            return true
+          end
+          log.result = 'The owl:sameAs statement is not found'
+        end
+        logger.result = "#{uri} does not have statements which contain owl:sameAs" unless logger.nil?
+        false
+      end
+
+      def contains_same_as_in_10000_triples(uri, prefixes, logger: nil)
+        sparql_query = <<-'SPARQL'
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
 SELECT
   *
 WHERE {
@@ -191,11 +223,44 @@ SPARQL
           log.result = 'The owl:sameAs statement is not found'
         end
 
-        logger.result = "#{uri} The endpoint does not have statements which contain owl:sameAs" unless logger.nil?
+        logger.result = "#{uri} does not have statements which contain owl:sameAs" unless logger.nil?
         false
       end
 
       def contains_see_also?(uri, prefixes, logger: nil)
+        return contains_see_also_in_10000_triples(uri, prefixes, logger: logger) if prefixes.count > 30
+        contains_see_also_with_filter_condition(uri, prefixes, logger: logger)
+      end
+
+      def contains_see_also_with_filter_condition(uri, prefixes, logger: nil)
+        conditions = prefixes.map{|prefix| "regex(STR(?s), '^#{prefix}', 'i')"}.join(' || ')
+        sparql_query = <<-SPARQL
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT
+  *
+WHERE {
+  GRAPH ?g { ?s rdfs:seeAlso ?o } .
+  filter (#{conditions})
+}
+LIMIT 1
+SPARQL
+
+        [:post, :get].each do |method|
+          log = Umakadata::Logging::Log.new
+          logger.push log unless logger.nil?
+          results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
+          if results != nil && results.count > 0
+            log.result = "#{results.count} rdfs:seeAlso statements are found"
+            logger.result = "#{uri} has statements which contain rdfs:seeAlso" unless logger.nil?
+            return true
+          end
+          log.result = 'The rdfs:seeAlso statement is not found'
+        end
+        logger.result = "#{uri} does not have statements which contain rdfs:seeAlso" unless logger.nil?
+        false
+      end
+
+      def contains_see_also_in_10000_triples(uri, prefixes, logger: nil)
         sparql_query = <<-'SPARQL'
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT
@@ -221,7 +286,7 @@ SPARQL
           log.result = 'The rdfs:seeAlso statement is not found'
         end
 
-        logger.result = "#{uri} The endpoint does not have statements which contain rdfs:seeAlso" unless logger.nil?
+        logger.result = "#{uri} does not have statements which contain rdfs:seeAlso" unless logger.nil?
         false
       end
 
