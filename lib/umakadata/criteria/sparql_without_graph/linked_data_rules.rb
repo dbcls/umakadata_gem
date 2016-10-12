@@ -48,7 +48,7 @@ SPARQL
         end
 
         def uri_provides_info?(uri, prefixes, logger: nil)
-          uri = self.get_subject_randomly(uri, prefixes, logger: logger)
+          uri = self.get_subject(uri, prefixes, logger: logger)
           if uri == nil
             logger.result = 'The endpoint does not have information about URI' unless logger.nil?
             return false
@@ -75,7 +75,42 @@ SPARQL
           true
         end
 
-        def get_subject_randomly(uri, prefixes, logger: nil)
+        def get_subject(uri, prefixes, logger: nil)
+          return get_subject_with_filter_condition(uri, prefixes, logger: logger) if prefixes.count <= 30
+          get_subject_in_10000_triples(uri, prefixes, logger: logger)
+        end
+
+        def get_subject_with_filter_condition(uri, prefixes, logger: nil)
+          conditions = prefixes.map{|prefix| "regex(STR(?s), '^#{prefix}', 'i')"}.join(' || ')
+          sparql_query = <<-"SPARQL"
+SELECT
+  ?s
+WHERE {
+  { ?s ?p ?o } .
+  filter (#{conditions})
+}
+LIMIT 1
+SPARQL
+
+          [:post, :get].each do |method|
+            log = Umakadata::Logging::Log.new
+            logger.push log unless logger.nil?
+            results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
+            if results != nil
+              if results[0] != nil
+                log.result = "#{results[0][:s]} subject is found"
+                return results[0][:s]
+              else
+                log.result = 'URI is not found'
+              end
+            else
+              log.result = 'SPARQL query result could not be read in RDF format'
+            end
+          end
+          nil
+        end
+
+        def get_subject_in_10000_triples(uri, prefixes, logger: nil)
           sparql_query = <<-'SPARQL'
 SELECT
   ?s
@@ -98,7 +133,7 @@ SPARQL
               end
               log.result = 'URI is not found'
             else
-              log.result = 'Sparql query result could not be read in RDF format'
+              log.result = 'SPARQL query result could not be read in RDF format'
             end
           end
           nil
