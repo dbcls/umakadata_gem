@@ -22,7 +22,7 @@ SELECT
   *
 WHERE {
   { ?s ?p ?o } .
-  filter (!regex(?s, "^http://", "i") && !isBLANK(?s))
+  filter (!regex(STR(?s), "^http://", "i") && !isBLANK(?s))
 }
 LIMIT 1
 SPARQL
@@ -81,7 +81,7 @@ SELECT
   ?s
 WHERE {
   { ?s ?p ?o } .
-  filter (isURI(?s) && !regex(?s, "^http://localhost", "i") && !regex (?s, "^http://www.openlinksw.com", "i"))
+  filter (isURI(?s) && !regex(STR(?s), "^http://localhost", "i") && !regex (STR(?s), "^http://www.openlinksw.com", "i"))
 }
 LIMIT 1
 OFFSET 100
