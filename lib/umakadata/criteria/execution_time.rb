@@ -39,10 +39,19 @@ SPARQL
       end
 
       def response_time(uri, sparql_query, logger)
-        start_time = Time.now
-        response = Umakadata::SparqlHelper.query(uri, sparql_query, logger: logger)
-        return nil if response.nil?
-        Time.now - start_time
+        [:post, :get].each do |method|
+          log = Umakadata::Logging::Log.new
+          logger.push log unless logger.nil?
+          start_time = Time.now
+          response = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
+          if response.nil?
+            log.result = 'An error occured in checking response time for the endpoint'
+            next
+          end
+          log.result = '200 HTTP response'
+          return Time.now - start_time
+        end
+        nil
       end
 
     end
