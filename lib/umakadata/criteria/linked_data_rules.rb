@@ -131,7 +131,7 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil
-            subject = search_uri_of_subject(prefixes, results)
+            subject = search_subject_from_prefixes(prefixes, results)
             unless subject.nil?
               log.result = "#{subject} subject is found"
               return subject
@@ -213,7 +213,7 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results.count > 0
-            result = search_uri_of_subject(prefixes, results)
+            result = search_subject_from_prefixes(prefixes, results)
             unless result.nil?
               log.result = "#{results.count} owl:sameAs statements are found"
               logger.result = "#{uri} has statements which contain owl:sameAs" unless logger.nil?
@@ -276,7 +276,7 @@ SPARQL
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
           if results != nil && results.count > 0
-            result = search_uri_of_subject(prefixes, results)
+            result = search_subject_from_prefixes(prefixes, results)
             unless result.nil?
               log.result = "#{results.count} rdfs:seeAlso statements are found"
               logger.result = "#{uri} has statements which contain rdfs:seeAlso" unless logger.nil?
@@ -290,7 +290,7 @@ SPARQL
         false
       end
 
-      def search_uri_of_subject(prefixes, results)
+      def search_subject_from_prefixes(prefixes, results)
         prefix_map = make_prefix_map(prefixes)
         results.each do |result|
           subject = result[:s].to_s
