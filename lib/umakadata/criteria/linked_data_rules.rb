@@ -21,7 +21,7 @@ SELECT
   *
 WHERE {
   GRAPH ?g { ?s ?p ?o } .
-  filter (!regex(?s, "^http://", "i") && !isBLANK(?s) && ?g NOT IN (
+  filter (!regex(STR(?s), "^http://", "i") && !isBLANK(?s) && ?g NOT IN (
     <http://www.openlinksw.com/schemas/virtrdf#>
   ))
 }
@@ -82,7 +82,7 @@ SELECT
   ?s
 WHERE {
   GRAPH ?g { ?s ?p ?o } .
-  filter (isURI(?s) && !regex(?s, "^http://localhost", "i") && ?g NOT IN (
+  filter (isURI(?s) && !regex(STR(?s), "^http://localhost", "i") && ?g NOT IN (
     <http://www.openlinksw.com/schemas/virtrdf#>
   ))
 }
