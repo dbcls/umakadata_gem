@@ -32,7 +32,7 @@ SPARQL
           log = Umakadata::Logging::Log.new
           logger.push log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
-          if results != nil
+          if results.is_a?(RDF::Query::Solutions)
             if results.count == 0
               log.result = 'HTTP-URI subject is found'
               logger.result = 'HTTP URIs are used' unless logger.nil?
