@@ -337,7 +337,7 @@ SPARQL
         message = "An error occurred in retrieving a list of labels"
         results = metadata_query(uri, query, message, logger: logger)
 
-        return [] if results.nil?
+        return [] unless results.is_a?(RDF::Query::Solutions)
         results.map { |solution| solution[:label] }
       end
 
