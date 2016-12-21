@@ -12,8 +12,6 @@ module Umakadata
 
         REGEXP = /<title>(.*)<\/title>/
 
-        LOV_VOCABULARY = 'http://lov.okfn.org/dataset/lov/api/v2/vocabulary/list'.freeze
-
         include Umakadata::ErrorHelper
 
         def metadata(uri, logger: nil)
@@ -154,36 +152,7 @@ module Umakadata
         end
 
         def list_ontologies_in_LOV(metadata, logger: nil)
-          list = Array.new
-
-          log = Umakadata::Logging::Log.new
-          logger.push log unless logger.nil?
-          args = {:logger => log}
-
-          response = http_get(LOV_VOCABULARY, args)
-
-          if !response.is_a?(Net::HTTPSuccess)
-            log.result = "HTTP response is not 2xx Success"
-            logger.result = "Vocabulary list on LOV is not fetchable" unless logger.nil?
-            return list
-          end
-
-          if response.body.empty?
-            log.result = "LOV API does not return any data"
-            logger.result = "Vocabulary list on LOV is not fetchable" unless logger.nil?
-            return list
-          end
-
-          log.result = 'LOV returns 200 HTTP response'
-
-          json = JSON.parse(response.body)
-          list_ontologies = json.map do |elm|
-            uri = elm['uri']
-            uri.include?('#') ? uri.split('#')[0] : uri
-          end
-          list_ontologies.uniq!
-          logger.result = "#{list_ontologies.count} ontologies are found in LOV" unless logger.nil?
-          list_ontologies
+          return Umakadata::LinkedOpenVocabularies.instance.get(logger: logger)
         end
 
         def ontologies(properties)
