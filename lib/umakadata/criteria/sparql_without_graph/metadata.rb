@@ -1,8 +1,4 @@
-require 'json'
-require 'sparql/client'
 require 'umakadata/error_helper'
-require 'umakadata/http_helper'
-require 'umakadata/sparql_helper'
 require 'umakadata/logging/log'
 
 module Umakadata
