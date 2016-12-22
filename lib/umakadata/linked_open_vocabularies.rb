@@ -26,13 +26,13 @@ module Umakadata
 
       if !response.is_a?(Net::HTTPSuccess)
         log.result = "HTTP response is not 2xx Success"
-        logger.result = "Vocabulary list on LOV is not fetchable" unless logger.nil?
+        logger.result = "Vocabulary list in LOV is not fetchable" unless logger.nil?
         return Array.new
       end
 
       if response.body.empty?
         log.result = "LOV API does not return any data"
-        logger.result = "Vocabulary list on LOV is not fetchable" unless logger.nil?
+        logger.result = "Vocabulary list in LOV is not fetchable" unless logger.nil?
         return Array.new
       end
 

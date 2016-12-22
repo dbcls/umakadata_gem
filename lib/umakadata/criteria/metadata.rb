@@ -147,7 +147,7 @@ module Umakadata
           end
         end
         score = ((used_ontologies.to_f / ontologies.count.to_f) * 100) / 2
-        log.result = "#{used_ontologies} / #{ontologies.count} ontologies match vocabularies on LOV"
+        log.result = "#{used_ontologies} / #{ontologies.count} ontologies match vocabularies in LOV"
         logger.result = "Ontology score (Linked Open Vocabularies) is #{score}" unless logger.nil?
         score < 0 ? 0 : score
       end
