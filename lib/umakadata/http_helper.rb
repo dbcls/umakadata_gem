@@ -1,4 +1,5 @@
 require 'net/http'
+require 'umakadata/http_header'
 require 'umakadata/logging/http_log'
 
 module Umakadata
@@ -18,6 +19,7 @@ module Umakadata
       path = uri.path.empty? ? '/' : uri.path
       path += '?' + uri.query unless uri.query.nil?
       request = Net::HTTP::Get.new(path, args[:headers])
+      request['User-Agent'] = Umakadata::HTTPHeader::USER_AGENT
 
       http_log = Umakadata::Logging::HttpLog.new(uri, request)
 
@@ -36,6 +38,7 @@ module Umakadata
 
       request = Net::HTTP::Post.new(uri.path.empty? ? '/' : uri.path, args[:headers])
       request.set_form_data(form_data, ';')
+      request['User-Agent'] = Umakadata::HTTPHeader::USER_AGENT
 
       http_log = Umakadata::Logging::HttpLog.new(uri, request)
 

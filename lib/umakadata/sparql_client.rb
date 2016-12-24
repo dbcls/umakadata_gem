@@ -1,4 +1,5 @@
 require 'sparql/client'
+require 'umakadata/http_header'
 
 module Umakadata
   class SparqlClient < SPARQL::Client
@@ -9,6 +10,7 @@ module Umakadata
     attr_reader :http_response
 
     def pre_http_hook(request)
+      request['User-Agent'] = Umakadata::HTTPHeader::USER_AGENT
       @http_request = request
     end
 
