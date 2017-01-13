@@ -19,12 +19,12 @@ module Umakadata
       super(@uri, logger: logger)
     end
 
-    def uri_provides_info?(logger: nil)
-      super(@uri, logger: logger)
+    def uri_provides_info?(prefixes, logger: nil)
+      super(@uri, prefixes, logger: logger)
     end
 
-    def contains_links?(logger: nil)
-      super(@uri, logger: logger)
+    def contains_links?(prefixes, logger: nil)
+      super(@uri, prefixes, logger: logger)
     end
 
     include Umakadata::Criteria::Metadata

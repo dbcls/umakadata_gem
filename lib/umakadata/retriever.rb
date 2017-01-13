@@ -38,11 +38,11 @@ module Umakadata
     def http_subject?(logger: nil)
       @handler.http_subject?(logger: logger)
     end
-    def uri_provides_info?(logger: nil)
-      @handler.uri_provides_info?(logger: logger)
+    def uri_provides_info?(prefixes, logger: nil)
+      @handler.uri_provides_info?(prefixes, logger: logger)
     end
-    def contains_links?(logger: nil)
-      @handler.contains_links?(logger: logger)
+    def contains_links?(prefixes, logger: nil)
+      @handler.contains_links?(prefixes, logger: logger)
     end
 
     include Umakadata::Criteria::VoID

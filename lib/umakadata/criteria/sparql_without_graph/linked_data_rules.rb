@@ -47,8 +47,8 @@ SPARQL
           false
         end
 
-        def uri_provides_info?(uri, logger: nil)
-          uri = self.get_subject_randomly(uri, logger: logger)
+        def uri_provides_info?(uri, prefixes, logger: nil)
+          uri = self.get_subject(uri, prefixes, logger: logger)
           if uri == nil
             logger.result = 'The endpoint does not have information about URI' unless logger.nil?
             return false
@@ -75,16 +75,21 @@ SPARQL
           true
         end
 
-        def get_subject_randomly(uri, logger: nil)
-          sparql_query = <<-'SPARQL'
+        def get_subject(uri, prefixes, logger: nil)
+          return get_subject_with_filter_condition(uri, prefixes, logger: logger) if prefixes.count <= 30
+          get_subject_in_10000_triples(uri, prefixes, logger: logger)
+        end
+
+        def get_subject_with_filter_condition(uri, prefixes, logger: nil)
+          conditions = prefixes.map{|prefix| "regex(STR(?s), '^#{prefix}', 'i')"}.join(' || ')
+          sparql_query = <<-"SPARQL"
 SELECT
   ?s
 WHERE {
   { ?s ?p ?o } .
-  filter (isURI(?s) && !regex(STR(?s), "^http://localhost", "i") && !regex (STR(?s), "^http://www.openlinksw.com", "i"))
+  filter (#{conditions})
 }
 LIMIT 1
-OFFSET 100
 SPARQL
 
           [:post, :get].each do |method|
@@ -99,16 +104,44 @@ SPARQL
                 log.result = 'URI is not found'
               end
             else
-              log.result = 'Sparql query result could not be read in RDF format'
+              log.result = 'SPARQL query result could not be read in RDF format'
             end
           end
           nil
         end
 
-        def contains_links?(uri, logger: nil)
+        def get_subject_in_10000_triples(uri, prefixes, logger: nil)
+          sparql_query = <<-'SPARQL'
+SELECT
+  ?s
+WHERE {
+  { ?s ?p ?o } .
+}
+LIMIT 10000
+SPARQL
+
+          [:post, :get].each do |method|
+            log = Umakadata::Logging::Log.new
+            logger.push log unless logger.nil?
+            results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
+            if results != nil
+              result = search_subject_from_prefixes(prefixes, results)
+              unless result.nil?
+                log.result = "#{result} subject is found"
+                return result
+              end
+              log.result = 'URI is not found'
+            else
+              log.result = 'SPARQL query result could not be read in RDF format'
+            end
+          end
+          nil
+        end
+
+        def contains_links?(uri, prefixes, logger: nil)
           same_as_log = Umakadata::Logging::Log.new
           logger.push same_as_log unless logger.nil?
-          same_as = self.contains_same_as?(uri, logger: same_as_log)
+          same_as = self.contains_same_as?(uri, prefixes, logger: same_as_log)
           if same_as
             logger.result = "#{uri} includes links to other URIs" unless logger.nil?
             return true
@@ -116,7 +149,7 @@ SPARQL
 
           contains_see_also_log = Umakadata::Logging::Log.new
           logger.push contains_see_also_log unless logger.nil?
-          see_also = self.contains_see_also?(uri, logger: contains_see_also_log)
+          see_also = self.contains_see_also?(uri, prefixes, logger: contains_see_also_log)
           if see_also
             logger.result = "#{uri} includes links to other URIs" unless logger.nil?
             return true
@@ -125,13 +158,20 @@ SPARQL
           false
         end
 
-        def contains_same_as?(uri, logger: nil)
-          sparql_query = <<-'SPARQL'
+        def contains_same_as?(uri, prefixes, logger: nil)
+          return contains_same_as_with_filter_condition(uri, prefixes, logger: logger) if prefixes.count <= 30
+          contains_same_as_in_10000_triples(uri, prefixes, logger: logger)
+        end
+
+        def contains_same_as_with_filter_condition(uri, prefixes, logger: nil)
+          conditions = prefixes.map{|prefix| "regex(STR(?s), '^#{prefix}', 'i')"}.join(' || ')
+          sparql_query = <<-"SPARQL"
 PREFIX owl:<http://www.w3.org/2002/07/owl#>
 SELECT
   *
 WHERE {
   { ?s owl:sameAs ?o } .
+  filter(#{conditions})
 }
 LIMIT 1
 SPARQL
@@ -147,17 +187,53 @@ SPARQL
             end
             log.result = 'The owl:sameAs statement is not found'
           end
-          logger.result = "#{uri} The endpoint does not have statements which contain owl:sameAs" unless logger.nil?
+          logger.result = "#{uri} does not have statements which contain owl:sameAs" unless logger.nil?
           false
         end
 
-        def contains_see_also?(uri, logger: nil)
+        def contains_same_as_in_10000_triples(uri, prefixes, logger: nil)
           sparql_query = <<-'SPARQL'
+PREFIX owl:<http://www.w3.org/2002/07/owl#>
+SELECT
+  *
+WHERE {
+  { ?s owl:sameAs ?o } .
+}
+LIMIT 10000
+SPARQL
+
+          [:post, :get].each do |method|
+            log = Umakadata::Logging::Log.new
+            logger.push log unless logger.nil?
+            results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
+            if results != nil && results.count > 0
+              result = search_subject_from_prefixes(prefixes, results)
+              unless result.nil?
+                log.result = "#{results.count} owl:sameAs statements are found"
+                logger.result = "#{uri} has statements which contain owl:sameAs" unless logger.nil?
+                return true
+              end
+            end
+            log.result = 'The owl:sameAs statement is not found'
+          end
+          logger.result = "#{uri} does not have statements which contain owl:sameAs" unless logger.nil?
+          false
+        end
+
+        def contains_see_also?(uri, prefixes, logger: nil)
+          return contains_see_also_with_filter_condition(uri, prefixes, logger: logger) if prefixes.count <= 30
+          contains_see_also_in_10000_triples(uri, prefixes, logger: logger)
+        end
+
+        def contains_see_also_with_filter_condition(uri, prefixes, logger: nil)
+          conditions = prefixes.map{|prefix| "regex(STR(?s), '^#{prefix}', 'i')"}.join(' || ')
+          sparql_query = <<-"SPARQL"
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT
   *
 WHERE {
   { ?s rdfs:seeAlso ?o } .
+  filter(#{conditions})
 }
 LIMIT 1
 SPARQL
@@ -173,9 +249,63 @@ SPARQL
             end
             log.result = 'The rdfs:seeAlso statement is not found'
           end
-
-          logger.result = "#{uri} The endpoint does not have statements which contain rdfs:seeAlso" unless logger.nil?
+          logger.result = "#{uri} does not have statements which contain rdfs:seeAlso" unless logger.nil?
           false
+        end
+
+
+        def contains_see_also_in_10000_triples(uri, prefixes, logger: nil)
+          sparql_query = <<-'SPARQL'
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT
+  *
+WHERE {
+  { ?s rdfs:seeAlso ?o } .
+}
+LIMIT 10000
+SPARQL
+
+          [:post, :get].each do |method|
+            log = Umakadata::Logging::Log.new
+            logger.push log unless logger.nil?
+            results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
+            if results != nil && results.count > 0
+              result = search_subject_from_prefixes(prefixes, results)
+              unless result.nil?
+                log.result = "#{results.count} rdfs:seeAlso statements are found"
+                logger.result = "#{uri} has statements which contain rdfs:seeAlso" unless logger.nil?
+                return true
+              end
+            end
+            log.result = 'The rdfs:seeAlso statement is not found'
+          end
+          logger.result = "#{uri} does not have statements which contain rdfs:seeAlso" unless logger.nil?
+          false
+        end
+
+        def search_subject_from_prefixes(prefixes, results)
+          prefix_map = make_prefix_map(prefixes)
+          results.each do |result|
+            subject = result[:s].to_s
+            uri = URI(subject)
+            prefix_candidates = prefix_map[uri.host]
+            next if prefix_candidates.nil?
+            prefix_candidates.each do |prefix|
+              return subject if subject.match("^#{prefix}")
+            end
+          end
+          nil
+        end
+
+        def make_prefix_map(prefixes)
+          map = {}
+          prefixes.each do |prefix|
+            uri = URI(prefix)
+            host = uri.host
+            list = map[host] ||= Array.new
+            map[host] = list.push prefix
+          end
+          map
         end
 
       end
