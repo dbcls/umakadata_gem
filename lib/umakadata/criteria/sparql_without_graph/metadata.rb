@@ -23,8 +23,13 @@ module Umakadata
           datatypes_log = Umakadata::Logging::Log.new
           datatypes_search_log = Umakadata::Logging::Log.new
           datatypes_log.push datatypes_search_log
-          datatypes = self.list_of_datatypes(uri, logger: datatypes_search_log)
-          datatypes_search_log.result = "#{datatypes.size} datatypes are found"
+          if IGNORE_ENDPOINTS.has_key?(uri.to_s) and IGNORE_ENDPOINTS[uri.to_s].include?('datatypes')
+            datatypes = []
+            datatypes_search_log.result = 'skip to count datatypes according to the configurations'
+          else
+            datatypes = self.list_of_datatypes(uri, logger: datatypes_search_log)
+            datatypes_search_log.result = "#{datatypes.size} datatypes are found"
+          end
 
           properties_log = Umakadata::Logging::Log.new
           properties_search_log = Umakadata::Logging::Log.new

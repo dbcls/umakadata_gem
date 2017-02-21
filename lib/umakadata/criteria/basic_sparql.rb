@@ -10,6 +10,11 @@ module Umakadata
       end
 
       def count_statements(logger: nil)
+        if IGNORE_ENDPOINTS.has_key?(@uri.to_s) and IGNORE_ENDPOINTS[@uri.to_s].include?('triples')
+          logger.result = 'skip to count triples according to the configurations' unless logger.nil?
+          return nil
+        end
+
         sparql_query = 'SELECT (COUNT(*) AS ?count) WHERE { ?s ?p ?o }'
         [:post, :get].each do |method|
           log = Umakadata::Logging::Log.new
