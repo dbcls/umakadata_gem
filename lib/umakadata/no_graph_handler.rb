@@ -15,8 +15,8 @@ module Umakadata
     end
 
     include Umakadata::Criteria::SPARQLWithoutGraph::LinkedDataRules
-    def http_subject?(logger: nil)
-      super(@uri, logger: logger)
+    def http_subject?(number_of_statements, logger: nil)
+      super(@uri, number_of_statements, logger: logger)
     end
 
     def uri_provides_info?(prefixes, logger: nil)

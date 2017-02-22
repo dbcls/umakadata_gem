@@ -16,35 +16,54 @@ module Umakadata
           @uri = uri
         end
 
-        def http_subject?(uri, logger: nil)
-          sparql_query = <<-'SPARQL'
+        def is_http_subject?(uri, offset, logger: nil)
+          sparql_query = <<-"SPARQL"
 SELECT
-  *
+  ?s
 WHERE {
   { ?s ?p ?o } .
-  filter (!regex(STR(?s), "^http://", "i") && !isBLANK(?s))
+  FILTER (!isBLANK(?s))
 }
+OFFSET #{offset}
 LIMIT 1
 SPARQL
 
+          is_http = false
           [:post, :get].each do |method|
             log = Umakadata::Logging::Log.new
             logger.push log unless logger.nil?
             results = Umakadata::SparqlHelper.query(uri, sparql_query, logger: log, options: {method: method})
-            if results.is_a?(RDF::Query::Solutions)
-              if results.count == 0
-                log.result = 'HTTP-URI subject is found'
-                logger.result = 'HTTP URIs are used' unless logger.nil?
-                return true
-              else
-                log.result = 'Non-HTTP-URI subjects are found'
-              end
-            else
-              log.result = 'Sparql query result could not be read in RDF format'
+            if !results.is_a?(RDF::Query::Solutions) or results[0].nil?
+              log.result = "Failed to retrieve subject of #{offset}th triples"
+              next
             end
+            subject = results[0][:s].to_s
+            is_http = !(subject =~  URI.regexp(['http', 'https'])).nil?
+            log.result = "#{subject} is#{is_http ? "" : " not"} HTTP/HTTPS URI"
+            break
           end
-          logger.result = 'HTTP URIs are not used' unless logger.nil?
-          false
+          logger.result = "The subject of #{offset}th triple is#{is_http ? "" : " not"} HTTP/HTTPS URI" unless logger.nil?
+
+          return is_http
+        end
+
+        NUMBER_OF_SAMPLES = 5
+        RATIO_OF_NOT_BLANK_SUBJECT = 0.1
+
+        def http_subject?(uri, number_of_statements, logger: nil)
+          random = Random.new
+          range = Range.new(1, (number_of_statements * RATIO_OF_NOT_BLANK_SUBJECT).to_i)
+          count = 0
+          for i in Range.new(1, NUMBER_OF_SAMPLES) do
+            log = Umakadata::Logging::Log.new
+            logger.push log unless logger.nil?
+            offset = random.rand(range)
+            count += 1 if is_http_subject?(uri, offset, logger: log)
+          end
+
+          ratio = (count.to_f / NUMBER_OF_SAMPLES * 100).to_i
+          logger.result = "#{ratio}% subjects in the endpoint are HTTP/HTTPS URI"
+          return ratio > 60
         end
 
         def uri_provides_info?(uri, prefixes, logger: nil)

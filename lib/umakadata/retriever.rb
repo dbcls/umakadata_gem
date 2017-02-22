@@ -35,8 +35,12 @@ module Umakadata
     end
 
     include Umakadata::Criteria::LinkedDataRules
-    def http_subject?(logger: nil)
-      @handler.http_subject?(logger: logger)
+    def http_subject?(number_of_statements, logger: nil)
+      if number_of_statements.nil? or number_of_statements == 0
+        logger.result = "We could not check whether Subjects in the endpoint are HTTP URI or not, since we did not know the number of statements. "
+        return false
+      end
+      @handler.http_subject?(number_of_statements, logger: logger)
     end
     def uri_provides_info?(prefixes, logger: nil)
       @handler.uri_provides_info?(prefixes, logger: logger)
