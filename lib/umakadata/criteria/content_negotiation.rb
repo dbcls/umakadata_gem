@@ -31,7 +31,7 @@ SPARQL
             break
           end
         end
-        return false if results.nil?
+        return false if results.nil? or results.first.nil?
 
         uri = results.first[:s]
 
