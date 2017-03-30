@@ -37,7 +37,7 @@ SPARQL
           logger.push http_log unless logger.nil?
           args = {:headers => {'Accept' => content_type}}
           request = URI(uri)
-          response = http_get_recursive(request, args, logger: http_log)
+          response = http_head_recursive(request, args, logger: http_log)
           if !response.is_a?(Net::HTTPSuccess)
             http_log.result = '#{uri} does not return 200 HTTP response'
             logger.result = "#{uri} does not support #{content_type} in the content negotiation" unless logger.nil?

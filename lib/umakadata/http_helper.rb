@@ -45,6 +45,26 @@ module Umakadata
       execute_request(http, request, http_log, args)
     end
 
+    def http_head(uri, args = {})
+      args = {
+        :time_out => 10
+      }.merge(args)
+
+      uri = URI.parse(uri.to_s) unless uri.is_a?(URI)
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.open_timeout = args[:time_out]
+      http.use_ssl = uri.scheme == 'https'
+      path = uri.path.empty? ? '/' : uri.path
+      path += '?' + uri.query unless uri.query.nil?
+      request = Net::HTTP::Head.new(path, args[:headers])
+      request['User-Agent'] = Umakadata::HTTPHeader::USER_AGENT
+
+      http_log = Umakadata::Logging::HttpLog.new(uri, request)
+
+      execute_request(http, request, http_log, args)
+    end
+
     def execute_request(http, request, http_log, args = {})
       begin
         response = http_log.response = http.start { |h|
@@ -73,6 +93,28 @@ module Umakadata
       if response.is_a? Net::HTTPRedirection
         log.result = 'HTTP response is 3xx Redirection'
         return http_get_recursive(URI(response['location']), args, limit - 1, logger: logger)
+      end
+
+      if response.is_a? Net::HTTPResponse
+        log.result = "HTTP response is #{response.code} Response"
+      else
+        log.result = 'An error occurred in getting uri recursively'
+      end
+      return force_encode(response)
+    end
+
+    def http_head_recursive(uri, args = {}, limit = 10, logger: nil)
+      raise RuntimeError, 'HTTP redirect too deep' if limit == 0
+
+      log = Umakadata::Logging::Log.new
+      logger.push log unless logger.nil?
+      args[:logger] = log
+
+      response = http_head(uri, args)
+
+      if response.is_a? Net::HTTPRedirection
+        log.result = 'HTTP response is 3xx Redirection'
+        return http_head_recursive(URI(response['location']), args, limit - 1, logger: logger)
       end
 
       if response.is_a? Net::HTTPResponse
