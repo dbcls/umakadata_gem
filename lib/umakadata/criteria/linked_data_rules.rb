@@ -51,7 +51,14 @@ SPARQL
 
       def http_subject?(uri, number_of_statements, logger: nil)
         random = Random.new
-        range = Range.new(1, (number_of_statements * RATIO_OF_NOT_BLANK_SUBJECT).to_i)
+        min = 1
+        max = (number_of_statements * RATIO_OF_NOT_BLANK_SUBJECT).to_i
+        if min > max
+          logger.result = "too small number of statements #{number_of_statements}"
+          return false
+        end
+
+        range = Range.new(min, max)
         count = 0
         for i in Range.new(1, NUMBER_OF_SAMPLES) do
           log = Umakadata::Logging::Log.new
