@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rdf:RDF
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:sd="http://www.w3.org/ns/sparql-service-description#"
+   xmlns:prof="http://www.w3.org/ns/owl-profile/"
+   xmlns:void="http://rdfs.org/ns/void#"
+   xmlns:dcterms="http://purl.org/dc/terms/">
+  <sd:Service>
+    <sd:endpoint rdf:resource="http://www.example/sparql/"/>
+    <sd:supportedLanguage rdf:resource="http://www.w3.org/ns/sparql-service-description#SPARQL11Query"/>
+    <sd:resultFormat rdf:resource="http://www.w3.org/ns/formats/RDF_XML"/>
+    <sd:resultFormat rdf:resource="http://www.w3.org/ns/formats/Turtle"/>
+    <sd:feature rdf:resource="http://www.w3.org/ns/sparql-service-description#DereferencesURIs"/>
+    <sd:defaultEntailmentRegime rdf:resource="http://www.w3.org/ns/entailment/RDFS"/>
+    <sd:extensionFunction>
+      <sd:Function rdf:about="http://example.org/Distance"/>
+    </sd:extensionFunction>
+    <sd:defaultDataset>
+      <sd:Dataset>
+        <sd:defaultGraph>
+          <sd:Graph>
+            <void:triples rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">100</void:triples>
+          </sd:Graph>
+        </sd:defaultGraph>
+        <sd:namedGraph>
+          <sd:NamedGraph>
+            <sd:name rdf:resource="http://www.example/named-graph"/>
+            <sd:entailmentRegime rdf:resource="http://www.w3.org/ns/entailment/OWL-RDF-Based"/>
+            <sd:supportedEntailmentProfile rdf:resource="http://www.w3.org/ns/owl-profile/RL"/>
+            <sd:graph>
+              <sd:Graph>
+                <void:triples rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2000</void:triples>
+              </sd:Graph>
+            </sd:graph>
+          </sd:NamedGraph>
+        </sd:namedGraph>
+      </sd:Dataset>
+    </sd:defaultDataset>
+    <dcterms:license rdf:resource="http://creativecommons.org/licenses/by/2.1/jp/"/>
+    <dcterms:publisher rdf:resource="http://www.example.org/Publisher"/>
+    <dcterms:modified>2014-01-01 10:00:00</dcterms:modified>
+    <dcterms:modified>2016-01-01 10:00:00</dcterms:modified>
+    <dcterms:modified>2015-01-01 10:00:00</dcterms:modified>
+  </sd:Service>
+</rdf:RDF>
