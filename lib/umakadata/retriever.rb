@@ -9,6 +9,8 @@ require "umakadata/criteria/metadata"
 require "umakadata/criteria/basic_sparql"
 require "umakadata/sparql_grammar"
 require "umakadata/linkset"
+require "umakadata/graph_handler"
+require "umakadata/no_graph_handler"
 
 module Umakadata
   class Retriever
