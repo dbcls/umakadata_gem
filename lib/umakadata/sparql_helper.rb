@@ -20,8 +20,8 @@ module Umakadata
       rescue => e
         sparql_log.error = e
       end
-      sparql_log.request = client.http_request
-      sparql_log.response = client.http_response
+      sparql_log.request = client.http_request if client
+      sparql_log.response = client.http_response if client
 
       return response if response.is_a?(RDF::Query::Solutions)
       return response if response.is_a?(TrueClass)
