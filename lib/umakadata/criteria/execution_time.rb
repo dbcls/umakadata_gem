@@ -38,7 +38,7 @@ SPARQL
         return execution_time
       end
 
-      def response_time(uri, sparql_query, logger)
+      def response_time(uri, sparql_query, logger=nil)
         [:post, :get].each do |method|
           log = Umakadata::Logging::Log.new
           logger.push log unless logger.nil?

@@ -66,15 +66,15 @@ SPARQL
 
         describe '#response_time' do
           it 'should return nil when query is malformed' do
-            allow(Umakadata::SparqlHelper).to receive(:query).and_raise(@uri, SPARQL::Client::MalformedQuery, logger: anything).and_return(nil)
-            expect(target.response_time(@uri, MALFORMED_QUERY, anything)).to eq nil
+            allow(Umakadata::SparqlHelper).to receive(:query).and_raise(@uri, SPARQL::Client::MalformedQuery, logger: anything, options: anything).and_return(nil)
+            expect(target.response_time(@uri, MALFORMED_QUERY)).to eq nil
           end
 
           it 'should return time when query is correctly' do
-            allow(Umakadata::SparqlHelper).to receive(:query).with(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, logger: anything).and_return(Net::HTTPResponse)
-            allow(Umakadata::SparqlHelper).to receive(:query).with(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, logger: anything).and_return(Net::HTTPResponse)
-            expect(target.response_time(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, anything).instance_of?(Float)).to be true
-            expect(target.response_time(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, anything).instance_of?(Float)).to be true
+            allow(Umakadata::SparqlHelper).to receive(:query).with(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, logger: anything, options: anything).and_return(Net::HTTPResponse)
+            expect(target.response_time(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY).instance_of?(Float)).to be true
+            allow(Umakadata::SparqlHelper).to receive(:query).with(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, logger: anything, options: anything).and_return(Net::HTTPResponse)
+            expect(target.response_time(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY).instance_of?(Float)).to be true
          end
        end
 

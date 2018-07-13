@@ -1,3 +1,4 @@
+require "rdf/vocab"
 require "umakadata/criteria/liveness"
 require "umakadata/criteria/service_description"
 require "umakadata/criteria/linked_data_rules"
@@ -96,15 +97,16 @@ module Umakadata
 
     def last_updated(service_description, void, logger: nil)
       log = Umakadata::Logging::Log.new
+      terms_for_update = [RDF::Vocab::DC.modified.to_s, RDF::Vocab::DC.issued.to_s]
       logger.push log unless logger.nil?
 
-      result = extract_dcterms_modified(service_description, :sd, log)
+      result = extract_terms_for_update(service_description, :sd, terms_for_update, log)
       return result unless result.nil?
 
-      result = extract_dcterms_modified(void, :void, log)
+      result = extract_terms_for_update(void, :void, terms_for_update, log)
       return result unless result.nil?
 
-      log.result = 'The literal of dcterms:modified is not found in either Service Description or VoID'
+      log.result = "The literal of #{terms_for_update} is not found in either Service Description or VoID"
       nil
     end
 
@@ -178,7 +180,7 @@ module Umakadata
       count_minus_tolerance.quo(digit_rounddown).floor * digit_rounddown
     end
 
-    def extract_dcterms_modified(str, type, log)
+    def extract_terms_for_update(str, type, term_list, log)
       s = if type == :sd
             'Service Description'
           elsif type == :void
@@ -189,19 +191,19 @@ module Umakadata
       statements = triples(str)
       unless statements.nil?
         time = []
-        statements.each do |subject, predicate, object|
-          if predicate == RDF::URI("http://purl.org/dc/terms/modified")
+        statements.each do |_, predicate, object|
+          if term_list.include?(predicate)
             time.push Time.parse(object.to_s) rescue time.push nil
           end
         end
-        dcterms_modified = time.compact.max
-        unless dcterms_modified.nil?
-          log.result = 'The literal of dcterms:modified is found in ' + s
-          local_log.result = "dcterms:modified is #{dcterms_modified}"
-          return { date: dcterms_modified, source: s }
+        most_recent = time.compact.max
+        unless most_recent.nil?
+          log.result = "The literal of #{term_list} is found in #{s}"
+          local_log.result = "date of update is #{most_recent}"
+          return { date: most_recent, source: s }
         end
       end
-      local_log.result = 'The literal of dcterms:modified is not found in ' + s
+      local_log.result = "The literal of #{term_list} is not found in #{s}"
       nil
     end
 

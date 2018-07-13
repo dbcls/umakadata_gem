@@ -16,12 +16,12 @@ WHERE
     FILTER regex(?s, "^#{prefix}")
   }
 LIMIT 1
-SPARQL
+          SPARQL
           results = nil
           [:post, :get].each do |method|
             request_log = Umakadata::Logging::Log.new
             logger.push request_log unless logger.nil?
-            results = Umakadata::SparqlHelper.query(uri, query, logger: request_log, options: {method: method})
+            results = Umakadata::SparqlHelper.query(uri, query, logger: request_log, options: { method: method })
             if results.nil?
               request_log.result = "failed to retrieve subject starts with #{prefix}"
             else
@@ -35,20 +35,62 @@ SPARQL
 
           http_log = Umakadata::Logging::Log.new
           logger.push http_log unless logger.nil?
-          args = {:headers => {'Accept' => content_type}}
-          request = URI(uri)
+          args     = { :headers => { 'Accept' => content_type } }
+          request  = URI(uri)
           response = http_head_recursive(request, args, logger: http_log)
           if !response.is_a?(Net::HTTPSuccess)
             http_log.result = '#{uri} does not return 200 HTTP response'
-            logger.result = "#{uri} does not support #{content_type} in the content negotiation" unless logger.nil?
+            logger.result   = "#{uri} does not support #{content_type} in the content negotiation" unless logger.nil?
             return false
           else
             http_log.result = 'The endpoint returns 200 HTTP response.'
           end
 
-          result = response.content_type == content_type
+          result        = response.content_type == content_type
           logger.result = "#{uri} #{result ? 'supports' : 'does not support'} #{content_type} in the content negotiation" unless logger.nil?
 
+          return result
+        end
+
+        def check_endpoint(uri, content_type, logger: nil)
+          query = <<-SPARQL
+CONSTRUCT {?s ?p ?o}
+WHERE { ?s ?p ?o }
+LIMIT 1
+          SPARQL
+
+          response = nil
+          %i[post get].each do |method|
+            sparql_log = Umakadata::Logging::SparqlLog.new(uri, query)
+            logger.push sparql_log unless logger.nil?
+            begin
+              client   = Umakadata::SparqlClient.new(uri, { method: method })
+              response = client.query(query, content_type: content_type)
+            rescue => e
+              sparql_log.error = e
+            end
+            if response.nil?
+              sparql_log.result = "Failed to retrieve #{uri}"
+            else
+              sparql_log.result = "Success to retrieve #{uri}"
+              break
+            end
+          end
+          return false if response.nil?
+
+          result = nil
+          case content_type
+          when TURTLE
+            result = response.is_a?(RDF::Turtle::Reader)
+          when RDFXML
+            result = response.is_a?(RDF::RDFXML::Reader)
+          when HTML
+            result = response.content_type == content_type
+          else
+            result = false
+          end
+
+          logger.result = "#{uri} #{result ? 'supports' : 'does not support'} #{content_type} in the content negotiation" unless logger.nil?
           return result
         end
 

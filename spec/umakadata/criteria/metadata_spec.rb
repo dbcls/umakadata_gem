@@ -12,6 +12,7 @@ describe 'Umakadata' do
 
         before do
           @uri = URI('http://example.com')
+          IGNORE_ENDPOINTS = { "http://sparql.uniprot.org/sparql/" => ["datatypes", "triples"] }
         end
 
         it 'should return empty metadata if failed to retrieve graph list' do
@@ -63,7 +64,7 @@ describe 'Umakadata' do
         end
 
         it 'should return error message when sparql query is malformed' do
-          allow_any_instance_of(Umakadata::SparqlHelper).to receive(:query).and_raise(SPARQL::Client::MalformedQuery, 'Occured MalformedQuery')
+          allow_any_instance_of(Umakadata::SparqlClient).to receive(:query).and_raise(SPARQL::Client::MalformedQuery, 'Occured MalformedQuery')
 
           metadata = target.metadata(@uri)
 
