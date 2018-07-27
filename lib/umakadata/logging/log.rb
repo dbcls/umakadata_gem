@@ -6,11 +6,13 @@ module Umakadata
 
     class Log
 
-      attr_accessor :result
+      attr_accessor :result, :start_time, :end_time
 
       def initialize
         @list = Array.new
         @result = nil
+        @start_time = nil
+        @end_time = nil
       end
 
       def push(log)
@@ -32,7 +34,7 @@ module Umakadata
           context.push log.to_h
         }
 
-        {:result => @result, :context => context}.to_json
+        {:execution_time => {:start => @start_time, :end => @end_time} ,:result => @result, :context => context}.to_json
       end
     end
 
