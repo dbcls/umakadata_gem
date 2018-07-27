@@ -75,6 +75,10 @@ module Umakadata
       @handler.check_content_negotiation(prefix, content_type, logger: logger)
     end
 
+    def check_endpoint(content_type, logger: nil)
+      @handler.check_endpoint(content_type, logger: logger)
+    end
+
     include Umakadata::Criteria::Metadata
     def metadata(logger: nil)
       @handler.metadata(logger: logger)

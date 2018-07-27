@@ -14,6 +14,10 @@ module Umakadata
       super(@uri, prefix, content_type, logger: logger)
     end
 
+    def check_endpoint(content_type, logger: nil)
+      super(@uri, content_type, logger: logger)
+    end
+
     include Umakadata::Criteria::SPARQLWithoutGraph::LinkedDataRules
     def http_subject?(number_of_statements, logger: nil)
       super(@uri, number_of_statements, logger: logger)
