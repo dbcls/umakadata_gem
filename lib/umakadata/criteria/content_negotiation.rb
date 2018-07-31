@@ -15,34 +15,34 @@ module Umakadata
           if case_sensitive
             <<-"SPARQL"
           FILTER (
-            regex(str(?s), "^#{allow_prefix}", "i") AND
-            !regex(str(?s), "^#{deny_prefix}", "i"))
+            regex(str(?s), "^#{allow_prefix}") AND
+            !regex(str(?s), "^#{deny_prefix}"))
             SPARQL
           else
             <<-"SPARQL"
           FILTER (
-            regex(str(?s), "^#{allow_prefix}") AND
-            !regex(str(?s), "^#{deny_prefix}"))
+            regex(str(?s), "^#{allow_prefix}", "i") AND
+            !regex(str(?s), "^#{deny_prefix}", "i"))
             SPARQL
           end
         elsif allow_prefix.present?
           if case_sensitive
             <<-"SPARQL"
-          FILTER (regex(str(?s), "^#{allow_prefix}", "i"))
+          FILTER (regex(str(?s), "^#{allow_prefix}"))
             SPARQL
           else
             <<-"SPARQL"
-          FILTER (regex(str(?s), "^#{allow_prefix}"))
+          FILTER (regex(str(?s), "^#{allow_prefix}", "i"))
             SPARQL
           end
         elsif deny_prefix.present?
           if case_sensitive
             <<-"SPARQL"
-          FILTER (!regex(str(?s), "^#{deny_prefix}", "i"))
+          FILTER (!regex(str(?s), "^#{deny_prefix}"))
             SPARQL
           else
             <<-"SPARQL"
-          FILTER (!regex(str(?s), "^#{deny_prefix}"))
+          FILTER (!regex(str(?s), "^#{deny_prefix}", "i"))
             SPARQL
           end
         end
