@@ -15,7 +15,7 @@ SELECT
   ?s
 WHERE
   { ?s ?p ?o 
-    #{filter}
+    FILTER( #{filter} )
   }
 LIMIT 1
           SPARQL

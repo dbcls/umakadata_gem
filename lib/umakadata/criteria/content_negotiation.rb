@@ -16,7 +16,7 @@ SELECT
 WHERE {
         GRAPH ?g {
            ?s ?p ?o
-           #{filter}
+           FILTER( #{filter} )
         } .
       }
 LIMIT 1
