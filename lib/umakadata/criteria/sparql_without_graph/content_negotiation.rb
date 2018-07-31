@@ -6,14 +6,16 @@ module Umakadata
     module SPARQLWithoutGraph
       module ContentNegotiation
         include Umakadata::HTTPHelper
+        include Umakadata::Criteria::FilterClause
 
-        def check_content_negotiation(uri, prefix, content_type, logger: nil)
+        def check_content_negotiation(uri, allow_prefix, deny_prefix, case_sensitive, content_type, logger: nil)
+          filter = filter_clause(allow_prefix, deny_prefix, case_sensitive)
           query = <<-"SPARQL"
 SELECT
   ?s
 WHERE
   { ?s ?p ?o 
-    FILTER regex(?s, "^#{prefix}")
+    #{filter}
   }
 LIMIT 1
           SPARQL

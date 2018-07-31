@@ -10,8 +10,8 @@ module Umakadata
     end
 
     include Umakadata::Criteria::SPARQLWithoutGraph::ContentNegotiation
-    def check_content_negotiation(prefix, content_type, logger: nil)
-      super(@uri, prefix, content_type, logger: logger)
+    def check_content_negotiation(prefix, denied_prefix, case_sensitive, content_type, logger: nil)
+      super(@uri, prefix, denied_prefix, case_sensitive, content_type, logger: logger)
     end
 
     def check_endpoint(content_type, logger: nil)

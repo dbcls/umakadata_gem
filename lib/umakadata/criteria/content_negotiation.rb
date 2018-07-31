@@ -1,51 +1,15 @@
 require 'umakadata/http_helper'
 require 'umakadata/logging/log'
-require 'active_support'
-require 'active_support/core_ext'
+require 'umakadata/criteria/filter_clause'
 
 module Umakadata
   module Criteria
     module ContentNegotiation
-
       include Umakadata::HTTPHelper
+      include Umakadata::Criteria::FilterClause
 
       def check_content_negotiation(uri, allow_prefix, deny_prefix, case_sensitive, content_type, logger: nil)
-        filter =
-        if allow_prefix.present? && deny_prefix.present?
-          if case_sensitive
-            <<-"SPARQL"
-          FILTER (
-            regex(str(?s), "^#{allow_prefix}") AND
-            !regex(str(?s), "^#{deny_prefix}"))
-            SPARQL
-          else
-            <<-"SPARQL"
-          FILTER (
-            regex(str(?s), "^#{allow_prefix}", "i") AND
-            !regex(str(?s), "^#{deny_prefix}", "i"))
-            SPARQL
-          end
-        elsif allow_prefix.present?
-          if case_sensitive
-            <<-"SPARQL"
-          FILTER (regex(str(?s), "^#{allow_prefix}"))
-            SPARQL
-          else
-            <<-"SPARQL"
-          FILTER (regex(str(?s), "^#{allow_prefix}", "i"))
-            SPARQL
-          end
-        elsif deny_prefix.present?
-          if case_sensitive
-            <<-"SPARQL"
-          FILTER (!regex(str(?s), "^#{deny_prefix}"))
-            SPARQL
-          else
-            <<-"SPARQL"
-          FILTER (!regex(str(?s), "^#{deny_prefix}", "i"))
-            SPARQL
-          end
-        end
+        filter = filter_clause(allow_prefix, deny_prefix, case_sensitive)
         query = <<-"SPARQL"
 SELECT
   ?s
