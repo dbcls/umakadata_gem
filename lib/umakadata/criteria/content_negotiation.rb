@@ -1,5 +1,7 @@
 require 'umakadata/http_helper'
 require 'umakadata/logging/log'
+require 'active_support'
+require 'active_support/core_ext'
 
 module Umakadata
   module Criteria
@@ -7,14 +9,50 @@ module Umakadata
 
       include Umakadata::HTTPHelper
 
-      def check_content_negotiation(uri, prefix, content_type, logger: nil)
+      def check_content_negotiation(uri, allow_prefix, deny_prefix, case_sensitive, content_type, logger: nil)
+        filter =
+        if allow_prefix.present? && deny_prefix.present?
+          if case_sensitive
+            <<-"SPARQL"
+          FILTER (
+            regex(str(?s), "^#{allow_prefix}", "i") AND
+            !regex(str(?s), "^#{deny_prefix}", "i"))
+            SPARQL
+          else
+            <<-"SPARQL"
+          FILTER (
+            regex(str(?s), "^#{allow_prefix}") AND
+            !regex(str(?s), "^#{deny_prefix}"))
+            SPARQL
+          end
+        elsif allow_prefix.present?
+          if case_sensitive
+            <<-"SPARQL"
+          FILTER (regex(str(?s), "^#{allow_prefix}", "i"))
+            SPARQL
+          else
+            <<-"SPARQL"
+          FILTER (regex(str(?s), "^#{allow_prefix}"))
+            SPARQL
+          end
+        elsif deny_prefix.present?
+          if case_sensitive
+            <<-"SPARQL"
+          FILTER (!regex(str(?s), "^#{deny_prefix}", "i"))
+            SPARQL
+          else
+            <<-"SPARQL"
+          FILTER (!regex(str(?s), "^#{deny_prefix}"))
+            SPARQL
+          end
+        end
         query = <<-"SPARQL"
 SELECT
   ?s
 WHERE {
         GRAPH ?g {
            ?s ?p ?o
-           FILTER regex(?s, "^#{prefix}")
+           #{filter}
         } .
       }
 LIMIT 1
@@ -25,9 +63,9 @@ LIMIT 1
           logger.push request_log unless logger.nil?
           results = Umakadata::SparqlHelper.query(uri, query, logger: request_log, options: { method: method })
           if results.nil?
-            request_log.result = "failed to retrieve subject starts with #{prefix}"
+            request_log.result = "failed to retrieve subject starts with #{allow_prefix}"
           else
-            request_log.result = "Success to pick up a subject which starts with #{prefix}"
+            request_log.result = "Success to pick up a subject which starts with #{allow_prefix}"
             break
           end
         end

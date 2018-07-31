@@ -8,9 +8,12 @@ describe 'Umakadata' do
 
         let(:test_class) { Struct.new(:target) { include Umakadata::Criteria::ContentNegotiation } }
         let(:target) { test_class.new }
+        let(:allow_prefix) { 'http://exmaple.com/allowed' }
+        let(:deny_prefix) { 'http://exmaple.com/denied' }
+        let(:case_sensitive) { true }
 
         before do
-          @uri = URI('http://example.com')
+          @uri = 'http://exmaple.com/'
           allow(Umakadata::SparqlHelper).to receive(:query).and_return([{ :s => @uri, :p => 'preidicate', :o => 'object' }])
         end
 
@@ -20,7 +23,7 @@ describe 'Umakadata' do
           allow(target).to receive(:http_head_recursive).and_return(response)
           allow(response).to receive(:is_a?).and_return(true)
 
-          result = target.check_content_negotiation(@uri, '', Umakadata::DataFormat::TURTLE)
+          result = target.check_content_negotiation(@uri, allow_prefix, deny_prefix, case_sensitive, Umakadata::DataFormat::TURTLE)
           expect(result).to eq(true)
         end
 
@@ -30,7 +33,7 @@ describe 'Umakadata' do
           allow(target).to receive(:http_head_recursive).and_return(response)
           allow(response).to receive(:is_a?).and_return(true)
 
-          result = target.check_content_negotiation(@uri, '', Umakadata::DataFormat::TURTLE)
+          result = target.check_content_negotiation(@uri, allow_prefix, deny_prefix, case_sensitive, Umakadata::DataFormat::TURTLE)
           expect(result).to eq(false)
         end
 
@@ -40,7 +43,7 @@ describe 'Umakadata' do
           allow(target).to receive(:http_head_recursive).and_return(response)
           allow(response).to receive(:is_a?).and_return(true)
 
-          result = target.check_content_negotiation(@uri, '', Umakadata::DataFormat::RDFXML)
+          result = target.check_content_negotiation(@uri, allow_prefix, deny_prefix, case_sensitive, Umakadata::DataFormat::RDFXML)
           expect(result).to eq(true)
         end
 
@@ -50,7 +53,7 @@ describe 'Umakadata' do
           allow(target).to receive(:http_head_recursive).and_return(response)
           allow(response).to receive(:is_a?).and_return(true)
 
-          result = target.check_content_negotiation(@uri, '', Umakadata::DataFormat::RDFXML)
+          result = target.check_content_negotiation(@uri, allow_prefix, deny_prefix, case_sensitive, Umakadata::DataFormat::RDFXML)
           expect(result).to eq(false)
         end
 
@@ -60,7 +63,7 @@ describe 'Umakadata' do
           allow(target).to receive(:http_head_recursive).and_return(response)
           allow(response).to receive(:is_a?).and_return(true)
 
-          result = target.check_content_negotiation(@uri, '', Umakadata::DataFormat::HTML)
+          result = target.check_content_negotiation(@uri, allow_prefix, deny_prefix, case_sensitive, Umakadata::DataFormat::HTML)
           expect(result).to eq(true)
         end
 
@@ -70,7 +73,7 @@ describe 'Umakadata' do
           allow(target).to receive(:http_head_recursive).and_return(response)
           allow(response).to receive(:is_a?).and_return(true)
 
-          result = target.check_content_negotiation(@uri, '', Umakadata::DataFormat::HTML)
+          result = target.check_content_negotiation(@uri, allow_prefix, deny_prefix, case_sensitive, Umakadata::DataFormat::HTML)
           expect(result).to eq(false)
         end
 
