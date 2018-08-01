@@ -34,7 +34,7 @@ module Umakadata
     end
 
     include Umakadata::Criteria::ServiceClause
-    def support?(logger: nil)
+    def check_service_clause(logger: nil)
       super(@uri, logger: logger)
     end
 

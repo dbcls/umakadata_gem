@@ -10,7 +10,7 @@ module Umakadata
       # @param uri [URI]: the target endpoint
       # @param args [Hash]:
       # @return [Boolean]
-      def support?(uri, logger: nil)
+      def check_service_clause(uri, logger: nil)
         sparql_query = <<-"SPARQL"
 SELECT * 
 WHERE {
