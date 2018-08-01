@@ -7,9 +7,9 @@ module Umakadata
       def filter_clause(allow_prefix, deny_prefix, case_sensitive)
         if allow_prefix.present? && deny_prefix.present?
           if case_sensitive
-            "regex(str(?s), \"^#{allow_prefix}\") AND !regex(str(?s), \"^#{deny_prefix}\")"
+            "(regex(str(?s), \"^#{allow_prefix}\") AND !regex(str(?s), \"^#{deny_prefix}\"))"
           else
-            "regex(str(?s), \"^#{allow_prefix}\", \"i\") AND !regex(str(?s), \"^#{deny_prefix}\", \"i\")"
+            "(regex(str(?s), \"^#{allow_prefix}\", \"i\") AND !regex(str(?s), \"^#{deny_prefix}\", \"i\"))"
           end
         elsif allow_prefix.present?
           if case_sensitive
