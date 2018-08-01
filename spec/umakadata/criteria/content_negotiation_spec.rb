@@ -13,7 +13,7 @@ describe 'Umakadata' do
         let(:case_sensitive) { true }
 
         before do
-          @uri = 'http://exmaple.com/'
+          @uri = URI('http://example.com')
           allow(Umakadata::SparqlHelper).to receive(:query).and_return([{ :s => @uri, :p => 'preidicate', :o => 'object' }])
         end
 
