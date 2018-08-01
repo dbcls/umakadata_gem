@@ -1,6 +1,9 @@
 require 'umakadata/http_helper'
 require 'umakadata/sparql_helper'
 require 'umakadata/logging/log'
+require 'umakadata/criteria/filter_clause'
+require 'active_support'
+require 'active_support/core_ext'
 
 module Umakadata
   module Criteria
@@ -8,6 +11,7 @@ module Umakadata
       module LinkedDataRules
 
         include Umakadata::HTTPHelper
+        include Umakadata::Criteria::FilterClause
 
         REGEXP = /<title>(.*)<\/title>/
 
@@ -107,7 +111,7 @@ SPARQL
         end
 
         def get_subject_with_filter_condition(uri, prefixes, logger: nil)
-          conditions = prefixes.map{|prefix| "regex(STR(?s), '^#{prefix}', 'i')"}.join(' || ')
+          conditions = prefixes.map{|prefix| filter_clause(prefix[:allow], prefix[:deny], prefix[:case_sensitive]) }.join(' || ')
           sparql_query = <<-"SPARQL"
 SELECT
   ?s
@@ -190,7 +194,7 @@ SPARQL
         end
 
         def contains_same_as_with_filter_condition(uri, prefixes, logger: nil)
-          conditions = prefixes.map{|prefix| "regex(STR(?s), '^#{prefix}', 'i')"}.join(' || ')
+          conditions = prefixes.map{|prefix| filter_clause(prefix[:allow], prefix[:deny], prefix[:case_sensitive])}.join(' || ')
           sparql_query = <<-"SPARQL"
 PREFIX owl:<http://www.w3.org/2002/07/owl#>
 SELECT
@@ -252,7 +256,7 @@ SPARQL
         end
 
         def contains_see_also_with_filter_condition(uri, prefixes, logger: nil)
-          conditions = prefixes.map{|prefix| "regex(STR(?s), '^#{prefix}', 'i')"}.join(' || ')
+          conditions = prefixes.map{|prefix| filter_clause(prefix[:allow], prefix[:deny], prefix[:case_sensitive])}.join(' || ')
           sparql_query = <<-"SPARQL"
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT
@@ -310,30 +314,21 @@ SPARQL
         end
 
         def search_subject_from_prefixes(prefixes, results)
-          prefix_map = make_prefix_map(prefixes)
           results.each do |result|
             subject = result[:s].to_s
-            uri = URI(subject)
-            prefix_candidates = prefix_map[uri.host]
-            next if prefix_candidates.nil?
-            prefix_candidates.each do |prefix|
-              return subject if subject.match("^#{prefix}")
+            matched = prefixes.any? do |p|
+              if p.case_sensitive
+                (p[:allow].blank? || subject =~ /^#{p[:allow]}/) &&
+                (p[:deny].blank? || !(subject =~ /^#{p[:deny]}/))
+              else
+                (p[:allow].blank? || subject =~ /^#{p[:allow]}/i) &&
+                (p[:deny].blank? || !(subject =~ /^#{p[:deny]}/i))
+              end
             end
+            return subject if matched
           end
           nil
         end
-
-        def make_prefix_map(prefixes)
-          map = {}
-          prefixes.each do |prefix|
-            uri = URI(prefix)
-            host = uri.host
-            list = map[host] ||= Array.new
-            map[host] = list.push prefix
-          end
-          map
-        end
-
       end
     end
   end
