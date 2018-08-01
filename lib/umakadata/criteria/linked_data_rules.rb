@@ -110,7 +110,7 @@ SPARQL
       end
 
       def get_subject_with_filter_condition(uri, prefixes, logger: nil)
-        conditions = prefixes.map{|prefix| filter_clause(prefix[:allow], prefix[:deny], prefix[:case_sensitive]) }.join(' || ')
+        conditions = prefixes.map{|prefix| filter_clause(prefix[:allowed_uri], prefix[:denied_uri], prefix[:case_sensitive]) }.join(' || ')
         sparql_query = <<-SPARQL
 SELECT
   ?s
@@ -198,7 +198,7 @@ SPARQL
       end
 
       def contains_same_as_with_filter_condition(uri, prefixes, logger: nil)
-        conditions = prefixes.map{|prefix| filter_clause(prefix[:allow], prefix[:deny], prefix[:case_sensitive])}.join(' || ')
+        conditions = prefixes.map{|prefix| filter_clause(prefix[:allowed_uri], prefix[:denied_uri], prefix[:case_sensitive])}.join(' || ')
         sparql_query = <<-SPARQL
 PREFIX owl:<http://www.w3.org/2002/07/owl#>
 SELECT
@@ -261,7 +261,7 @@ SPARQL
       end
 
       def contains_see_also_with_filter_condition(uri, prefixes, logger: nil)
-        conditions = prefixes.map{|prefix| filter_clause(prefix[:allow], prefix[:deny], prefix[:case_sensitive])}.join(' || ')
+        conditions = prefixes.map{|prefix| filter_clause(prefix[:allowed_uri], prefix[:denied_uri], prefix[:case_sensitive])}.join(' || ')
         sparql_query = <<-SPARQL
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT
@@ -269,7 +269,7 @@ SELECT
 WHERE {
   GRAPH ?g { ?s rdfs:seeAlso ?o } .
   filter (#{conditions})
-}
+} b
 LIMIT 1
 SPARQL
 
@@ -324,11 +324,11 @@ SPARQL
           subject = result[:s].to_s
           matched = prefixes.any? do |p|
             if p.case_sensitive
-              (p[:allow].blank? || subject =~ /^#{p[:allow]}/) &&
-                (p[:deny].blank? || !(subject =~ /^#{p[:deny]}/))
+              (p[:allowed_uri].blank? || subject =~ /^#{p[:allowed_uri]}/) &&
+                (p[:denied_uri].blank? || !(subject =~ /^#{p[:denied_uri]}/))
             else
-              (p[:allow].blank? || subject =~ /^#{p[:allow]}/i) &&
-                (p[:deny].blank? || !(subject =~ /^#{p[:deny]}/i))
+              (p[:allowed_uri].blank? || subject =~ /^#{p[:allowed_uri]}/i) &&
+                (p[:denied_uri].blank? || !(subject =~ /^#{p[:denied_url]}/i))
             end
           end
           return subject if matched
