@@ -269,7 +269,7 @@ SELECT
 WHERE {
   GRAPH ?g { ?s rdfs:seeAlso ?o } .
   filter (#{conditions})
-} b
+}
 LIMIT 1
 SPARQL
 
