@@ -1,5 +1,6 @@
 require "rdf/vocab"
 require "umakadata/criteria/liveness"
+require "umakadata/criteria/service_clause"
 require "umakadata/criteria/service_description"
 require "umakadata/criteria/linked_data_rules"
 require "umakadata/criteria/void"
@@ -30,6 +31,11 @@ module Umakadata
     include Umakadata::Criteria::Liveness
     def alive?(time_out = 30, logger: nil)
       super(@uri, time_out, logger: logger)
+    end
+
+    include Umakadata::Criteria::ServiceClause
+    def support?(logger: nil)
+      super(@uri, logger: logger)
     end
 
     include Umakadata::Criteria::ServiceDescription
