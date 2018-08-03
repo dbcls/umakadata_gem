@@ -174,10 +174,6 @@ module Umakadata
         list_ontologies
       end
 
-      def list_ontologies_in_LOV(metadata, logger: nil)
-        return Umakadata::LinkedOpenVocabularies.instance.get(logger: logger)
-      end
-
       def ontologies(properties)
         ontologies = []
         properties.each do |uri|
