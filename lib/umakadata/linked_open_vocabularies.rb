@@ -6,7 +6,7 @@ module Umakadata
     include Singleton
     include Umakadata::HTTPHelper
 
-    LOV = 'http://lov.okfn.org/dataset/lov/api/v2/vocabulary/list'.freeze
+    LOV = 'https://lov.linkeddata.es/dataset/lov/api/v2/vocabulary/list'.freeze
 
     def initialize
       @list_ontologies = Array.new
