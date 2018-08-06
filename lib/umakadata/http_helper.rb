@@ -66,10 +66,20 @@ module Umakadata
     end
 
     def execute_request(http, request, http_log, args = {})
+      retry_count = 0
       begin
         response = http_log.response = http.start { |h|
           h.request(request)
         }
+      rescue Net::OpenTimeout => e
+        if (retry_count += 1) > 3
+          http_log.error = e
+        else
+          puts 'retry http request'
+          seconds = 5 * 2 ** retry_count # [10s, 20s, 40s]
+          sleep(seconds)
+          retry
+        end
       rescue => e
         http_log.error = e
       end
