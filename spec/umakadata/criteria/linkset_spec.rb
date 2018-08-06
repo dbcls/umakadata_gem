@@ -71,9 +71,9 @@ describe 'Umakadata' do
         linksets = target.linksets triples(turtle)
 
         expect(linksets.count).to be(3)
-        expect(linksets[0]).to eq(RDF::URI('http://dbpedia.org'))
-        expect(linksets[1]).to eq(RDF::URI('http://lsd.dbcls.jp/portal/'))
-        expect(linksets[2]).to eq(RDF::URI('http://lifesciencedb.jp/bdls/'))
+        expect(linksets).to include(RDF::URI('http://dbpedia.org'),
+                                    RDF::URI('http://lsd.dbcls.jp/portal/'),
+                                    RDF::URI('http://lifesciencedb.jp/bdls/'))
       end
 
     end
