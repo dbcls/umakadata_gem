@@ -25,16 +25,18 @@ module Umakadata
     # @return [Array]
     attr_reader :publisher
 
+    FORMATS = { "Turtle" => TURTLE, "RDF/XML" => RDFXML }
+
     def initialize(http_response, logger: nil)
       body = http_response.body
-      data = triples(body, TURTLE)
-      logger.result = 'VoID is in Turtle format' unless logger.nil? || data.nil?
-      if data.nil?
-        data = triples(body, RDFXML)
-        logger.result = 'VoID is in RDF/XML format' unless logger.nil?
+      data = nil
+      FORMATS.each do |key, value|
+        break unless data.nil?
+        data = triples(body, value)
+        logger.result = "VoID is in #{key} format" unless logger.nil?
       end
       if data.nil?
-        logger.result = 'VoID is invalid (valid formats: Turtle or RDF/XML)' unless logger.nil?
+        logger.result = "VoID is invalid (valid formats: #{FORMATS.keys.join(',')})" unless logger.nil?
         return
       end
 
