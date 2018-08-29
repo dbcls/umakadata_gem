@@ -14,7 +14,7 @@ SPARQL
         base_query_log = Umakadata::Logging::Log.new
         logger.push base_query_log unless logger.nil?
         base_response_time = self.base_response_time(uri, base_query_log)
-        base_query_log.result = "HTTP HEAD request " + (base_response_time.nil? ? "is N/A" : "takes #{base_response_time} second")
+        base_query_log.result = "HTTP HEAD request " + (base_response_time.nil? ? "is N/A" : "takes #{base_response_time} second on average")
 
         target_query_log = Umakadata::Logging::Log.new
         logger.push target_query_log unless logger.nil?
@@ -51,13 +51,10 @@ SPARQL
       end
 
       def base_response_time(uri, logger = nil)
-        logs = Umakadata::Logging::Log.new
-        logger.push logs unless logger.nil?
-
         trials = 5
-        response_times = trials.times.map do |_|
+        response_times = trials.times.map do |n|
           log = Umakadata::Logging::Log.new
-          logs.push log unless logs.nil?
+          logger.push log unless logger.nil?
 
           start_time = Time.now
           response   = http_head(uri, { :headers => { 'Accept' => '*/*' }, :time_out => 10, :logger => log })
@@ -66,7 +63,7 @@ SPARQL
             next
           end
           response_time = Time.now - start_time
-          log.result = "200 HTTP response takes #{response_time} second"
+          log.result = "(#{n+1}) 200 HTTP response takes #{response_time} second"
           response_time
         end
 
