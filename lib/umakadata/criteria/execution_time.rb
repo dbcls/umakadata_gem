@@ -17,7 +17,7 @@ SPARQL
       def execution_time(uri, logger: nil)
         base_query_log = Umakadata::Logging::Log.new
         logger.push base_query_log unless logger.nil?
-        base_response_time = self.response_time(uri, BASE_QUERY, base_query_log)
+        base_response_time = self.base_response_time(uri, base_query_log)
         base_query_log.result = "#{BASE_QUERY.gsub(/\n/,'')} " + (base_response_time.nil? ? "is N/A" : "takes #{base_response_time} second")
 
         target_query_log = Umakadata::Logging::Log.new
@@ -54,6 +54,19 @@ SPARQL
         nil
       end
 
+      def base_response_time(uri, logger = nil)
+        log = Umakadata::Logging::Log.new
+        logger.push log unless logger.nil?
+
+        start_time = Time.now
+        response   = http_head(uri, { :headers => { 'Accept' => '*/*' }, :time_out => 10, :logger => log })
+        if !response.is_a?(Net::HTTPSuccess)
+          log.result    = 'HTTP response is not 2xx Success'
+          return nil
+        end
+        log.result = '200 HTTP response'
+        return Time.now - start_time
+      end
     end
   end
 end

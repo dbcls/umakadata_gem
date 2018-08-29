@@ -17,7 +17,7 @@ SPARQL
         end
 
         it 'should return not nil' do
-          allow(target).to receive(:response_time).with(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, anything)
+          allow(target).to receive(:base_response_time).with(@uri, anything)
             .and_return(1000)
           allow(target).to receive(:response_time).with(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, anything)
             .and_return(10000)
@@ -25,7 +25,7 @@ SPARQL
         end
 
         it 'should return nil when the response time of ask query is nil' do
-          allow(target).to receive(:response_time).with(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, anything)
+          allow(target).to receive(:base_response_time).with(@uri, anything)
             .and_return(nil)
           allow(target).to receive(:response_time).with(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, anything)
             .and_return(10000)
@@ -33,7 +33,7 @@ SPARQL
         end
 
         it 'should return nil when the response time of target query is nil' do
-          allow(target).to receive(:response_time).with(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, anything)
+          allow(target).to receive(:base_response_time).with(@uri, anything)
             .and_return(1000)
           allow(target).to receive(:response_time).with(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, anything)
           .and_return(nil)
@@ -41,7 +41,7 @@ SPARQL
         end
 
         it 'should return nil when the response time of ask query is greater than the one of target query' do
-          allow(target).to receive(:response_time).with(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, anything)
+          allow(target).to receive(:base_response_time).with(@uri, anything)
             .and_return(10000)
           allow(target).to receive(:response_time).with(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, anything)
             .and_return(1000)
@@ -49,7 +49,7 @@ SPARQL
         end
 
         it 'should return 9000 when the response time of ask query is 1000 and the one of target query is 10000' do
-          allow(target).to receive(:response_time).with(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, anything)
+          allow(target).to receive(:base_response_time).with(@uri, anything)
             .and_return(1000)
           allow(target).to receive(:response_time).with(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, anything)
             .and_return(10000)
@@ -57,7 +57,7 @@ SPARQL
         end
 
         it 'should return 0 when the response time of ask query is 10000 and the one of target query is 10000' do
-          allow(target).to receive(:response_time).with(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, anything)
+          allow(target).to receive(:base_response_time).with(@uri, anything)
             .and_return(10000)
           allow(target).to receive(:response_time).with(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, anything)
             .and_return(10000)
@@ -71,8 +71,6 @@ SPARQL
           end
 
           it 'should return time when query is correctly' do
-            allow(Umakadata::SparqlHelper).to receive(:query).with(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY, logger: anything, options: anything).and_return(Net::HTTPResponse)
-            expect(target.response_time(@uri, Umakadata::Criteria::ExecutionTime::BASE_QUERY).instance_of?(Float)).to be true
             allow(Umakadata::SparqlHelper).to receive(:query).with(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY, logger: anything, options: anything).and_return(Net::HTTPResponse)
             expect(target.response_time(@uri, Umakadata::Criteria::ExecutionTime::TARGET_QUERY).instance_of?(Float)).to be true
          end
