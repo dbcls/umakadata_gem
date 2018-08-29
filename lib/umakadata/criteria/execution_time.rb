@@ -5,10 +5,6 @@ module Umakadata
   module Criteria
     module ExecutionTime
 
-      BASE_QUERY = <<-'SPARQL'
-ASK {}
-SPARQL
-
       TARGET_QUERY = <<-'SPARQL'
 SELECT DISTINCT (COUNT(?class) AS ?c)
 WHERE {[] a ?class .}
@@ -18,13 +14,11 @@ SPARQL
         base_query_log = Umakadata::Logging::Log.new
         logger.push base_query_log unless logger.nil?
         base_response_time = self.base_response_time(uri, base_query_log)
-        puts base_response_time
-        base_query_log.result = "#{BASE_QUERY.gsub(/\n/,'')} " + (base_response_time.nil? ? "is N/A" : "takes #{base_response_time} second")
+        base_query_log.result = "HTTP HEAD request " + (base_response_time.nil? ? "is N/A" : "takes #{base_response_time} second")
 
         target_query_log = Umakadata::Logging::Log.new
         logger.push target_query_log unless logger.nil?
         target_response_time = self.response_time(uri, TARGET_QUERY, target_query_log)
-        puts target_response_time
         target_query_log.result = "#{TARGET_QUERY.gsub(/\n/,'')} " + (target_response_time.nil? ? "is N/A" : "takes #{target_response_time} second")
 
         if base_response_time.nil? || target_response_time.nil?
