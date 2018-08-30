@@ -95,7 +95,7 @@ module Umakadata
     def make_reader_for_jsonld(str)
       begin
         return nil unless JSON::LD::Format.detect(str)
-        reader = JSON::LD::Reader.new(str)
+        reader = JSON::LD::Reader.new(str, { validate: true })
         return reader
       rescue
         return nil
