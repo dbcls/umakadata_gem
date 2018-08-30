@@ -25,7 +25,7 @@ module Umakadata
     # @return [Array]
     attr_reader :publisher
 
-    FORMATS = { "N-Triples" => NTRIPLES, "Turtle" => TURTLE, "RDF/XML" => RDFXML, "N3" => N3 }
+    FORMATS = { "N-Triples" => NTRIPLES, "Turtle" => TURTLE, "RDF/XML" => RDFXML, "N3" => N3, "RDFa" => RDFA }
 
     def initialize(http_response, logger: nil)
       body = http_response.body
