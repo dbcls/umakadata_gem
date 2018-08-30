@@ -1,5 +1,6 @@
 require 'rdf/turtle'
 require 'rdf/rdfxml'
+require 'rdf/n3'
 
 module Umakadata
   module DataFormat
@@ -8,6 +9,7 @@ module Umakadata
     TURTLE = 'text/turtle'.freeze
     RDFXML = 'application/rdf+xml'.freeze
     HTML   = 'text/html'.freeze
+    N3 = 'text/n3'.freeze
 
     def xml?(str)
       return !make_reader_for_xml(str).nil?
@@ -15,6 +17,10 @@ module Umakadata
 
     def ttl?(str)
       return !make_reader_for_ttl(str).nil?
+    end
+
+    def n3?(str)
+      return !make_reader_for_n3(str).nil?
     end
 
     def make_reader_for_xml(str)
@@ -31,6 +37,15 @@ module Umakadata
         str = str.gsub(/@prefix\s*:\s*?<#>\s*\.\n/, '')
         str = str.gsub(/<>/, '<http://blank>')
         reader = RDF::Graph.new << RDF::Turtle::Reader.new(str, {validate: true})
+        return reader
+      rescue
+        return nil
+      end
+    end
+
+    def make_reader_for_n3(str)
+      begin
+        reader = RDF::N3::Reader.new(str)
         return reader
       rescue
         return nil
@@ -65,6 +80,8 @@ module Umakadata
             end
           end
         end
+      elsif type == N3 || (type.nil? && n3?(str))
+        reader = make_reader_for_n3(str)
       end
       return nil if reader.nil?
 

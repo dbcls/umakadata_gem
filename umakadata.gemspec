@@ -30,5 +30,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rdf-turtle", "~> 2.0"
   spec.add_dependency "rdf-rdfxml", "~> 2.0"
   spec.add_dependency "rdf-vocab", "~> 2.0"
+  spec.add_dependency "rdf-n3", "~> 2.0"
   spec.add_dependency "activesupport", "~> 4.2.6"
 end
