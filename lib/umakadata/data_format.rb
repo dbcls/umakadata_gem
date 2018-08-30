@@ -31,6 +31,7 @@ module Umakadata
 
     def make_reader_for_xml(str)
       begin
+        return nil unless RDF::RDFXML::Format.detect(str)
         reader = RDF::RDFXML::Reader.new(str, {validate: true})
         return reader
       rescue
@@ -42,6 +43,7 @@ module Umakadata
       begin
         str = str.gsub(/@prefix\s*:\s*?<#>\s*\.\n/, '')
         str = str.gsub(/<>/, '<http://blank>')
+        return nil unless RDF::Turtle::Format.detect(str)
         reader = RDF::Graph.new << RDF::Turtle::Reader.new(str, {validate: true})
         return reader
       rescue
@@ -51,6 +53,7 @@ module Umakadata
 
     def make_reader_for_n3(str)
       begin
+        # TODO return nil if it does not match N3
         reader = RDF::N3::Reader.new(str)
         return reader
       rescue
@@ -60,6 +63,7 @@ module Umakadata
 
     def make_reader_for_ntriples(str)
       begin
+        return nil unless RDF::NTriples::Format.detect(str)
         reader = RDF::NTriples::Reader.new(str)
         return reader
       rescue
