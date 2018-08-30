@@ -64,7 +64,6 @@ module Umakadata
 
     def make_reader_for_n3(str)
       begin
-        # TODO return nil if it does not match N3
         reader = RDF::N3::Reader.new(str, { validate: true })
         return reader
       rescue
