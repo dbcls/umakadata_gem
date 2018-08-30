@@ -1,6 +1,7 @@
 require 'rdf/turtle'
 require 'rdf/rdfxml'
 require 'rdf/n3'
+require 'rdf/ntriples'
 
 module Umakadata
   module DataFormat
@@ -10,6 +11,7 @@ module Umakadata
     RDFXML = 'application/rdf+xml'.freeze
     HTML   = 'text/html'.freeze
     N3 = 'text/n3'.freeze
+    NTRIPLES = 'application/n-triples'.freeze
 
     def xml?(str)
       return !make_reader_for_xml(str).nil?
@@ -21,6 +23,10 @@ module Umakadata
 
     def n3?(str)
       return !make_reader_for_n3(str).nil?
+    end
+
+    def ntriples?(str)
+      return !make_reader_for_ntriples(str).nil?
     end
 
     def make_reader_for_xml(str)
@@ -52,11 +58,22 @@ module Umakadata
       end
     end
 
+    def make_reader_for_ntriples(str)
+      begin
+        reader = RDF::NTriples::Reader.new(str)
+        return reader
+      rescue
+        return nil
+      end
+    end
+
     def triples(str, type=nil)
       return nil if str.nil? || str.empty?
 
       reader = nil
-      if type == TURTLE || (type.nil? && ttl?(str))
+      if type == NTRIPLES || (type.nil? && ntriples?(str))
+        reader = make_reader_for_ntriples(str)
+      elsif type == TURTLE || (type.nil? && ttl?(str))
         reader = make_reader_for_ttl(str)
       elsif type == RDFXML || (type.nil? && xml?(str))
         reader = make_reader_for_xml(str)
@@ -91,7 +108,8 @@ module Umakadata
           data.push [subject, predicate, object]
         end
       rescue
-         puts $!
+        puts $!
+        return nil
       end
       return data
     end

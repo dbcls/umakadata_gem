@@ -65,6 +65,20 @@ describe 'Umakadata' do
           expect(void.publisher.include?('http://www.example.org/Publisher')).to be false
         end
 
+        it 'should return void object when valid response is retrieved of n-triples format' do
+          valid_ntriples = read_file('good_ntriples_01.nt')
+          response = double(Net::HTTPResponse)
+          allow(target).to receive(:http_get_recursive).with(@uri, anything, logger: nil).and_return(response)
+          allow(target).to receive(:well_known_uri).and_return(@uri)
+          allow(response).to receive(:is_a?).and_return(true)
+          allow(response).to receive(:body).and_return(valid_ntriples)
+
+          void = target.void_on_well_known_uri(@uri)
+
+          expect(void.license.include?('http://creativecommons.org/licenses/by/2.1/jp/')).to be true
+          expect(void.publisher.include?('http://www.example.org/Publisher')).to be true
+        end
+
         it 'should return false description object when invalid response is retrieved' do
           invalid_ttl = read_file('bad_turtle_01.ttl')
           response = double(Net::HTTPSuccess)
