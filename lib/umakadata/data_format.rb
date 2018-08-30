@@ -14,6 +14,7 @@ module Umakadata
     N3 = 'text/n3'.freeze
     NTRIPLES = 'application/n-triples'.freeze
     RDFA = 'application/xhtml+xml'.freeze
+    JSONLD = 'application/ld+json'.freeze
 
     def xml?(str)
       return !make_reader_for_xml(str).nil?
@@ -33,6 +34,10 @@ module Umakadata
 
     def rdfa?(str)
       return !make_reader_for_rdfa(str).nil?
+    end
+
+    def jsonld?(str)
+      return !make_reader_for_jsonld(str).nil?
     end
 
     def make_reader_for_xml(str)
@@ -87,6 +92,16 @@ module Umakadata
       end
     end
 
+    def make_reader_for_jsonld(str)
+      begin
+        return nil unless JSON::LD::Format.detect(str)
+        reader = JSON::LD::Reader.new(str)
+        return reader
+      rescue
+        return nil
+      end
+    end
+
     def triples(str, type=nil)
       return nil if str.nil? || str.empty?
 
@@ -121,6 +136,8 @@ module Umakadata
         reader = make_reader_for_n3(str)
       elsif type == RDFA || (type.nil? && rdfa?(str))
         reader = make_reader_for_rdfa(str)
+      elsif type == JSONLD || (type.nil? && jsonld?(str))
+        reader = make_reader_for_jsonld(str)
       end
       return nil if reader.nil?
 

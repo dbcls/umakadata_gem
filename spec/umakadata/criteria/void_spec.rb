@@ -93,6 +93,36 @@ describe 'Umakadata' do
           expect(void.publisher.include?('http://www.example.org/Publisher')).to be true
         end
 
+        it 'should return void object when valid response is retrieved of html format with json-ld' do
+          valid_jsonld = read_file('good_jsonld_01.html')
+          response = double(Net::HTTPResponse)
+          allow(target).to receive(:http_get_recursive).with(@uri, anything, logger: nil).and_return(response)
+          allow(target).to receive(:well_known_uri).and_return(@uri)
+          allow(response).to receive(:is_a?).and_return(true)
+          allow(response).to receive(:body).and_return(valid_jsonld)
+          allow(response).to receive(:content_type).and_return(Umakadata::DataFormat::HTML)
+
+          void = target.void_on_well_known_uri(@uri)
+
+          expect(void.license.include?('http://creativecommons.org/licenses/by/2.1/jp/')).to be true
+          expect(void.publisher.include?('http://www.example.org/Publisher')).to be true
+        end
+
+        it 'should return void object when valid response is retrieved of json-ld format' do
+          valid_jsonld = read_file('good_jsonld_02.jsonld')
+          response     = double(Net::HTTPResponse)
+          allow(target).to receive(:http_get_recursive).with(@uri, anything, logger: nil).and_return(response)
+          allow(target).to receive(:well_known_uri).and_return(@uri)
+          allow(response).to receive(:is_a?).and_return(true)
+          allow(response).to receive(:body).and_return(valid_jsonld)
+          allow(response).to receive(:content_type).and_return(Umakadata::DataFormat::HTML)
+
+          void = target.void_on_well_known_uri(@uri)
+
+          expect(void.license.include?('http://creativecommons.org/licenses/by/2.1/jp/')).to be true
+          expect(void.publisher.include?('http://www.example.org/Publisher')).to be true
+        end
+
         it 'should return false description object when invalid response is retrieved' do
           invalid_ttl = read_file('bad_turtle_01.ttl')
           response = double(Net::HTTPSuccess)
@@ -100,6 +130,21 @@ describe 'Umakadata' do
           allow(target).to receive(:well_known_uri).and_return(@uri)
           allow(response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
           allow(response).to receive(:body).and_return(invalid_ttl)
+
+          void = target.void_on_well_known_uri(@uri)
+
+          expect(void.text).to be_nil
+          expect(void.license).to be_nil
+          expect(void.publisher).to be_nil
+        end
+
+        it 'should return false descriotion object when invalid response of html format is retrieved' do
+          invalid_html = read_file('bad_jsonld_01.html')
+          response = double(Net::HTTPSuccess)
+          allow(target).to receive(:http_get_recursive).with(@uri, anything, logger: nil).and_return(response)
+          allow(target).to receive(:well_known_uri).and_return(@uri)
+          allow(response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
+          allow(response).to receive(:body).and_return(invalid_html)
 
           void = target.void_on_well_known_uri(@uri)
 
