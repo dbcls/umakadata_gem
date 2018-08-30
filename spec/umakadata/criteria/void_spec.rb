@@ -114,7 +114,6 @@ describe 'Umakadata' do
           allow(target).to receive(:well_known_uri).and_return(@uri)
           allow(response).to receive(:is_a?).and_return(true)
           allow(response).to receive(:body).and_return(valid_jsonld)
-          allow(response).to receive(:content_type).and_return(Umakadata::DataFormat::HTML)
 
           void = target.void_on_well_known_uri(@uri)
 
@@ -129,7 +128,6 @@ describe 'Umakadata' do
           allow(target).to receive(:well_known_uri).and_return(@uri)
           allow(response).to receive(:is_a?).and_return(true)
           allow(response).to receive(:body).and_return(valid_jsonld)
-          allow(response).to receive(:content_type).and_return(Umakadata::DataFormat::HTML)
 
           void = target.void_on_well_known_uri(@uri)
 
