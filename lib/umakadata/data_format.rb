@@ -7,14 +7,14 @@ require 'rdf/rdfa'
 module Umakadata
   module DataFormat
 
-    UNKNOWN = 'unknown'
-    TURTLE = 'text/turtle'.freeze
-    RDFXML = 'application/rdf+xml'.freeze
-    HTML   = 'text/html'.freeze
-    N3 = 'text/n3'.freeze
+    UNKNOWN  = 'unknown'
+    TURTLE   = 'text/turtle'.freeze
+    RDFXML   = 'application/rdf+xml'.freeze
+    HTML     = 'text/html'.freeze
+    N3       = 'text/n3'.freeze
     NTRIPLES = 'application/n-triples'.freeze
-    RDFA = 'application/xhtml+xml'.freeze
-    JSONLD = 'application/ld+json'.freeze
+    RDFA     = 'application/xhtml+xml'.freeze
+    JSONLD   = 'application/ld+json'.freeze
 
     def xml?(str)
       return !make_reader_for_xml(str).nil?
@@ -43,7 +43,7 @@ module Umakadata
     def make_reader_for_xml(str)
       begin
         return nil unless RDF::RDFXML::Format.detect(str)
-        reader = RDF::RDFXML::Reader.new(str, {validate: true})
+        reader = RDF::RDFXML::Reader.new(str, { validate: true })
         return reader
       rescue
         return nil
@@ -55,7 +55,7 @@ module Umakadata
         str = str.gsub(/@prefix\s*:\s*?<#>\s*\.\n/, '')
         str = str.gsub(/<>/, '<http://blank>')
         return nil unless RDF::Turtle::Format.detect(str)
-        reader = RDF::Graph.new << RDF::Turtle::Reader.new(str, {validate: true})
+        reader = RDF::Graph.new << RDF::Turtle::Reader.new(str, { validate: true })
         return reader
       rescue
         return nil
@@ -102,7 +102,7 @@ module Umakadata
       end
     end
 
-    def triples(str, type=nil)
+    def triples(str, type = nil)
       return nil if str.nil? || str.empty?
 
       reader = nil
@@ -113,17 +113,17 @@ module Umakadata
       elsif type == RDFXML || (type.nil? && xml?(str))
         reader = make_reader_for_xml(str)
         if !reader.nil?
-          class <<reader
+          class << reader
             def uri(value, append = nil)
               append = RDF::URI(append)
-              value = RDF::URI(value)
-              value = if append.absolute?
-                        value = append
-                      elsif append
-                        value = value.join(append)
-                      else
-                        value
-                      end
+              value  = RDF::URI(value)
+              value  = if append.absolute?
+                         value = append
+                       elsif append
+                         value = value.join(append)
+                       else
+                         value
+                       end
               # comment out since validate? does not consider blank nodes
               # value.validate! if validate?
               value.canonicalize! if canonicalize?
@@ -135,7 +135,7 @@ module Umakadata
       elsif type == N3 || (type.nil? && n3?(str))
         reader = make_reader_for_n3(str)
         if !reader.nil?
-          class <<reader
+          class << reader
             def uri(value, append = nil)
               value = RDF::URI(value)
               value = value.join(append) if append
@@ -146,7 +146,7 @@ module Umakadata
 
               # Variable substitution for in-scope variables. Variables are in scope if they are defined in anthing other than
               # the current formula
-              var = @variables[value.to_s]
+              var   = @variables[value.to_s]
               value = var[:var] if var
 
               value
@@ -156,17 +156,17 @@ module Umakadata
       elsif type == RDFA || (type.nil? && rdfa?(str))
         reader = make_reader_for_rdfa(str)
         if !reader.nil?
-          class <<reader
+          class << reader
             def uri(value, append = nil)
               append = RDF::URI(append)
-              value = RDF::URI(value)
-              value = if append.absolute?
-                        value = append
-                      elsif append
-                        value = value.join(append)
-                      else
-                        value
-                      end
+              value  = RDF::URI(value)
+              value  = if append.absolute?
+                         value = append
+                       elsif append
+                         value = value.join(append)
+                       else
+                         value
+                       end
               # comment out since validate? does not consider blank nodes
               # value.validate! if validate?
               value.canonicalize! if canonicalize?
