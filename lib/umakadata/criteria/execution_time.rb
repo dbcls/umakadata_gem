@@ -60,8 +60,9 @@ SPARQL
           logger.push log unless logger.nil?
 
           start_time = Time.now
-          socket = TCPSocket.new(uri.host, uri.port)
-          if !socket.is_a?(TCPSocket)
+          begin
+            socket = TCPSocket.new(uri.host, uri.port)
+          rescue SocketError
             log.result = 'TCP connection is not Success'
             next
           end
