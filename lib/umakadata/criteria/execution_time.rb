@@ -1,5 +1,6 @@
 require 'umakadata/sparql_helper'
 require 'umakadata/logging/log'
+require 'socket'
 
 module Umakadata
   module Criteria
@@ -14,7 +15,7 @@ SPARQL
         base_query_log = Umakadata::Logging::Log.new
         logger.push base_query_log unless logger.nil?
         base_response_time = self.base_response_time(uri, base_query_log)
-        base_query_log.result = "HTTP HEAD request " + (base_response_time.nil? ? "is N/A" : "takes #{base_response_time} second on average")
+        base_query_log.result = "TCP connection " + (base_response_time.nil? ? "is N/A" : "takes #{base_response_time} second on average")
 
         target_query_log = Umakadata::Logging::Log.new
         logger.push target_query_log unless logger.nil?
@@ -52,18 +53,21 @@ SPARQL
 
       def base_response_time(uri, logger = nil)
         trials = 5
+        uri = URI.parse(uri.to_s) unless uri.is_a?(URI)
+
         response_times = trials.times.map do |n|
           log = Umakadata::Logging::Log.new
           logger.push log unless logger.nil?
 
           start_time = Time.now
-          response   = http_head(uri, { :headers => { 'Accept' => '*/*' }, :time_out => 10, :logger => log })
-          if !response.is_a?(Net::HTTPSuccess)
-            log.result    = 'HTTP response is not 2xx Success'
+          socket = TCPSocket.new(uri.host, uri.port)
+          if !socket.is_a?(TCPSocket)
+            log.result = 'TCP connection is not Success'
             next
           end
           response_time = Time.now - start_time
-          log.result = "(#{n+1}) 200 HTTP response takes #{response_time} second"
+          socket.close
+          log.result = "(#{n+1}) TCP connection takes #{response_time} second"
           response_time
         end
 
