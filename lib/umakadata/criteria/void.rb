@@ -12,7 +12,8 @@ module Umakadata
       include Umakadata::HTTPHelper
 
       WELL_KNOWN_VOID_PATH = "/.well-known/void".freeze
-      MEDIA_TYPES = [Umakadata::DataFormat::TURTLE, Umakadata::DataFormat::RDFXML].freeze
+      MEDIA_TYPES = [Umakadata::DataFormat::NTRIPLES, Umakadata::DataFormat::TURTLE, Umakadata::DataFormat::RDFXML,
+                     Umakadata::DataFormat::N3, Umakadata::DataFormat::RDFA, Umakadata::DataFormat::JSONLD].freeze
 
       def well_known_uri(uri)
         URI::HTTP.build({:host => uri.host, :path => WELL_KNOWN_VOID_PATH})
