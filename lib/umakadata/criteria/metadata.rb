@@ -181,7 +181,8 @@ module Umakadata
           if uri.include?('#')
             ontologies.push uri.split('#')[0]
           else
-            ontologies.push /^(.*\/).*?$/.match(uri)[1]
+            result = /^(.*\/).*?$/.match(uri)
+            ontologies.push result[1] unless result.nil?
           end
         end
         return ontologies.uniq
