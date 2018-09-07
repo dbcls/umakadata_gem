@@ -161,6 +161,35 @@ describe 'Umakadata' do
 
       end
 
+      describe '#ontologies' do
+        let(:test_class) { Struct.new(:target) { include Umakadata::Criteria::Metadata } }
+        let(:target) { test_class.new }
+
+        it 'should return ontology if retrieved item contains sharpe' do
+          properties = ['http://www.w3.org/1999/02/22-rdf-syntax-ns#type']
+
+          ontologies = target.ontologies(properties)
+
+          expect(ontologies[0]).to eq('http://www.w3.org/1999/02/22-rdf-syntax-ns')
+        end
+
+        it 'should return ontology if retrieved item matches regular expression' do
+          properties = ['http://www.w3.org/1999/02/22-rdf-syntax-ns']
+
+          ontologies = target.ontologies(properties)
+
+          expect(ontologies[0]).to eq('http://www.w3.org/1999/02/')
+        end
+
+        it 'should return empty ontologies if retrieved items do not match regular expression' do
+          properties = ['', 'http:']
+
+          ontologies = target.ontologies(properties)
+
+          expect(ontologies.count).to eq 0
+        end
+      end
+
     end
   end
 end
