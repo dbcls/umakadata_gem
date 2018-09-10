@@ -14,7 +14,7 @@ module Umakadata
         sparql_query = <<-"SPARQL"
 SELECT * 
 WHERE {
-  SERVICE <#{uri}> { <example.com> ?p ?o }
+  SERVICE <#{uri}> { <http://example.com> ?p ?o }
 } 
 LIMIT 1
         SPARQL
