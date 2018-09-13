@@ -25,9 +25,9 @@ LIMIT 1
             logger.push request_log unless logger.nil?
             results = Umakadata::SparqlHelper.query(uri, query, logger: request_log, options: { method: method })
             if results.nil?
-              request_log.result = "failed to retrieve subject starts with #{prefix}"
+              request_log.result = "failed to retrieve subject starts with #{allow_prefix}"
             else
-              request_log.result = "Success to pick up a subject which starts with #{prefix}"
+              request_log.result = "Success to pick up a subject which starts with #{allow_prefix}"
               break
             end
           end
