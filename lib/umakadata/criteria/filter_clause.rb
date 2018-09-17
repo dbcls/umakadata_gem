@@ -24,7 +24,7 @@ module Umakadata
             "!regex(str(?s), \"^#{deny_prefix}\", \"i\")"
           end
         else
-          raise StandardError.new('Neither allow_prefix nor deny_prefix is specified: one of them must be specified.')
+          raise StandardError.new('Neither allow_regex nor deny_regex is specified: one of them must be specified.')
         end
       end
     end

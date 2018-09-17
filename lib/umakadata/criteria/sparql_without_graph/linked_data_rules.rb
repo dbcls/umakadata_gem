@@ -111,7 +111,7 @@ SPARQL
         end
 
         def get_subject_with_filter_condition(uri, prefixes, logger: nil)
-          conditions = prefixes.map{|prefix| filter_clause(prefix[:allow], prefix[:deny], prefix[:case_sensitive]) }.join(' || ')
+          conditions = prefixes.map{|prefix| filter_clause(prefix[:allow_regex], prefix[:deny_regex], prefix[:case_sensitive]) }.join(' || ')
           sparql_query = <<-"SPARQL"
 SELECT
   ?s
@@ -194,7 +194,7 @@ SPARQL
         end
 
         def contains_same_as_with_filter_condition(uri, prefixes, logger: nil)
-          conditions = prefixes.map{|prefix| filter_clause(prefix[:allow], prefix[:deny], prefix[:case_sensitive])}.join(' || ')
+          conditions = prefixes.map{|prefix| filter_clause(prefix[:allow_regex], prefix[:deny_regex], prefix[:case_sensitive])}.join(' || ')
           sparql_query = <<-"SPARQL"
 PREFIX owl:<http://www.w3.org/2002/07/owl#>
 SELECT
@@ -256,7 +256,7 @@ SPARQL
         end
 
         def contains_see_also_with_filter_condition(uri, prefixes, logger: nil)
-          conditions = prefixes.map{|prefix| filter_clause(prefix[:allow], prefix[:deny], prefix[:case_sensitive])}.join(' || ')
+          conditions = prefixes.map{|prefix| filter_clause(prefix[:allow_regex], prefix[:deny_regex], prefix[:case_sensitive])}.join(' || ')
           sparql_query = <<-"SPARQL"
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT
