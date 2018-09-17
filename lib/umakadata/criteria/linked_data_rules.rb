@@ -318,7 +318,6 @@ SPARQL
         false
       end
 
-
       def search_subject_from_prefixes(prefixes, results)
         results.each do |result|
           subject = result[:s].to_s

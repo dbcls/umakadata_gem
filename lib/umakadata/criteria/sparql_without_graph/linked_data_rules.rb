@@ -318,11 +318,11 @@ SPARQL
             subject = result[:s].to_s
             matched = prefixes.any? do |p|
               if p.case_sensitive
-                (p[:allow].blank? || subject =~ /^#{p[:allow]}/) &&
-                (p[:deny].blank? || !(subject =~ /^#{p[:deny]}/))
+                (p[:allow_regex].blank? || subject =~ /^#{p[:allow_regex]}/) &&
+                  (p[:deny_regex].blank? || !(subject =~ /^#{p[:deny_regex]}/))
               else
-                (p[:allow].blank? || subject =~ /^#{p[:allow]}/i) &&
-                (p[:deny].blank? || !(subject =~ /^#{p[:deny]}/i))
+                (p[:allow_regex].blank? || subject =~ /^#{p[:allow_regex]}/i) &&
+                  (p[:deny_regex].blank? || !(subject =~ /^#{p[:denied_url]}/i))
               end
             end
             return subject if matched
