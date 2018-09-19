@@ -1,10 +1,13 @@
 require 'umakadata/sparql_helper'
 require 'umakadata/logging/log'
-require 'socket'
 
 module Umakadata
   module Criteria
     module ExecutionTime
+
+      BASE_QUERY = <<-'SPARQL'
+ASK {}
+SPARQL
 
       TARGET_QUERY = <<-'SPARQL'
 SELECT DISTINCT (COUNT(?class) AS ?c)
@@ -14,8 +17,8 @@ SPARQL
       def execution_time(uri, logger: nil)
         base_query_log = Umakadata::Logging::Log.new
         logger.push base_query_log unless logger.nil?
-        base_response_time = self.base_response_time(uri, base_query_log)
-        base_query_log.result = "TCP connection " + (base_response_time.nil? ? "is N/A" : "takes #{base_response_time} second on average")
+        base_response_time = self.response_time(uri, BASE_QUERY, base_query_log)
+        base_query_log.result = "#{BASE_QUERY.gsub(/\n/,'')} " + (base_response_time.nil? ? "is N/A" : "takes #{base_response_time} second")
 
         target_query_log = Umakadata::Logging::Log.new
         logger.push target_query_log unless logger.nil?
@@ -51,30 +54,6 @@ SPARQL
         nil
       end
 
-      def base_response_time(uri, logger = nil)
-        trials = 5
-        uri = URI.parse(uri.to_s) unless uri.is_a?(URI)
-
-        response_times = trials.times.map do |n|
-          log = Umakadata::Logging::Log.new
-          logger.push log unless logger.nil?
-
-          start_time = Time.now
-          begin
-            socket = TCPSocket.new(uri.host, uri.port)
-          rescue SocketError
-            log.result = 'TCP connection is not Success'
-            next
-          end
-          response_time = Time.now - start_time
-          socket.close
-          log.result = "(#{n+1}) TCP connection takes #{response_time} second"
-          response_time
-        end
-
-        return nil if response_times.compact.size != trials
-        return response_times.sum.to_f / response_times.size
-      end
     end
   end
 end
