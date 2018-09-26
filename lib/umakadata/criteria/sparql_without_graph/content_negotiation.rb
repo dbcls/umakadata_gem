@@ -8,32 +8,35 @@ module Umakadata
         include Umakadata::HTTPHelper
         include Umakadata::Criteria::FilterClause
 
-        def check_content_negotiation(uri, allow_prefix, deny_prefix, case_sensitive, content_type, logger: nil)
-          filter = filter_clause(allow_prefix, deny_prefix, case_sensitive)
-          query = <<-"SPARQL"
-SELECT
-  ?s
-WHERE
-  { ?s ?p ?o 
-    FILTER( #{filter} )
-  }
+        def check_content_negotiation(uri, allow, deny, as_regex, case_insensitive, fixed_uri, content_type, logger: nil)
+          uri = if fixed_uri && !fixed_uri.empty?
+                  fixed_uri
+                else
+                  filter = filter_clause(allow, deny, as_regex, case_insensitive)
+                  query  = <<-"SPARQL"
+SELECT ?s
+WHERE {
+  ?s ?p ?o 
+  FILTER( #{filter} )
+}
 LIMIT 1
-          SPARQL
-          results = nil
-          [:post, :get].each do |method|
-            request_log = Umakadata::Logging::Log.new
-            logger.push request_log unless logger.nil?
-            results = Umakadata::SparqlHelper.query(uri, query, logger: request_log, options: { method: method })
-            if results.nil?
-              request_log.result = "failed to retrieve subject starts with #{allow_prefix}"
-            else
-              request_log.result = "Success to pick up a subject which starts with #{allow_prefix}"
-              break
-            end
-          end
-          return false if results.nil?
+                  SPARQL
+                  results = nil
+                  [:post, :get].each do |method|
+                    request_log = Umakadata::Logging::Log.new
+                    logger.push request_log unless logger.nil?
+                    results = Umakadata::SparqlHelper.query(uri, query, logger: request_log, options: { method: method })
+                    if results.nil?
+                      request_log.result = "failed to retrieve subject starts with #{allow}"
+                    else
+                      request_log.result = "Success to pick up a subject which starts with #{allow}"
+                      break
+                    end
+                  end
+                  return false if results.nil?
 
-          uri = results.first[:s]
+                  results.first[:s]
+                end
 
           http_log = Umakadata::Logging::Log.new
           logger.push http_log unless logger.nil?

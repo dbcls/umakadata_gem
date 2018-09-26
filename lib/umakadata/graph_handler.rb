@@ -10,8 +10,8 @@ module Umakadata
     end
 
     include Umakadata::Criteria::ContentNegotiation
-    def check_content_negotiation(allow_prefix, deny_prefix, case_sensitive, content_type, logger: nil)
-      super(@uri, allow_prefix, deny_prefix, case_sensitive, content_type, logger: logger)
+    def check_content_negotiation(allow, deny, as_regex, case_insensitive, fixed_uri, content_type, logger: nil)
+      super(@uri, allow, deny, as_regex, case_insensitive, fixed_uri, content_type, logger: logger)
     end
 
     def check_endpoint(content_type, logger: nil)

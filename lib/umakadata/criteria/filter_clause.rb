@@ -4,28 +4,22 @@ require 'active_support/core_ext'
 module Umakadata
   module Criteria
     module FilterClause
-      def filter_clause(allow_prefix, deny_prefix, case_sensitive)
-        if allow_prefix.present? && deny_prefix.present?
-          if case_sensitive
-            "(regex(str(?s), \"^#{allow_prefix}\") AND !regex(str(?s), \"^#{deny_prefix}\"))"
-          else
-            "(regex(str(?s), \"^#{allow_prefix}\", \"i\") AND !regex(str(?s), \"^#{deny_prefix}\", \"i\"))"
-          end
-        elsif allow_prefix.present?
-          if case_sensitive
-            "regex(str(?s), \"^#{allow_prefix}\")"
-          else
-            "regex(str(?s), \"^#{allow_prefix}\", \"i\")"
-          end
-        elsif deny_prefix.present?
-          if case_sensitive
-            "!regex(str(?s), \"^#{deny_prefix}\")"
-          else
-            "!regex(str(?s), \"^#{deny_prefix}\", \"i\")"
-          end
-        else
-          raise StandardError, 'Neither allow_regex nor deny_regex is specified: one of them must be specified.'
-        end
+      def filter_clause(allow, deny, as_regex, case_insensitive)
+        as_regex ? regex(allow, deny, case_insensitive) : str_starts(allow, deny)
+      end
+
+      def regex(allow, deny, case_insensitive)
+        conditions = []
+        conditions << %[regex(str(?s), "^#{allow}"#{case_insensitive ? ', "i"' : ''})] if allow && !allow.empty?
+        conditions << %[regex(str(?s), "^#{deny}"#{case_insensitive ? ', "i"' : ''})] if deny && !deny.empty?
+        conditions.join('&&')
+      end
+
+      def str_starts(allow, deny)
+        conditions = []
+        conditions << %[STRSTARTS(STR(?s), "#{allow}")] if allow && !allow.empty?
+        conditions << %[!STRSTARTS(STR(?s), "#{deny}")] if deny && !deny.empty?
+        conditions.join(' && ')
       end
     end
   end
