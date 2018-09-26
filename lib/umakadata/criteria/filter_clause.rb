@@ -12,14 +12,14 @@ module Umakadata
         conditions = []
         conditions << %[regex(str(?s), "^#{allow}"#{case_insensitive ? ', "i"' : ''})] if allow && !allow.empty?
         conditions << %[regex(str(?s), "^#{deny}"#{case_insensitive ? ', "i"' : ''})] if deny && !deny.empty?
-        conditions.join('&&')
+        conditions.length > 1 ? "(#{conditions.join('&&')})" : conditions.first
       end
 
       def str_starts(allow, deny)
         conditions = []
         conditions << %[STRSTARTS(STR(?s), "#{allow}")] if allow && !allow.empty?
         conditions << %[!STRSTARTS(STR(?s), "#{deny}")] if deny && !deny.empty?
-        conditions.join(' && ')
+        conditions.length > 1 ? "(#{conditions.join('&&')})" : conditions.first
       end
     end
   end

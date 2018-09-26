@@ -111,16 +111,32 @@ SPARQL
         end
 
         def get_subject_with_filter_condition(uri, prefixes, logger: nil)
-          conditions = prefixes.map{|prefix| filter_clause(prefix[:allow_regex], prefix[:deny_regex], prefix[:case_sensitive]) }.join(' || ')
-          sparql_query = <<-"SPARQL"
-SELECT
-  ?s
+          sparql_query = if (prefix = prefixes.select(&:use_fixed_uri).first).present?
+                           <<-SPARQL
+SELECT ?s
 WHERE {
-  { ?s ?p ?o } .
+  <#{prefix[:fixed_uri]}> ?p ?o .
+}
+LIMIT 1
+                           SPARQL
+                         elsif (others = prefixes.reject(&:use_fixed_uri)).present?
+                           conditions = others.map { |p| filter_clause(p[:allow], p[:deny], p[:as_regex], p[:case_sensitive]) }.join(' || ')
+                           <<-SPARQL
+SELECT ?s
+WHERE {
+  ?s ?p ?o .
   filter (#{conditions})
 }
 LIMIT 1
-SPARQL
+                           SPARQL
+                         else
+                           log = Umakadata::Logging::Log.new
+                           logger.push log unless logger.nil?
+                           log.result = 'No URI prefixes found.'
+                           nil
+                         end
+
+          return unless sparql_query
 
           [:post, :get].each do |method|
             log = Umakadata::Logging::Log.new
@@ -194,17 +210,33 @@ SPARQL
         end
 
         def contains_same_as_with_filter_condition(uri, prefixes, logger: nil)
-          conditions = prefixes.map{|prefix| filter_clause(prefix[:allow_regex], prefix[:deny_regex], prefix[:case_sensitive])}.join(' || ')
-          sparql_query = <<-"SPARQL"
-PREFIX owl:<http://www.w3.org/2002/07/owl#>
-SELECT
-  *
+          sparql_query = if (prefix = prefixes.select(&:use_fixed_uri).first).present?
+                           <<-SPARQL
+SELECT ?s
 WHERE {
-  { ?s owl:sameAs ?o } .
-  filter(#{conditions})
+  <#{prefix[:fixed_uri]}> owl:sameAs ?o .
 }
 LIMIT 1
-SPARQL
+                           SPARQL
+                         elsif (others = prefixes.reject(&:use_fixed_uri)).present?
+                           conditions = others.map { |p| filter_clause(p[:allow], p[:deny], p[:as_regex], p[:case_sensitive]) }.join(' || ')
+                           <<-SPARQL
+PREFIX owl:<http://www.w3.org/2002/07/owl#>
+SELECT *
+WHERE {
+  { ?s owl:sameAs ?o } .
+  FILTER (#{conditions})
+}
+LIMIT 1
+                           SPARQL
+                         else
+                           log = Umakadata::Logging::Log.new
+                           logger.push log unless logger.nil?
+                           log.result = 'No URI prefixes found.'
+                           nil
+                         end
+
+          return unless sparql_query
 
           [:post, :get].each do |method|
             log = Umakadata::Logging::Log.new
@@ -256,17 +288,33 @@ SPARQL
         end
 
         def contains_see_also_with_filter_condition(uri, prefixes, logger: nil)
-          conditions = prefixes.map{|prefix| filter_clause(prefix[:allow_regex], prefix[:deny_regex], prefix[:case_sensitive])}.join(' || ')
-          sparql_query = <<-"SPARQL"
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT
-  *
+          sparql_query = if (prefix = prefixes.select(&:use_fixed_uri).first).present?
+                           <<-SPARQL
+SELECT ?s
 WHERE {
-  { ?s rdfs:seeAlso ?o } .
-  filter(#{conditions})
+  <#{prefix[:fixed_uri]}> rdfs:seeAlso ?o .
 }
 LIMIT 1
-SPARQL
+                           SPARQL
+                         elsif (others = prefixes.reject(&:use_fixed_uri)).present?
+                           conditions = others.map { |p| filter_clause(p[:allow], p[:deny], p[:as_regex], p[:case_sensitive]) }.join(' || ')
+                           <<-SPARQL
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT *
+WHERE {
+  { ?s rdfs:seeAlso ?o } .
+  FILTER (#{conditions})
+}
+LIMIT 1
+                           SPARQL
+                         else
+                           log = Umakadata::Logging::Log.new
+                           logger.push log unless logger.nil?
+                           log.result = 'No URI prefixes found.'
+                           nil
+                         end
+
+          return unless sparql_query
 
           [:post, :get].each do |method|
             log = Umakadata::Logging::Log.new
@@ -318,11 +366,11 @@ SPARQL
             subject = result[:s].to_s
             matched = prefixes.any? do |p|
               if p.case_sensitive
-                (p[:allow_regex].blank? || subject =~ /^#{p[:allow_regex]}/) &&
-                  (p[:deny_regex].blank? || !(subject =~ /^#{p[:deny_regex]}/))
+                (p[:allow].blank? || subject =~ /^#{p[:allow]}/) &&
+                  (p[:deny].blank? || !(subject =~ /^#{p[:deny]}/))
               else
-                (p[:allow_regex].blank? || subject =~ /^#{p[:allow_regex]}/i) &&
-                  (p[:deny_regex].blank? || !(subject =~ /^#{p[:denied_url]}/i))
+                (p[:allow].blank? || subject =~ /^#{p[:allow]}/i) &&
+                  (p[:deny].blank? || !(subject =~ /^#{p[:denied_url]}/i))
               end
             end
             return subject if matched
