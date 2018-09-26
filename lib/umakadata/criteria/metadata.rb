@@ -181,10 +181,12 @@ module Umakadata
           if uri.include?('#')
             ontologies.push uri.split('#')[0]
           else
-            ontologies.push /^(.*\/).*?$/.match(uri)[1] unless URI.parse(uri.to_s).host.nil?
+            if (v = RDF::URI.parse(uri).parent)
+              ontologies.push v
+            end
           end
         end
-        return ontologies.uniq
+        ontologies.uniq
       end
 
       def score_each_graph(metadata, score_proc)
