@@ -13,6 +13,7 @@ require "umakadata/sparql_grammar"
 require "umakadata/linkset"
 require "umakadata/graph_handler"
 require "umakadata/no_graph_handler"
+require 'umakadata/linked_open_vocabularies'
 
 module Umakadata
   class Retriever
