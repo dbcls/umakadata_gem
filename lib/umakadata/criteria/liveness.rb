@@ -13,7 +13,7 @@ module Umakadata
       # @param  args [Hash]:
       # @return [Boolean]
       def alive?(uri, time_out, logger: nil)
-        sparql_query = 'SELECT * WHERE {?s ?p ?o} LIMIT 1'
+        sparql_query = 'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . } LIMIT 1'
 
         [:post, :get].each do |method|
           request_log = Umakadata::Logging::Log.new

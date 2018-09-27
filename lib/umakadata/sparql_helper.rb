@@ -24,6 +24,7 @@ module Umakadata
       sparql_log.response = client.http_response if client
 
       return response if response.is_a?(RDF::Query::Solutions)
+      return response if response.is_a?(RDF::Reader)
       return response if response.is_a?(TrueClass)
       return response if response.is_a?(FalseClass)
 
