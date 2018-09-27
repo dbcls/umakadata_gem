@@ -1,5 +1,6 @@
-require "umakadata/retriever"
-require "umakadata/version"
+require 'rdf'
+require 'umakadata/retriever'
+require 'umakadata/version'
 
 module Umakadata
 end
