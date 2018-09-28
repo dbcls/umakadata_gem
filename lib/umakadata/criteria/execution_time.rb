@@ -26,6 +26,11 @@ SPARQL
         target = measurement.collect { |x| x[0] }.compact
         base = measurement.collect { |x| x[1] }.compact
 
+        if target.empty? || base.empty? == 0
+          logger.result = "Failed to measure execution time." unless logger.nil?
+          return
+        end
+
         exec_time = (target.inject(:+) / target.length) - (base.inject(:+) / base.length)
         t = exec_time > 0 ? exec_time : 0
 
