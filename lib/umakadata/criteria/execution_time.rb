@@ -10,11 +10,31 @@ ASK {}
 SPARQL
 
       TARGET_QUERY = <<-'SPARQL'
-SELECT DISTINCT (COUNT(?class) AS ?c)
-WHERE {[] a ?class .}
+SELECT DISTINCT ?class 
+WHERE { 
+  [] a ?class . 
+} 
+LIMIT 100 
+OFFSET %d
 SPARQL
 
-      def execution_time(uri, logger: nil)
+      def execution_time(uri, times: 3, logger: nil)
+        measurement = times.times.map do |t|
+          measure(t, uri, logger: logger)
+        end
+
+        target = measurement.collect { |x| x[0] }.compact
+        base = measurement.collect { |x| x[1] }.compact
+
+        exec_time = (target.inject(:+) / target.length) - (base.inject(:+) / base.length)
+        t = exec_time > 0 ? exec_time : 0
+
+        logger.result = "Execution time takes #{t} second" unless logger.nil?
+
+        t
+      end
+
+      def measure(time, uri, logger: nil)
         base_query_log = Umakadata::Logging::Log.new
         logger.push base_query_log unless logger.nil?
         base_response_time = self.response_time(uri, BASE_QUERY, base_query_log)
@@ -22,20 +42,15 @@ SPARQL
 
         target_query_log = Umakadata::Logging::Log.new
         logger.push target_query_log unless logger.nil?
-        target_response_time = self.response_time(uri, TARGET_QUERY, target_query_log)
-        target_query_log.result = "#{TARGET_QUERY.gsub(/\n/,'')} " + (target_response_time.nil? ? "is N/A" : "takes #{target_response_time} second")
+        target_response_time = self.response_time(uri, TARGET_QUERY % (100 * time), target_query_log)
+        target_query_log.result = "#{(TARGET_QUERY  % (100 * time)).gsub(/\n/,'')} " + (target_response_time.nil? ? "is N/A" : "takes #{target_response_time} second")
 
         if base_response_time.nil? || target_response_time.nil?
           logger.result = "Execution time is N/A" unless logger.nil?
-          return nil
+          return []
         end
-        execution_time = target_response_time - base_response_time
-        if execution_time < 0.0
-          logger.result = "Execution time is invalid (#{execution_time})" unless logger.nil?
-        else
-          logger.result = "Execution time takes #{execution_time} second" unless logger.nil?
-        end
-        return execution_time
+
+        [target_response_time, base_response_time]
       end
 
       def response_time(uri, sparql_query, logger=nil)
