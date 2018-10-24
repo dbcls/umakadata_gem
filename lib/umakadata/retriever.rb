@@ -1,20 +1,3 @@
-require "rdf/vocab"
-require "umakadata/criteria/liveness"
-require "umakadata/criteria/service_clause"
-require "umakadata/criteria/service_description"
-require "umakadata/criteria/linked_data_rules"
-require "umakadata/criteria/void"
-require "umakadata/criteria/execution_time"
-require "umakadata/criteria/cool_uri"
-require "umakadata/criteria/content_negotiation"
-require "umakadata/criteria/metadata"
-require "umakadata/criteria/basic_sparql"
-require "umakadata/sparql_grammar"
-require "umakadata/linkset"
-require "umakadata/graph_handler"
-require "umakadata/no_graph_handler"
-require 'umakadata/linked_open_vocabularies'
-
 module Umakadata
   class Retriever
 
