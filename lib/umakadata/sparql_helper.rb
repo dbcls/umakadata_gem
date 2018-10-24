@@ -2,36 +2,45 @@ require 'umakadata/sparql_client'
 require 'umakadata/logging/sparql_log'
 
 module Umakadata
-
   module SparqlHelper
+    DEFAULT_OPTIONS = { 'read_timeout':       5 * 60,
+                        raise_on_redirection: true,
+                        try_any_formats:      true }.freeze
 
     def self.query(uri, query, logger: nil, options: {})
       sparql_log = Umakadata::Logging::SparqlLog.new(uri, query)
       logger.push sparql_log unless logger.nil?
 
+      options = DEFAULT_OPTIONS.merge(options)
+      client  = Umakadata::SparqlClient.new(uri, options)
+
       begin
-        client = Umakadata::SparqlClient.new(uri, {'read_timeout': 5 * 60}.merge(options))
         response = client.query(query)
-      rescue RDF::ReaderError
-        content_type = client.http_response.content_type
+      rescue SparqlClient::HTTPRedirection => e
+        sparql_log.response = client.http_response if client
+
+        client = Umakadata::SparqlClient.new(e.location, options)
+        retry
+      rescue RDF::ReaderError => e
+        content_type     = client.http_response.content_type
         sparql_log.error = "content-type: #{content_type} is inconsistent with the body of the response"
-      rescue SPARQL::Client::ClientError, SPARQL::Client::ServerError => e
-        sparql_log.error = e
+        raise e unless logger
       rescue => e
         sparql_log.error = e
+        raise e unless logger
       end
-      sparql_log.request = client.http_request if client
+
+      sparql_log.request  = client.http_request if client
       sparql_log.response = client.http_response if client
 
       return response if response.is_a?(RDF::Query::Solutions)
       return response if response.is_a?(RDF::Reader)
       return response if response.is_a?(TrueClass)
       return response if response.is_a?(FalseClass)
+      return response if response.is_a?(String)
 
       sparql_log.error ||= 'Failed to parse'
       return nil
     end
-
   end
-
 end
