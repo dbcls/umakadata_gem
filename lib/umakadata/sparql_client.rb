@@ -88,6 +88,24 @@ module Umakadata
       end
     end
 
+    class HTTPTooManyRequests < StandardError
+      attr_reader :retry_after
+
+      def initialize(msg = nil, retry_after: 10)
+        @retry_after = retry_after
+        super(msg)
+      end
+
+      # @return [Integer] the duration to wait in seconds
+      def wait_duration
+        begin
+          Integer(@retry_after)
+        rescue
+          ((DateTime.parse(@retry_after) - DateTime.now) * 24 * 60 * 60).to_i
+        end
+      end
+    end
+
     def initialize(url, options = {}, &block)
       @raise_on_redirection = options.delete(:raise_on_redirection) || false
       @try_any_formats = options.delete(:try_any_formats) || false
@@ -100,9 +118,14 @@ module Umakadata
     end
 
     def post_http_hook(response)
+      if response.kind_of? Net::HTTPTooManyRequests
+        raise HTTPTooManyRequests.new(retry_after: response['Retry-After'])
+      end
+
       if @raise_on_redirection && response.kind_of?(Net::HTTPRedirection)
         raise HTTPRedirection.new(location: response['location'])
       end
+
       @http_response = response
     end
 
