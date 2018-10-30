@@ -39,10 +39,12 @@ module Umakadata
       rescue RDF::ReaderError => e
         content_type     = client.http_response.content_type
         sparql_log.error = "content-type: #{content_type} is inconsistent with the body of the response"
-        raise e unless logger
+        STDERR.puts [e.message, e.backtrace]
+        return nil
       rescue => e
         sparql_log.error = e
-        raise e unless logger
+        STDERR.puts [e.message, e.backtrace]
+        return nil
       end
 
       sparql_log.request  = client.http_request if client
