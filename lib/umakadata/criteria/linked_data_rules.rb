@@ -105,20 +105,13 @@ SPARQL
       end
 
       def get_subject(uri, prefixes, logger: nil)
+        return prefix[:fixed_uri] if (prefix = prefixes.select(&:use_fixed_uri).first).present?
         return get_subject_with_filter_condition(uri, prefixes, logger: logger) if prefixes.count <= 30
         get_subject_in_10000_triples(uri, prefixes, logger: logger)
       end
 
       def get_subject_with_filter_condition(uri, prefixes, logger: nil)
-        sparql_query = if (prefix = prefixes.select(&:use_fixed_uri).first).present?
-                         <<-SPARQL
-SELECT ?s
-WHERE {
-  GRAPH ?g { <#{prefix[:fixed_uri]}> ?p ?o } .
-}
-LIMIT 1
-                         SPARQL
-                       elsif (others = prefixes.reject(&:use_fixed_uri)).present?
+        sparql_query = if (others = prefixes.reject(&:use_fixed_uri)).present?
                          conditions = others.map { |p| filter_clause(p[:allow], p[:deny], p[:as_regex], p[:case_sensitive]) }.join(' || ')
                          <<-SPARQL
 SELECT ?s
