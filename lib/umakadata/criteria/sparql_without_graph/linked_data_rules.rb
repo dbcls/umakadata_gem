@@ -106,7 +106,8 @@ SPARQL
         end
 
         def get_subject(uri, prefixes, logger: nil)
-          return prefix[:fixed_uri] if (prefix = prefixes.select(&:use_fixed_uri).first).present?
+          prefix = prefixes.select(&:use_fixed_uri).first
+          return prefix[:fixed_uri] if prefix.present?
           return get_subject_with_filter_condition(uri, prefixes, logger: logger) if prefixes.count <= 30
           get_subject_in_10000_triples(uri, prefixes, logger: logger)
         end
