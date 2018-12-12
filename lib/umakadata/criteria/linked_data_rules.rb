@@ -84,7 +84,7 @@ SPARQL
         end
 
         begin
-          response = http_head_recursive(URI(uri), {}, logger: logger)
+          response = http_get_recursive(URI(uri), {}, logger: logger)
         rescue => e
           logger.result = 'An error occurred in getting uri recursively' unless logger.nil?
           return false
@@ -95,7 +95,7 @@ SPARQL
           return false
         end
 
-        if response.content_length.nil?
+        if response.content_length.nil? && response.body.blank?
           logger.result = "#{uri} does not return any data" unless logger.nil?
           return false
         end
