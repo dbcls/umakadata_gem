@@ -23,11 +23,15 @@ module Umakadata
         headers = {}
         headers['Accept'] = content_type
         headers['Accept'] ||= SERVICE_DESC_CONTEXT_TYPE.join(',')
-        args = {:headers => headers, :time_out => time_out, :logger => log}
 
-        response = http_get(uri, args)
+        begin
+          response = http_get_recursive(uri, { :headers => headers, :time_out => time_out }, :logger => log)
+        rescue => e
+          logger.result = e.message unless logger.nil?
+          return false
+        end
 
-        if !response.is_a?(Net::HTTPSuccess)
+        unless response.is_a?(Net::HTTPSuccess)
           log.result = "HTTP response is not 2xx Success"
           logger.result = 'The endpoint does not return 200 HTTP response' unless logger.nil?
           return nil
@@ -38,11 +42,11 @@ module Umakadata
 
         case sd.type
         when Umakadata::DataFormat::UNKNOWN
-          logger.result = 'Service Description is invalid (valid formats: Turtle or RDF/XML)' unless logger.nil?
+          logger.result = 'Service description is invalid (valid formats: Turtle or RDF/XML)' unless logger.nil?
         when Umakadata::DataFormat::TURTLE
-          logger.result = 'Service Description is in Turtle format' unless logger.nil?
+          logger.result = 'Service description is in Turtle format' unless logger.nil?
         when Umakadata::DataFormat::RDFXML
-          logger.result = 'Service Description is in RDF/XML format' unless logger.nil?
+          logger.result = 'Service description is in RDF/XML format' unless logger.nil?
         end
 
         sd
