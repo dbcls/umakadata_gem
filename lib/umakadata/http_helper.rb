@@ -110,7 +110,8 @@ module Umakadata
       else
         log.result = 'An error occurred in getting uri recursively'
       end
-      return force_encode(response)
+
+      force_encode(response)
     end
 
     def http_head_recursive(uri, args = {}, limit = 10, logger: nil)
@@ -132,17 +133,19 @@ module Umakadata
       else
         log.result = 'An error occurred in getting uri recursively'
       end
-      return force_encode(response)
+
+      force_encode(response)
     end
 
     def force_encode(response)
       return nil if response.nil?
-      body = response.body
-      unless body.nil?
+
+      unless (body = response.body).nil?
         body.force_encoding('UTF-8') unless body.encoding == Encoding::UTF_8
         response.body = body.encode('UTF-16BE', :invalid => :replace, :undef => :replace, :replace => '?').encode("UTF-8") unless body.valid_encoding?
       end
-      return response
+
+      response
     end
 
     private
