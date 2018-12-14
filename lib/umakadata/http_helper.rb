@@ -102,7 +102,7 @@ module Umakadata
 
       if response.is_a? Net::HTTPRedirection
         log.result = 'HTTP response is 3xx Redirection'
-        return http_get_recursive(URI(response['location']), args, limit - 1, logger: logger)
+        return http_get_recursive(follow_redirect(response, uri), args, limit - 1, logger: logger)
       end
 
       if response.is_a? Net::HTTPResponse
@@ -124,7 +124,7 @@ module Umakadata
 
       if response.is_a? Net::HTTPRedirection
         log.result = 'HTTP response is 3xx Redirection'
-        return http_head_recursive(URI(response['location']), args, limit - 1, logger: logger)
+        return http_head_recursive(follow_redirect(response, uri), args, limit - 1, logger: logger)
       end
 
       if response.is_a? Net::HTTPResponse
@@ -143,6 +143,16 @@ module Umakadata
         response.body = body.encode('UTF-16BE', :invalid => :replace, :undef => :replace, :replace => '?').encode("UTF-8") unless body.valid_encoding?
       end
       return response
+    end
+
+    private
+
+    def follow_redirect(response, request_uri)
+      location = URI.parse(response['location'])
+
+      return location if location.absolute?
+
+      URI.parse(request_uri.to_s).merge(location)
     end
 
   end
