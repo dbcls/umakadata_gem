@@ -48,10 +48,8 @@ module Umakadata
   end
 
   module RequestImprove
-    GRAPH_RESULTS = %w[text/turtle text/rdf+turtle application/turtle application/x-turtle
-                       text/n3 text/rdf+n3 application/rdf+n3 application/n-triples
-                       text/x-nquads application/n-quads application/ld+json application/x-ld+json
-                       application/rdf+xml application/xhtml+xml application/rdf+json].freeze
+    GRAPH_RESULTS = %w[application/n-quads application/rdf+xml application/ld+json application/n-triples
+                       text/turtle text/n3 application/trix application/trig application/sparql-results+json].freeze
 
     def request(query, headers = {}, &block)
       unless headers['Accept']
@@ -70,11 +68,38 @@ module Umakadata
         (query =~ /CONSTRUCT|DESCRIBE|DELETE|CLEAR/)
     end
   end
+=begin
+  module Logging
+    require 'awesome_print'
 
+    def pre_http_hook(request)
+      puts '===== REQUEST ====='
+      ap request.to_hash
+      puts '-------------------'
+      puts request.method + ' ' + url
+      puts request.body
+      puts '==================='
+
+      super
+    end
+
+    def post_http_hook(response)
+      puts '===== RESPONSE ====='
+      ap response.to_hash
+      puts '--------------------'
+      puts response.code + ' ' + response.message
+      puts response.body
+      puts '===================='
+
+      super
+    end
+  end
+=end
   class SparqlClient < SPARQL::Client
     include Umakadata::DataFormat
     prepend ParserImprove
     prepend RequestImprove
+#    prepend Logging
 
     attr_reader :http_request
     attr_reader :http_response
@@ -108,7 +133,7 @@ module Umakadata
 
     def initialize(url, options = {}, &block)
       @raise_on_redirection = options.delete(:raise_on_redirection) || false
-      @try_any_formats = options.delete(:try_any_formats) || false
+      @try_any_formats      = options.delete(:try_any_formats) || false
       super
     end
 
