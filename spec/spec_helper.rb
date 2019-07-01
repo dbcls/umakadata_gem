@@ -1,20 +1,16 @@
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+# frozen_string_literal: true
+
+require 'bundler/setup'
 require 'umakadata'
-require 'umakadata/linkset'
 
 RSpec.configure do |config|
-  original_stderr = $stderr
-  original_stdout = $stdout
+  # Enable flags like --only-failures and --next-failure
+  config.example_status_persistence_file_path = '.rspec_status'
 
-  # Redirect stderr and stdout to /dev/null
-  config.before(:all) do
-    $stderr = File.open(File::NULL, "w")
-    $stdout = File.open(File::NULL, "w")
-  end
+  # Disable RSpec exposing methods globally on `Module` and `main`
+  config.disable_monkey_patching!
 
-  # Restore original output
-  config.after(:all) do
-    $stderr = original_stderr
-    $stdout = original_stdout
+  config.expect_with :rspec do |c|
+    c.syntax = :expect
   end
 end
