@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    umakadata (0.1.0)
+    umakadata (1.0.0.pre.dev)
       activesupport (~> 5.2)
       faraday (~> 0.15.4)
       linkeddata (~> 3.0)
@@ -35,7 +35,7 @@ GEM
     hamster (3.0.0)
       concurrent-ruby (~> 1.0)
     htmlentities (4.3.4)
-    i18n (1.5.1)
+    i18n (1.6.0)
       concurrent-ruby (~> 1.0)
     json-ld (3.0.2)
       multi_json (~> 1.12)
@@ -82,7 +82,7 @@ GEM
     multipart-post (2.1.1)
     net-http-persistent (3.0.1)
       connection_pool (~> 2.2)
-    nokogiri (1.9.1)
+    nokogiri (1.10.3)
       mini_portile2 (~> 2.4.0)
     nokogumbo (1.5.0)
       nokogiri
