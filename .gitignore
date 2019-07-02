@@ -9,3 +9,6 @@
 
 # rspec failure tracking
 .rspec_status
+
+# any ruby(>= 2.3)
+.ruby-version
