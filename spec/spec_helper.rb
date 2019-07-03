@@ -1,4 +1,6 @@
 require 'bundler/setup'
+require 'webmock/rspec'
+
 require 'umakadata'
 
 RSpec.configure do |config|
