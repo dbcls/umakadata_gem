@@ -1,0 +1,1 @@
+require 'umakadata/logger/formatter'
