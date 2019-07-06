@@ -1,2 +1,49 @@
 AllCops:
   TargetRubyVersion: 2.3
+  Exclude:
+    - 'tmp/**/*'
+
+# Layout
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented_relative_to_receiver
+
+# Metrics
+Metrics/AbcSize:
+  Exclude:
+    - 'lib/umakadata/sparql/client.rb'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'lib/umakadata/sparql/client.rb'
+    - 'spec/**/*'
+    - 'umakadata.gemspec'
+
+Metrics/ClassLength:
+  Max: 300
+  Exclude:
+    - 'lib/umakadata/sparql/client.rb'
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'lib/umakadata/sparql/client.rb'
+
+Metrics/LineLength:
+  Max: 120
+  Exclude:
+    - 'lib/umakadata/sparql/client.rb'
+    - 'spec/**/*'
+
+Metrics/MethodLength:
+  Exclude:
+    - 'lib/umakadata/sparql/client.rb'
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'lib/umakadata/sparql/client.rb'
+
+# Style
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
