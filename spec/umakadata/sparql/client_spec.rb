@@ -19,7 +19,7 @@ RSpec.describe Umakadata::SPARQL::Client do
       before do
         response = {
           status: 200,
-          headers: { 'Content-Type' => 'application/n-triples' },
+          headers: { 'Content-Type': 'application/n-triples' },
           body: '<http://example.org/bob#me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> .'
         }
 
@@ -27,10 +27,10 @@ RSpec.describe Umakadata::SPARQL::Client do
           .to_return(response)
       end
 
-      it 'returns Umakadata::SPARQL::Query' do
+      it 'returns Umakadata::Query' do
         result = client.query(query.to_s)
 
-        expect(result).to be_a_kind_of Umakadata::SPARQL::Query
+        expect(result).to be_a_kind_of Umakadata::Query
         expect(result.errors).to match_array []
         expect(result.warnings).to match_array []
       end
@@ -48,10 +48,10 @@ RSpec.describe Umakadata::SPARQL::Client do
           .to_return(response)
       end
 
-      it 'returns Umakadata::SPARQL::Query with a warning' do
+      it 'returns Umakadata::Query with a warning' do
         result = client.query(query.to_s)
 
-        expect(result).to be_a_kind_of Umakadata::SPARQL::Query
+        expect(result).to be_a_kind_of Umakadata::Query
         expect(result.errors).to match_array []
         expect(result.warnings.at(0)).to match(/Inconsistent content type/)
       end
@@ -72,10 +72,10 @@ RSpec.describe Umakadata::SPARQL::Client do
           .to_return(response)
       end
 
-      it 'returns Umakadata::SPARQL::Query' do
+      it 'returns Umakadata::Query' do
         result = client.query(query.to_s)
 
-        expect(result).to be_a_kind_of Umakadata::SPARQL::Query
+        expect(result).to be_a_kind_of Umakadata::Query
         expect(result.response.status).to be 500
         expect(result.response.body).to eq 'Internal Server Error'
         expect(result.errors).to match_array []
