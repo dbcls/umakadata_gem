@@ -7,6 +7,8 @@ module Umakadata
       # Check whether if the endpoint returns CORS header
       #
       # @return [true, false] true if the endpoint returns CORS header
+      #
+      # @see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
       def cors_supported?
         @cors_supported ||= cors_support.response.headers['Access-Control-Allow-Origin'] == '*'
       end

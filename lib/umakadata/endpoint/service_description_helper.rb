@@ -2,6 +2,8 @@ module Umakadata
   class Endpoint
     # Helper methods to evaluate endpoint's service description
     #
+    # @see https://www.w3.org/TR/sparql11-service-description/
+    #
     # @since 1.0.0
     module ServiceDescriptionHelper
       SD = RDF::Vocabulary.new('http://www.w3.org/ns/sparql-service-description#')
