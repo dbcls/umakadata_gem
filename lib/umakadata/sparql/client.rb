@@ -39,7 +39,7 @@ module Umakadata
       # @option options [Hash] :read_timeout
       # @option options [Hash] :retry
       # @option options [Hash] :redirect
-      # @option options [Hash] :logger disable logging if logdev is nil
+      # @option options [Hash] :logger disable logging if { logdev => nil }
       #
       def initialize(url, **options)
         super
