@@ -81,6 +81,18 @@ module Umakadata
         end
       end
 
+      # Executes a HTTP request and return Response
+      #
+      # @param [Symbol] method
+      # @param [String] path
+      # @param [String] body
+      # @param [Hash{Symbol => Object}] headers
+      #
+      # @yield [request, response]
+      # @yieldparam [Faraday::Request] request
+      # @yieldparam [Faraday::Response] response
+      #
+      # @return [Faraday::Response]
       def request(method, path, body = nil, **headers, &block)
         raise ArgumentError, "unsupported http method: #{method}" unless METHODS.include?(method)
 
@@ -134,8 +146,6 @@ module Umakadata
 
       private
 
-      #
-      # @return [Faraday::Connection]
       def connection
         @connection ||= begin
           client = faraday
