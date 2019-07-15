@@ -1,23 +1,44 @@
 require 'forwardable'
 
-OpenStruct.new
-
 module Umakadata
+  # A class that represents Umakadata query including HTTP request/response,
+  # trace information, warnings and errors (if any).
+  #
+  # @!attribute request
+  #   @return [Umakadata::Query::Request]
+  # @!attribute response
+  #   @return [Umakadata::Query::Response]
+  # @!attribute result
+  #   @return [Object]
+  # @!attribute elapsed_time
+  #   @return [Float] unit: sec
+  # @!attribute trace
+  #   @return [Array<String>]
+  # @!attribute warnings
+  #   @return [Array<String>]
+  # @!attribute errors
+  #   @return [Array<StandardError>]
   class Query
-    class HTTPEntity
+    # A class that represents HTTP messages
+    #
+    # @!attribute [r] headers
+    #   @return [Hash{String => String}]
+    # @!attribute [r] body
+    #   @return [String]
+    class HTTPMessages
       attr_reader :headers
-      attr_accessor :body
+      attr_reader :body
 
       def initialize(headers = {}, body = nil)
         @headers = headers.map { |k, v| [k.split('-').map(&:camelize).join('-'), v] }.to_h
 
         class << @headers
-          def respond_to_missing?(*_)
-            true
+          def respond_to_missing?(symbol, *_)
+            key?(key(symbol))
           end
 
           def method_missing(symbol, *_) # rubocop:disable Style/MethodMissingSuper
-            self[key(symbol)] || nil
+            self[key(symbol)]
           end
 
           def key(symbol)
@@ -29,6 +50,16 @@ module Umakadata
       end
     end
 
+    # A class that represents HTTP request
+    #
+    # @!attribute [r] method
+    #   @return [String] { GET | POST | PUT | DELETE | HEAD | PATCH | OPTIONS }
+    # @!attribute [r] url
+    #   @return [String]
+    # @!attribute [r] headers
+    #   @return [Hash{String => String}]
+    # @!attribute [r] body
+    #   @return [String]
     class Request
       extend Forwardable
 
@@ -38,7 +69,7 @@ module Umakadata
       def_delegators :@entity, :headers, :body
 
       def initialize(**hash)
-        @entity = HTTPEntity.new(hash.fetch(:request_headers, {}), hash[:body])
+        @entity = HTTPMessages.new(hash.fetch(:request_headers, {}), hash[:body])
         @method = hash[:method]&.to_s&.upcase
         @url = hash[:url]&.to_s
       end
@@ -48,6 +79,21 @@ module Umakadata
       end
     end
 
+    # A class that represents HTTP response
+    #
+    # @!attribute [r] method
+    #   @return [String] { GET | POST | PUT | DELETE | HEAD | PATCH | OPTIONS }
+    # @!attribute [r] url
+    #   @return [String]
+    # @!attribute [r] status
+    #   @return [Integer]
+    #   @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+    # @!attribute [r] reason_phrase
+    #   @return [String]
+    # @!attribute [r] headers
+    #   @return [Hash{String => String}]
+    # @!attribute [r] body
+    #   @return [String]
     class Response
       extend Forwardable
 
@@ -59,7 +105,7 @@ module Umakadata
       def_delegators :@entity, :headers, :body
 
       def initialize(**hash)
-        @entity = HTTPEntity.new(hash.fetch(:response_headers, {}), hash[:body])
+        @entity = HTTPMessages.new(hash.fetch(:response_headers, {}), hash[:body])
         @method = hash[:method]&.to_s&.upcase
         @url = hash[:url]&.to_s
         @status = hash[:status]
