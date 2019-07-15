@@ -19,6 +19,7 @@ module Umakadata
       METHODS = %i[get post].freeze
 
       GRAPH_ALL = Umakadata::HTTP::ResponseParser::RDF_GRAPH_CONTENT_TYPES.join(', ').freeze
+      RESULT_ALL = ::SPARQL::Client::RESULT_ALL
 
       DEFAULT_METHOD = :post
       DEFAULT_PROTOCOL = 1.0
@@ -187,6 +188,10 @@ module Umakadata
           client.query(self)
         end
         result
+      end
+
+      def sparql_client
+        @sparql_client ||= ::SPARQL::Client.new(@url)
       end
     end
   end
