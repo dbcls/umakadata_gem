@@ -18,19 +18,7 @@ module Umakadata
 
       METHODS = %i[get post].freeze
 
-      RDF_CONTENT_TYPES = %w[
-        text/turtle
-        text/n3
-        application/n-triples
-        application/n-quads
-        application/trig
-        application/trix
-        application/rdf+json
-        application/rdf+xml
-        application/ld+json
-      ].freeze
-
-      GRAPH_ALL = RDF_CONTENT_TYPES.join(', ').freeze
+      GRAPH_ALL = Umakadata::HTTP::ResponseParser::RDF_GRAPH_CONTENT_TYPES.join(', ').freeze
 
       DEFAULT_METHOD = :post
       DEFAULT_PROTOCOL = 1.0
