@@ -63,8 +63,8 @@ module Umakadata
           t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           begin
             request(method, path, body, headers) do |req, res|
-              q.request = Query::Request.new(req.to_env(connection).to_h)
-              q.response = Query::Response.new(res.env.to_h)
+              q.request = Query::Request.new(**req.to_env(connection).to_h)
+              q.response = Query::Response.new(**res.env.to_h)
             end
 
             if (200..299).include?(q.response.status)
