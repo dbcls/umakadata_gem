@@ -14,3 +14,20 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 end
+
+def suppress_stderr
+  original_stderr = $stderr.clone
+
+  ret = nil
+  begin
+    $stderr.reopen(File.new('/dev/null', 'w'))
+    ret = yield
+  rescue StandardError => e
+    $stderr.reopen(original_stderr)
+    raise e
+  ensure
+    $stderr.reopen(original_stderr)
+  end
+
+  ret
+end
