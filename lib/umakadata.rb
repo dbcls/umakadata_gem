@@ -8,7 +8,7 @@ module Umakadata
   require 'umakadata/endpoint'
   require 'umakadata/http'
   require 'umakadata/logger'
-  require 'umakadata/query'
+  require 'umakadata/activity'
   require 'umakadata/sparql'
   require 'umakadata/version'
 end

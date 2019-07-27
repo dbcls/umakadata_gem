@@ -18,7 +18,7 @@ module Umakadata
 
       # Execute query to obtain service description
       #
-      # @return [Umakadata::Query]
+      # @return [Umakadata::Activity]
       def sd
         @sd ||= http.get(::URI.parse(url).request_uri, Accept: Umakadata::SPARQL::Client::GRAPH_ALL)
       end

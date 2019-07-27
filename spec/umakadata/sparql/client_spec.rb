@@ -27,10 +27,10 @@ RSpec.describe Umakadata::SPARQL::Client do
           .to_return(response)
       end
 
-      it 'returns Umakadata::Query' do
+      it 'returns Umakadata::Activity' do
         result = client.query(query.to_s)
 
-        expect(result).to be_a_kind_of Umakadata::Query
+        expect(result).to be_a_kind_of Umakadata::Activity
         expect(result.errors).to match_array []
         expect(result.warnings).to match_array []
       end
@@ -48,10 +48,10 @@ RSpec.describe Umakadata::SPARQL::Client do
           .to_return(response)
       end
 
-      it 'returns Umakadata::Query with a warning' do
+      it 'returns Umakadata::Activity with a warning' do
         result = client.query(query.to_s)
 
-        expect(result).to be_a_kind_of Umakadata::Query
+        expect(result).to be_a_kind_of Umakadata::Activity
         expect(result.errors).to match_array []
         expect(result.warnings.at(0)).to match(/Inconsistent content type/)
       end
@@ -72,10 +72,10 @@ RSpec.describe Umakadata::SPARQL::Client do
           .to_return(response)
       end
 
-      it 'returns Umakadata::Query' do
+      it 'returns Umakadata::Activity' do
         result = client.query(query.to_s)
 
-        expect(result).to be_a_kind_of Umakadata::Query
+        expect(result).to be_a_kind_of Umakadata::Activity
         expect(result.response.status).to be 500
         expect(result.response.body).to eq 'Internal Server Error'
         expect(result.errors).to match_array []

@@ -20,7 +20,7 @@ module Umakadata
 
       # Execute query to check graph keyword support
       #
-      # @return [Umakadata::Query]
+      # @return [Umakadata::Activity]
       def graph_keyword_support
         @graph_keyword_support ||= sparql
                                      .construct(%i[s p o])
@@ -32,7 +32,7 @@ module Umakadata
 
       # Execute query to check service keyword support
       #
-      # @return [Umakadata::Query]
+      # @return [Umakadata::Activity]
       def service_keyword_support
         @service_keyword_support ||= sparql.query <<~SPARQL
           CONSTRUCT { ?s ?p ?o . } WHERE { SERVICE <#{url}> { ?s ?p ?o . } } LIMIT 1

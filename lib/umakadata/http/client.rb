@@ -48,23 +48,23 @@ module Umakadata
       #
       # @param  [String] path
       # @param  [Hash{Symbol => Object}] headers
-      # @return [Umakadata::Query]
+      # @return [Umakadata::Activity]
       def get(path, **headers)
         query(:get, path, headers)
       end
 
-      # Executes a HTTP request and return Query
+      # Executes a HTTP request and return Activity
       #
       # @param  [String] path
       # @param  [Hash{Symbol => Object}] headers
-      # @return [Umakadata::Query]
+      # @return [Umakadata::Activity]
       def query(method, path, body = nil, **headers)
-        Query.new do |q|
+        Activity.new do |q|
           t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           begin
             request(method, path, body, headers) do |req, res|
-              q.request = Query::Request.new(**req.to_env(connection).to_h)
-              q.response = Query::Response.new(**res.env.to_h)
+              q.request = Activity::Request.new(**req.to_env(connection).to_h)
+              q.response = Activity::Response.new(**res.env.to_h)
             end
 
             if (200..299).include?(q.response.status)

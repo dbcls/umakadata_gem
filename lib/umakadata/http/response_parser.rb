@@ -27,7 +27,7 @@ module Umakadata
 
       class << self
         #
-        # @param [Umakadata::Query::Response] response
+        # @param [Umakadata::Activity::Response] response
         # @return [RDF::Query::Solutions, RDF::Enumerable, true, false, nil]
         def parse(response, &block)
           new(response.body, url: response.url, content_type: response.headers.content_type, callback: block).parse

@@ -24,7 +24,7 @@ module Umakadata
 
       # Execute query to obtain VoID
       #
-      # @return [Umakadata::Query]
+      # @return [Umakadata::Activity]
       #
       # @see https://www.w3.org/TR/void/#discovery
       #

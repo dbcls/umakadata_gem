@@ -15,7 +15,7 @@ module Umakadata
 
       # Execute query to check CORS support
       #
-      # @return [Umakadata::Query]
+      # @return [Umakadata::Activity]
       def cors_support
         @cors_support ||= sparql.ask(%i[s p o]).execute
       end

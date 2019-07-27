@@ -1,13 +1,13 @@
 require 'forwardable'
 
 module Umakadata
-  # A class that represents Umakadata query including HTTP request/response,
+  # A class that represents Umakadata activity including HTTP request/response,
   # trace information, warnings and errors (if any).
   #
   # @!attribute request
-  #   @return [Umakadata::Query::Request]
+  #   @return [Umakadata::Activity::Request]
   # @!attribute response
-  #   @return [Umakadata::Query::Response]
+  #   @return [Umakadata::Activity::Response]
   # @!attribute result
   #   @return [Object]
   # @!attribute elapsed_time
@@ -18,7 +18,7 @@ module Umakadata
   #   @return [Array<String>]
   # @!attribute errors
   #   @return [Array<StandardError>]
-  class Query
+  class Activity
     # A class that represents HTTP messages
     #
     # @!attribute [r] headers
