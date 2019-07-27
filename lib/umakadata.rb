@@ -5,6 +5,7 @@ require_relative 'rdf/statement_improve'
 
 # Namespace for Umakadata
 module Umakadata
+  require 'umakadata/endpoint'
   require 'umakadata/http'
   require 'umakadata/logger'
   require 'umakadata/query'
