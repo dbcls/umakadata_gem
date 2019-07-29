@@ -1,4 +1,5 @@
 require 'forwardable'
+require 'umakadata/criteria'
 require 'umakadata/endpoint/http_helper'
 require 'umakadata/endpoint/service_description_helper'
 require 'umakadata/endpoint/syntax_helper'
@@ -35,5 +36,13 @@ module Umakadata
     def http
       @http ||= Umakadata::HTTP::Client.new(url, **@options)
     end
+
+    private
+
+    def availability
+      @criteria[:availability] ||= Criteria::Availability.new(self)
+    end
+
+    def_delegator :availability, :alive?
   end
 end

@@ -1,14 +1,17 @@
 module Umakadata
-  module Criteria
-    require 'umakadata/criteria/liveness'
-    require 'umakadata/criteria/service_clause'
-    require 'umakadata/criteria/service_description'
-    require 'umakadata/criteria/linked_data_rules'
-    require 'umakadata/criteria/void'
-    require 'umakadata/criteria/execution_time'
-    require 'umakadata/criteria/cool_uri'
-    require 'umakadata/criteria/content_negotiation'
-    require 'umakadata/criteria/metadata'
-    require 'umakadata/criteria/basic_sparql'
+  #
+  # @attr_reader [Umakadata::Endpoint] endpoint
+  class Criteria
+    attr_reader :endpoint
+
+    #
+    # @param [Umakadata::Endpoint] endpoint
+    # @param [Hash{Symbol => Ojbect}] options
+    def initialize(endpoint, **options)
+      @endpoint = endpoint
+      @options = options
+    end
   end
 end
+
+require 'umakadata/criteria/availability'
