@@ -18,6 +18,8 @@ module Umakadata
   #   @return [Array<String>]
   # @!attribute errors
   #   @return [Array<StandardError>]
+  #
+  # @since 1.0.0
   class Activity
     # A class that represents HTTP messages
     #
