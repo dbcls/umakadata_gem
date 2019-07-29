@@ -74,7 +74,7 @@ RSpec.describe Umakadata::Endpoint::VoIDHelper do
   end
 
   let(:void2) do
-    <<~BODY
+    <<~BODY # does not contain publisher
       @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
       @prefix pav:   <http://purl.org/pav/> .
       @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
