@@ -1,7 +1,9 @@
+require 'faraday'
 require 'linkeddata'
 
-require_relative 'faraday/response/content_type'
-require_relative 'rdf/statement_improve'
+require 'faraday/response_ext'
+require 'rdf/enumerable_ext'
+require 'rdf/statement_ext'
 
 # Namespace for Umakadata
 module Umakadata
