@@ -10,17 +10,29 @@ module Umakadata
 
       # @return [Array<String>]
       def supported_language
-        @supported_language ||= Array(sd.result
-                                        &.select { |x| RDF::Statement.new(nil, SD.supported_language, nil).match? x }
-                                        &.map { |x| x.object.value }
-                                        &.uniq)
+        service_description.supported_language
       end
 
       # Execute query to obtain service description
       #
       # @return [Umakadata::Activity]
-      def sd
-        @sd ||= http.get(::URI.parse(url).request_uri, Accept: Umakadata::SPARQL::Client::GRAPH_ALL)
+      def service_description
+        @service_description ||= begin
+          sd = http.get(::URI.parse(url).request_uri, Accept: Umakadata::SPARQL::Client::GRAPH_ALL)
+
+          class << sd
+            # @return [Array<String>]
+            def supported_language
+              @supported_language ||= Array(result
+                                              &.filter_by_property(SD.supported_language)
+                                              &.map(&:object)
+                                              &.map(&:value)
+                                              &.uniq)
+            end
+          end
+
+          sd
+        end
       end
     end
   end

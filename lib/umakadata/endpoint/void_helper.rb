@@ -8,18 +8,12 @@ module Umakadata
     module VoIDHelper
       # @return [Array<String>]
       def publisher
-        @publisher ||= Array(void.result
-                               &.select { |x| RDF::Statement.new(nil, RDF::Vocab::DC.publisher, nil).match? x }
-                               &.map { |x| x.object.value }
-                               &.uniq)
+        void.publisher
       end
 
       # @return [Array<String>]
       def license
-        @license ||= Array(void.result
-                             &.select { |x| RDF::Statement.new(nil, RDF::Vocab::DC.license, nil).match? x }
-                             &.map { |x| x.object.value }
-                             &.uniq)
+        void.license
       end
 
       # Execute query to obtain VoID
@@ -32,7 +26,31 @@ module Umakadata
       #   It might be necessary to obtain metadata by SPARQL query.
       #   See https://www.w3.org/TR/void/#discovery-links
       def void
-        @void ||= http.get('/.well-known/void', Accept: Umakadata::SPARQL::Client::GRAPH_ALL)
+        @void ||= begin
+          void = http.get('/.well-known/void', Accept: Umakadata::SPARQL::Client::GRAPH_ALL)
+
+          class << void
+            # @return [Array<String>]
+            def publisher
+              @publisher ||= Array(result
+                                     &.filter_by_property(RDF::Vocab::DC.publisher)
+                                     &.map(&:object)
+                                     &.map(&:value)
+                                     &.uniq)
+            end
+
+            # @return [Array<String>]
+            def license
+              @license ||= Array(result
+                                   &.filter_by_property(RDF::Vocab::DC.license)
+                                   &.map(&:object)
+                                   &.map(&:value)
+                                   &.uniq)
+            end
+          end
+
+          void
+        end
       end
     end
   end
