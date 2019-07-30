@@ -16,11 +16,11 @@ module Umakadata
         text/n3
         application/n-triples
         application/n-quads
+        application/rdf+xml
+        application/rdf+json
+        application/ld+json
         application/trig
         application/trix
-        application/rdf+json
-        application/rdf+xml
-        application/ld+json
       ].freeze
 
       NULL_LOGGER = ::Logger.new(nil)
