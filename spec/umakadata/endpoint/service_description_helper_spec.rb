@@ -21,26 +21,7 @@ RSpec.describe Umakadata::Endpoint::ServiceDescriptionHelper do
         response = {
           status: 200,
           headers: { 'Content-Type': 'text/turtle; charset=UTF-8' },
-          body: <<~BODY # example from http://lsd.dbcls.jp/sparql
-            @prefix rdf:	<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-            @prefix ns1:	<http://lsd.dbcls.jp/> .
-            @prefix sd:	<http://www.w3.org/ns/sparql-service-description#> .
-            ns1:sparql	rdf:type	sd:Service ;
-              sd:endpoint	ns1:sparql ;
-              sd:feature	sd:DereferencesURIs ,
-                sd:UnionDefaultGraph .
-            @prefix ns3:	<http://www.w3.org/ns/formats/> .
-            ns1:sparql	sd:resultFormat	ns3:SPARQL_Results_CSV ,
-                ns3:SPARQL_Results_JSON ,
-                ns3:N3 ,
-                ns3:RDF_XML ,
-                ns3:SPARQL_Results_XML ,
-                ns3:Turtle ,
-                ns3:N-Triples ,
-                ns3:RDFa ;
-              sd:supportedLanguage	sd:SPARQL11Query ;
-              sd:url	ns1:sparql .
-          BODY
+          body: File.read(File.join(GEM_ROOT, 'examples', 'service_description', 'life_science_dictionary.ttl'))
         }
 
         stub_request(:any, url)
