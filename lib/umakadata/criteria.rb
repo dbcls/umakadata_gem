@@ -15,3 +15,4 @@ module Umakadata
 end
 
 require 'umakadata/criteria/availability'
+require 'umakadata/criteria/freshness'
