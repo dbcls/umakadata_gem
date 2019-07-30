@@ -1,0 +1,48 @@
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix wv: <http://vocab.org/waiver/terms/norms> .
+@prefix sd: <http://www.w3.org/ns/sparql-service-description#> .
+
+# Example from https://www.w3.org/TR/void/#sparql-sd
+#   append dcterms:issued and dcterms:modified for testing
+<#service> a sd:Service;
+    sd:url <http://example.org/geopedia/sparql>;
+    sd:defaultDatasetDescription [
+        a sd:Dataset;
+        dcterms:title "GeoPedia";
+        dcterms:description "A mirror of DBpedia and Geonames";
+        void:triples 1100000100;
+        sd:defaultGraph [
+            a sd:Graph, void:Dataset;
+            dcterms:title "GeoPedia SPARQL Endpoint Description";
+            dcterms:description "Contains a copy of this SD+VoID file!";
+            void:triples 100;
+            dcterms:issued "2019-01-01T00:00:00.000Z"^^xsd:dateTime;
+        ];
+        sd:namedGraph [
+            sd:name <http://dbpedia.org/>;
+            sd:graph [
+                a sd:Graph, void:Dataset;
+                dcterms:title "DBpedia";
+                foaf:homepage <http://dbpedia.org/>;
+                void:triples 1000000000;
+                dcterms:modified "2019-01-03T00:00:00.000Z"^^xsd:dateTime;
+            ];
+        ];
+        sd:namedGraph [
+            sd:name <http://geonames.org/>;
+            sd:graph [
+                a sd:Graph, void:Dataset;
+                dcterms:title "Geonames";
+                foaf:homepage <http://www.geonames.org/ontology/>;
+                void:triples 100000000;
+                dcterms:issued "2019-01-02T00:00:00.000Z"^^xsd:dateTime;
+            ];
+        ];
+    ];
+    .

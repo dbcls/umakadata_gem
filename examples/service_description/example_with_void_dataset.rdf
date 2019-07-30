@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+        xmlns:dcterms="http://purl.org/dc/terms/"
+        xmlns:foaf="http://xmlns.com/foaf/0.1/"
+        xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+        xmlns:sd="http://www.w3.org/ns/sparql-service-description#"
+        xmlns:void="http://rdfs.org/ns/void#">
+  <rdf:Description rdf:about="http://example.com/sparql#service">
+    <rdf:type rdf:resource="http://www.w3.org/ns/sparql-service-description#Service"/>
+    <sd:url rdf:resource="http://example.org/geopedia/sparql"/>
+    <sd:defaultDatasetDescription>
+      <rdf:Description>
+        <rdf:type rdf:resource="http://www.w3.org/ns/sparql-service-description#Dataset"/>
+        <dcterms:title>GeoPedia</dcterms:title>
+        <dcterms:description>A mirror of DBpedia and Geonames</dcterms:description>
+        <void:triples rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1100000100</void:triples>
+        <sd:defaultGraph>
+          <rdf:Description>
+            <rdf:type rdf:resource="http://www.w3.org/ns/sparql-service-description#Graph"/>
+            <rdf:type rdf:resource="http://rdfs.org/ns/void#Dataset"/>
+            <dcterms:title>GeoPedia SPARQL Endpoint Description</dcterms:title>
+            <dcterms:description>Contains a copy of this SD+VoID file!</dcterms:description>
+            <void:triples rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">100</void:triples>
+            <dcterms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2019-01-01T00:00:00+00:00</dcterms:issued>
+          </rdf:Description>
+        </sd:defaultGraph>
+        <sd:namedGraph>
+          <rdf:Description>
+            <sd:name rdf:resource="http://dbpedia.org/"/>
+            <sd:graph>
+              <rdf:Description>
+                <rdf:type rdf:resource="http://www.w3.org/ns/sparql-service-description#Graph"/>
+                <rdf:type rdf:resource="http://rdfs.org/ns/void#Dataset"/>
+                <dcterms:title>DBpedia</dcterms:title>
+                <foaf:homepage rdf:resource="http://dbpedia.org/"/>
+                <void:triples rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1000000000</void:triples>
+                <dcterms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2019-01-03T00:00:00+00:00</dcterms:modified>
+              </rdf:Description>
+            </sd:graph>
+          </rdf:Description>
+        </sd:namedGraph>
+        <sd:namedGraph>
+          <rdf:Description>
+            <sd:name rdf:resource="http://geonames.org/"/>
+            <sd:graph>
+              <rdf:Description>
+                <rdf:type rdf:resource="http://www.w3.org/ns/sparql-service-description#Graph"/>
+                <rdf:type rdf:resource="http://rdfs.org/ns/void#Dataset"/>
+                <dcterms:title>Geonames</dcterms:title>
+                <foaf:homepage rdf:resource="http://www.geonames.org/ontology/"/>
+                <void:triples rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">100000000</void:triples>
+                <dcterms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2019-01-02T00:00:00+00:00</dcterms:issued>
+              </rdf:Description>
+            </sd:graph>
+          </rdf:Description>
+        </sd:namedGraph>
+      </rdf:Description>
+    </sd:defaultDatasetDescription>
+  </rdf:Description>
+</rdf:RDF>
