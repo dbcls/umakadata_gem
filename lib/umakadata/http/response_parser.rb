@@ -23,8 +23,6 @@ module Umakadata
         application/trix
       ].freeze
 
-      NULL_LOGGER = ::Logger.new(nil)
-
       class << self
         #
         # @param [Umakadata::Activity::Response] response
@@ -57,8 +55,6 @@ module Umakadata
 
         options = @options.merge(options)
 
-        options[:logger] = NULL_LOGGER
-
         case options[:content_type]
         when RESULT_BOOL
           true
@@ -80,25 +76,19 @@ module Umakadata
       # @option options [String] :content_type
       # @return [RDF::Enumerable, nil]
       def parse_rdf_serialization(**options)
-        options = options.dup
+        options = @options.merge(options)
+        return unless (reader = RDF::Reader.for(options))
 
-        # suppress parser error messages
-        options[:logger] = NULL_LOGGER
-
-        reader = RDF::Reader.for(options)
-
+        data = @data
         begin
-          if reader.new(@data).valid?
-            callback&.call(reader, nil)
-            reader.new(@data).to_a
-          elsif RDF::Turtle::Format.content_type.include?(options[:content_type])
-            data = @data.gsub('<>', "<#{@options[:url]}>")
-            if reader.new(data).valid?
-              callback&.call(reader, nil)
-              reader.new(data).to_a
-            end
-          end
+          options = options.merge(validate: true, logger: ::Logger.new(nil))
+          reader.new(data, options).to_a.tap { callback&.call(reader, nil) }
         rescue StandardError
+          if !@retry && RDF::Turtle::Format.content_type.include?(options[:content_type])
+            data = data.gsub(/<(#[^>]*)?>/, options[:url] ? "<#{options[:url]}\\1>" : '[]')
+            @retry = true
+            retry
+          end
           nil
         end
       end
@@ -108,11 +98,8 @@ module Umakadata
       # @option options [String] :content_type
       # @return [RDF::Enumerable, nil]
       def parse_any_rdf_serialization(**options)
-        options = options.dup
+        options = @options.merge(options)
         content_type = options[:content_type]
-
-        # suppress parser error messages
-        options[:logger] = NULL_LOGGER
 
         RDF_GRAPH_CONTENT_TYPES.each do |type|
           options[:content_type] = type
@@ -133,18 +120,14 @@ module Umakadata
       # @option options [String] :content_type
       # @return [RDF::Query::Solutions, nil]
       def parse_any_rdf_bindings(**options)
-        options = options.dup
+        options = @options.merge(options)
         content_type = options[:content_type]
 
         # suppress parser error messages
         options[:logger] = NULL_LOGGER
 
         %i[parse_json_bindings parse_xml_bindings parse_csv_bindings parse_tsv_bindings].each do |method|
-          solutions = begin
-                        __send__(method, @data)
-                      rescue StandardError
-                        nil
-                      end
+          solutions = delegate_to method
 
           next unless solutions
           next if solutions.count.zero?
@@ -155,6 +138,12 @@ module Umakadata
           return solutions
         end
 
+        nil
+      end
+
+      def delegate_to(method)
+        __send__(method, @data)
+      rescue StandardError
         nil
       end
 
