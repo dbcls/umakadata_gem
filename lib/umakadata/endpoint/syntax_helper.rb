@@ -34,7 +34,7 @@ module Umakadata
       #
       # @return [Array<Umakadata::Activity>]
       def service_keyword_support
-        @service_keyword_support ||= begin
+        cache(:service_keyword_support) do
           query = "CONSTRUCT { ?s ?p ?o . } WHERE { SERVICE <#{url}> { ?s ?p ?o . } } LIMIT 1"
           [sparql.query(query)]
         end
