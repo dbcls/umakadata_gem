@@ -69,12 +69,14 @@ module Umakadata
 
             if (200..299).include?(q.response.status)
               q.result = ResponseParser.parse(q.response) do |_, msg|
-                q.warnings.push msg if msg.present?
+                log(:warn, 'response_parser') { msg } if msg.present?
               end
             end
           rescue StandardError => e
-            q.errors.push e
+            log(:error, 'http_client') { e }
           ensure
+            q.errors = @errors
+            q.warnings = @warnings
             q.trace = @trace
             q.elapsed_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) - t0
           end
@@ -96,6 +98,8 @@ module Umakadata
       def request(method, path, body = nil, **headers, &block)
         raise ArgumentError, "unsupported http method: #{method}" unless METHODS.include?(method)
 
+        @errors = []
+        @warnings = []
         @trace = []
 
         execute_request(__send__("make_#{method}_request", path, body, headers), &block)
@@ -140,8 +144,32 @@ module Umakadata
         @options.fetch(:headers, {})
       end
 
-      def trace(msg)
-        @trace&.push msg
+      def log(level, progname = nil, &block)
+        if (ex = block&.call).respond_to?(:message)
+          block = proc { ex.message }
+        end
+        logger.send(level, progname, &block) if %i[debug info warn error fatal].include?(level)
+
+        case level
+        when :info, :trace
+          @trace.push(block&.call || progname)
+        when :warn
+          @warnings.push(block&.call || progname)
+        when :error
+          @errors.push(ex)
+          @trace.push('Connection closed due to timeout.') if ex.is_a?(Faraday::TimeoutError)
+        end
+      end
+
+      def logger
+        @logger ||= begin
+          options = LOGGER_DEFAULT_OPTIONS.merge(@options[:logger] || {})
+
+          device = options.key?(:logdev) ? options.fetch(:logdev) : STDERR
+          options = options.slice(:level, :progname, :formatter, :datetime_format, :shift_period_suffix)
+
+          ::Logger.new(device, options)
+        end
       end
 
       private
@@ -177,14 +205,12 @@ module Umakadata
         @options
           .fetch(:retry) { {} }
           .merge(retry_block: lambda do |response_env, retry_options, retries, exception|
-            sleep_amount = Retry.new(nil, retry_options).calculate_sleep_amount(retries + 1, response_env)
+            sleep_amount = Umakadata::FaradayMiddleware::Retry.new(nil, retry_options).calculate_sleep_amount(retries + 1, response_env)
 
-            warn('retry') { exception.message }
-            trace(exception.message)
+            log(:error, 'retry') { exception }
 
             msg = "Try request again in #{pluralize(sleep_amount, 'second')} (#{pluralize(retries, 'time')} left)"
-            info('retry') { msg }
-            trace(msg)
+            log(:info, 'retry') { msg }
           end)
       end
 
@@ -193,26 +219,14 @@ module Umakadata
           .fetch(:redirect) { {} }
           .merge(callback: lambda do |response_env, _|
             msg = "#{response_env.status} #{response_env.reason_phrase} - #{response_env.response.headers['location']}"
-            info('follow_redirects') { msg }
-            trace(msg)
+            log(:info, 'follow_redirects') { msg }
           end)
       end
 
       def logger_options
         @options
           .fetch(:logger) { {} }
-          .merge(callback: ->(env) { trace("#{env.method.upcase} #{env.url}") })
-      end
-
-      def logger
-        @logger ||= begin
-          options = LOGGER_DEFAULT_OPTIONS.merge(@options[:logger] || {})
-
-          device = options.key?(:logdev) ? options.fetch(:logdev) : STDERR
-          options = options.slice(:level, :progname, :formatter, :datetime_format, :shift_period_suffix)
-
-          ::Logger.new(device, options)
-        end
+          .merge(callback: ->(env) { log(:trace) { "#{env.method.upcase} #{env.url}" } })
       end
     end
   end
