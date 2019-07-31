@@ -27,6 +27,7 @@ module Umakadata
       @url = url
       @options = options
       @criteria = {}
+      @cache = Hash.new { |hsh, key| hsh[key] = {} }
     end
 
     # @return [Umakadata::SPARQL::Client] SPARQL Client
@@ -44,9 +45,12 @@ module Umakadata
 
     private
 
-    # @return [Hash{Object => Hash}] cache for activities
-    def cache
-      @cache ||= Hash.new({})
+    # @param [Object] namespace
+    # @param [Object] key
+    # @param [Proc] block
+    # @return [Object] cached value
+    def cache(namespace, key, &block)
+      @cache[namespace][key] ||= block.call
     end
 
     def availability

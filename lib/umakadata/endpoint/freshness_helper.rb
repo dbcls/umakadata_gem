@@ -1,9 +1,9 @@
 module Umakadata
-  module Endpoint
+  class Endpoint
     module FreshnessHelper
       # @return [Array<Umakadata::Activity>]
       def number_of_statements(**options)
-        cache[:number_of_statements][options] ||= begin
+        cache(:number_of_statements, options) do
           [sparql
              .select(count: { '*' => :count })
              .where(%i[s p o])
@@ -14,7 +14,7 @@ module Umakadata
 
       # @return [Array<Umakadata::Activity>]
       def first_statement(**options)
-        cache[:first_statement][options] ||= begin
+        cache(:first_statement, options) do
           [sparql
              .construct(%i[s p o])
              .where(%i[s p o])
@@ -28,7 +28,7 @@ module Umakadata
 
       # @return [Array<Umakadata::Activity>]
       def last_statement(**options)
-        cache[:last_statement][options] ||= begin
+        cache(:last_statement, options) do
           act = Array(number_of_statements(**options))
 
           RETRY_LAST_STATEMENT.times do |t|
