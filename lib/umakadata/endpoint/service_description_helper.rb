@@ -10,12 +10,12 @@ module Umakadata
 
       # @return [Array<String>]
       def supported_language
-        service_description.supported_language
+        service_description.first.supported_language
       end
 
       # Execute query to obtain service description
       #
-      # @return [Umakadata::Activity]
+      # @return [Array<Umakadata::Activity>]
       def service_description
         @service_description ||= begin
           sd = http.get(::URI.parse(url).request_uri, Accept: Umakadata::SPARQL::Client::GRAPH_ALL)
@@ -31,7 +31,7 @@ module Umakadata
             end
           end
 
-          sd
+          [sd]
         end
       end
     end
