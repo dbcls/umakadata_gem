@@ -17,7 +17,7 @@ module Umakadata
       #
       # @return [Array<Umakadata::Activity>]
       def service_description
-        @service_description ||= begin
+        cache(:service_description) do
           sd = http.get(::URI.parse(url).request_uri, Accept: Umakadata::SPARQL::Client::GRAPH_ALL)
 
           class << sd

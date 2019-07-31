@@ -26,7 +26,7 @@ module Umakadata
       #   It might be necessary to obtain metadata by SPARQL query.
       #   See https://www.w3.org/TR/void/#discovery-links
       def void
-        @void ||= begin
+        cache(:void) do
           void = http.get('/.well-known/void', Accept: Umakadata::SPARQL::Client::GRAPH_ALL)
 
           class << void
