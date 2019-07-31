@@ -42,6 +42,11 @@ module Umakadata
 
     private
 
+    # @return [Hash{Object => Hash}] cache for activities
+    def cache
+      @cache ||= Hash.new({})
+    end
+
     def availability
       @criteria[:availability] ||= Criteria::Availability.new(self)
     end
