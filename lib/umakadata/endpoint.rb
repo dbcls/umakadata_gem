@@ -54,7 +54,12 @@ module Umakadata
       @criteria[:freshness] ||= Criteria::Freshness.new(self)
     end
 
+    def operation
+      @criteria[:operation] ||= Criteria::Operation.new(self)
+    end
+
     def_delegator :availability, :alive?
     def_delegator :freshness, :last_updated
+    def_delegators :operation, :service_description?, :void?
   end
 end
