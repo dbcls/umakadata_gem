@@ -37,6 +37,9 @@ module Umakadata
       @http ||= Umakadata::HTTP::Client.new(url, **@options)
     end
 
+    def_delegators :sparql, :query
+    def_delegators :http, :get
+
     private
 
     def availability
