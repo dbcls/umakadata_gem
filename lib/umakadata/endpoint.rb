@@ -1,5 +1,6 @@
 require 'forwardable'
 require 'umakadata/criteria'
+require 'umakadata/endpoint/cache_helper'
 require 'umakadata/endpoint/freshness_helper'
 require 'umakadata/endpoint/http_helper'
 require 'umakadata/endpoint/service_description_helper'
@@ -14,6 +15,7 @@ module Umakadata
   class Endpoint
     extend Forwardable
 
+    include CacheHelper
     include FreshnessHelper
     include HTTPHelper
     include ServiceDescriptionHelper
@@ -27,7 +29,6 @@ module Umakadata
       @url = url
       @options = options
       @criteria = {}
-      @cache = Hash.new { |hsh, key| hsh[key] = {} }
     end
 
     # @return [Umakadata::SPARQL::Client] SPARQL Client
@@ -44,14 +45,6 @@ module Umakadata
     def_delegators :http, :get
 
     private
-
-    # @param [Object] namespace
-    # @param [Object] key
-    # @param [Proc] block
-    # @return [Object] cached value
-    def cache(namespace, key, &block)
-      @cache[namespace][key] ||= block.call
-    end
 
     def availability
       @criteria[:availability] ||= Criteria::Availability.new(self)
