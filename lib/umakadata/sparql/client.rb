@@ -24,6 +24,10 @@ module Umakadata
       DEFAULT_METHOD = :post
       DEFAULT_PROTOCOL = 1.0
 
+      DEFAULT_OPTIONS = {
+        read_timeout: 120
+      }.freeze
+
       NULL_LOGGER = ::Logger.new(nil)
 
       def_delegators :sparql_client, :set_url_default_graph
@@ -42,6 +46,7 @@ module Umakadata
       # @option options [Hash] :logger disable logging if { logdev => nil }
       #
       def initialize(url, **options)
+        options = DEFAULT_OPTIONS.merge(options)
         super
       end
 
@@ -168,8 +173,7 @@ module Umakadata
         {
           callback: lambda do |_, _|
             msg = 'Fallback to GET method'
-            info('method_fallback') { msg }
-            trace(msg)
+            log(:info, 'method_fallback') { msg }
           end
         }
       end
