@@ -23,7 +23,7 @@ module Umakadata
         comment = 'No statements about update information found in either VoID or ServiceDescription'
 
         %i[void service_description].each do |method|
-          next unless (date = find_update_date(method))
+          next unless (date = update_date(method))
 
           comment = "A statement about update information is found in #{SOURCE_LAST_UPDATED[method]}."
           break
@@ -50,8 +50,9 @@ module Umakadata
         end
       end
 
+      # @param [Symbol] method :void or :service_description
       # @return [DateTime, nil]
-      def find_update_date(method)
+      def update_date(method)
         date = extract_update_date(method)
 
         begin
@@ -61,6 +62,7 @@ module Umakadata
         end
       end
 
+      # @param [Symbol] method :void or :service_description
       # @return [Array<RDF::Literal>]
       def extract_update_date(method)
         statements = endpoint.send(method).first.result
