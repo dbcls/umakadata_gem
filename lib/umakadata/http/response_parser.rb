@@ -1,16 +1,21 @@
 require 'forwardable'
+require 'json'
 
 module Umakadata
   module HTTP
     class ResponseParser
       extend Forwardable
 
+      APPLICATION_JSON = Regexp.new(Regexp.escape('application/json')).freeze
+
+      # SPARQL Result
       RESULT_BOOL = Regexp.new(Regexp.escape(::SPARQL::Client::RESULT_BOOL)).freeze
       RESULT_JSON = Regexp.new(Regexp.escape(::SPARQL::Client::RESULT_JSON)).freeze
       RESULT_XML = Regexp.new(Regexp.escape(::SPARQL::Client::RESULT_XML)).freeze
       RESULT_CSV = Regexp.new(Regexp.escape(::SPARQL::Client::RESULT_CSV)).freeze
       RESULT_TSV = Regexp.new(Regexp.escape(::SPARQL::Client::RESULT_TSV)).freeze
 
+      # SPARQL Graph
       RDF_GRAPH_CONTENT_TYPES = %w[
         text/turtle
         text/n3
@@ -56,6 +61,8 @@ module Umakadata
         options = @options.merge(options)
 
         case options[:content_type]
+        when APPLICATION_JSON
+          JSON.parse(@data)
         when RESULT_BOOL
           true
         when RESULT_JSON
