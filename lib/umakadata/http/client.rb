@@ -61,26 +61,28 @@ module Umakadata
       # @param  [Hash{Symbol => Object}] headers
       # @return [Umakadata::Activity]
       def query(method, path, body = nil, **headers)
-        Activity.new do |q|
+        Activity.new do |act|
           t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           begin
             request(method, path, body, headers) do |req, res|
-              q.request = Activity::Request.new(**req.to_env(connection).to_h)
-              q.response = Activity::Response.new(**res.env.to_h)
+              act.request = Activity::Request.new(**req.to_env(connection).to_h)
+              act.response = Activity::Response.new(**res.env.to_h)
             end
 
-            if (200..299).include?(q.response.status)
-              q.result = ResponseParser.parse(q.response) do |_, msg|
+            if (200..299).include?(act.response.status)
+              act.result = ResponseParser.parse(act.response) do |_, msg|
                 log(:warn, 'response_parser') { msg } if msg.present?
               end
             end
+
+            yield act if block_given?
           rescue StandardError => e
             log(:error, 'http_client') { e }
           ensure
-            q.errors = @errors
-            q.warnings = @warnings
-            q.trace = @trace
-            q.elapsed_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) - t0
+            act.errors = @errors
+            act.warnings = @warnings
+            act.trace = @trace
+            act.elapsed_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) - t0
           end
         end
       end
