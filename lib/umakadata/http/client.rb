@@ -6,6 +6,7 @@ require 'forwardable'
 require 'umakadata/faraday_middleware/follow_redirects'
 require 'umakadata/faraday_middleware/logger'
 require 'umakadata/faraday_middleware/retry'
+require 'umakadata/http/lov_helper'
 require 'umakadata/logger'
 require 'umakadata/util/string'
 
@@ -18,6 +19,7 @@ module Umakadata
       extend Forwardable
 
       include StringExt
+      extend LOVHelper
 
       METHODS = Set.new %i[get post put delete head patch options]
 
