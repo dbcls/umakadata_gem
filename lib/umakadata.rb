@@ -2,6 +2,7 @@ require 'faraday'
 require 'linkeddata'
 
 require 'faraday/response_ext'
+require 'rdf/blank_node'
 require 'rdf/enumerable_ext'
 require 'rdf/statement_ext'
 
