@@ -1,10 +1,10 @@
 require 'forwardable'
 require 'umakadata/criteria'
-require 'umakadata/endpoint/cache_helper'
 require 'umakadata/endpoint/http_helper'
 require 'umakadata/endpoint/service_description_helper'
 require 'umakadata/endpoint/syntax_helper'
 require 'umakadata/endpoint/void_helper'
+require 'umakadata/util/cacheable'
 
 module Umakadata
   # A SPARQL endpoint for Umakadata
@@ -14,7 +14,7 @@ module Umakadata
   class Endpoint
     extend Forwardable
 
-    include CacheHelper
+    include Cacheable
     include HTTPHelper
     include ServiceDescriptionHelper
     include SyntaxHelper
