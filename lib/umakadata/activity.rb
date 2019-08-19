@@ -123,6 +123,7 @@ module Umakadata
     attr_accessor :response
 
     attr_accessor :result
+    attr_accessor :comment
 
     attr_accessor :elapsed_time
 
