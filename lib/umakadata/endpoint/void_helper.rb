@@ -8,12 +8,32 @@ module Umakadata
     module VoIDHelper
       # @return [Array<String>]
       def publisher
-        void.first.publisher
+        void.publisher
       end
 
       # @return [Array<String>]
       def license
-        void.first.license
+        void.license
+      end
+
+      module VoIDMethods
+        # @return [Array<String>]
+        def publishers
+          @publishers ||= Array(result
+                                 &.filter_by_property(RDF::Vocab::DC.publisher)
+                                 &.map(&:object)
+                                 &.map(&:value)
+                                 &.uniq)
+        end
+
+        # @return [Array<String>]
+        def licenses
+          @licenses ||= Array(result
+                               &.filter_by_property(RDF::Vocab::DC.license)
+                               &.map(&:object)
+                               &.map(&:value)
+                               &.uniq)
+        end
       end
 
       # Execute query to obtain VoID
@@ -27,29 +47,11 @@ module Umakadata
       #   See https://www.w3.org/TR/void/#discovery-links
       def void
         cache(:void) do
-          void = http.get('/.well-known/void', Accept: Umakadata::SPARQL::Client::GRAPH_ALL)
-
-          class << void
-            # @return [Array<String>]
-            def publisher
-              @publisher ||= Array(result
-                                     &.filter_by_property(RDF::Vocab::DC.publisher)
-                                     &.map(&:object)
-                                     &.map(&:value)
-                                     &.uniq)
-            end
-
-            # @return [Array<String>]
-            def license
-              @license ||= Array(result
-                                   &.filter_by_property(RDF::Vocab::DC.license)
-                                   &.map(&:object)
-                                   &.map(&:value)
-                                   &.uniq)
+          http.get('/.well-known/void', Accept: Umakadata::SPARQL::Client::GRAPH_ALL).tap do |void|
+            class << void
+              include VoIDMethods
             end
           end
-
-          [void]
         end
       end
     end

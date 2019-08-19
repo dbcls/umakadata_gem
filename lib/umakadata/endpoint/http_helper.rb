@@ -10,14 +10,19 @@ module Umakadata
       #
       # @see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
       def cors_supported?
-        @cors_supported ||= cors_support.first.response.headers['Access-Control-Allow-Origin'] == '*'
+        cors_support.response.headers['Access-Control-Allow-Origin'] == '*'
       end
 
       # Execute query to check CORS support
       #
-      # @return [Array<Umakadata::Activity>]
+      # @return [Umakadata::Activity]
       def cors_support
-        @cors_support ||= [sparql.ask(%i[s p o]).execute]
+        cache(:cors_support) do
+          sparql
+            .ask(%i[s p o])
+            .execute
+        end
+
       end
     end
   end

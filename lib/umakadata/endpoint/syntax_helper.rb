@@ -8,35 +8,37 @@ module Umakadata
       #
       # @return [true, false] true if the endpoint support graph keyword
       def graph_keyword_supported?
-        @graph_keyword_supported ||= graph_keyword_support.first.response.status == 200
+        graph_keyword_support.response.status == 200
       end
 
       # Check whether if the endpoint support service keyword
       #
       # @return [true, false] true if the endpoint support service keyword
       def service_keyword_supported?
-        @service_keyword_supported ||= service_keyword_support.first.response.status == 200
+        service_keyword_support.response.status == 200
       end
 
       # Execute query to check graph keyword support
       #
-      # @return [Array<Umakadata::Activity>]
+      # @return [Umakadata::Activity]
       def graph_keyword_support
-        @graph_keyword_support ||= [sparql
-                                      .construct(%i[s p o])
-                                      .where(%i[s p o])
-                                      .graph(:g)
-                                      .limit(1)
-                                      .execute]
+        cache(:graph_keyword_support) do
+          sparql
+            .construct(%i[s p o])
+            .where(%i[s p o])
+            .graph(:g)
+            .limit(1)
+            .execute
+        end
       end
 
       # Execute query to check service keyword support
       #
-      # @return [Array<Umakadata::Activity>]
+      # @return [Umakadata::Activity]
       def service_keyword_support
         cache(:service_keyword_support) do
-          query = "CONSTRUCT { ?s ?p ?o . } WHERE { SERVICE <#{url}> { ?s ?p ?o . } } LIMIT 1"
-          [sparql.query(query)]
+          sparql
+            .query("CONSTRUCT { ?s ?p ?o . } WHERE { SERVICE <#{url}> { ?s ?p ?o . } } LIMIT 1")
         end
       end
     end
