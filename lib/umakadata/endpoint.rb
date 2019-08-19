@@ -1,7 +1,6 @@
 require 'forwardable'
 require 'umakadata/criteria'
 require 'umakadata/endpoint/cache_helper'
-require 'umakadata/endpoint/freshness_helper'
 require 'umakadata/endpoint/http_helper'
 require 'umakadata/endpoint/service_description_helper'
 require 'umakadata/endpoint/syntax_helper'
@@ -16,7 +15,6 @@ module Umakadata
     extend Forwardable
 
     include CacheHelper
-    include FreshnessHelper
     include HTTPHelper
     include ServiceDescriptionHelper
     include SyntaxHelper
