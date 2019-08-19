@@ -99,7 +99,12 @@ module Umakadata
         headers = options.fetch(:headers, {})
         headers[:Accept] ||= options.fetch(:content_type, is_graph ? GRAPH_ALL : RESULT_ALL)
 
-        super(options.fetch(:method, DEFAULT_METHOD), nil, nil, headers)
+        super(options.fetch(:method, DEFAULT_METHOD), nil, nil, headers) do |act|
+          class << act
+            attr_accessor :query
+          end
+          act.query = query.to_s
+        end
       end
 
       protected
