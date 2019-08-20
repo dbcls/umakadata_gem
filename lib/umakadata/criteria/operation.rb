@@ -50,7 +50,6 @@ module Umakadata
         yield measurement if block_given?
 
         inject_measurement(test, measurement)
-
       end
     end
   end
