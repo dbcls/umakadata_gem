@@ -11,6 +11,16 @@ module Umakadata
       @endpoint = endpoint
       @options = options
     end
+
+    def inject_measurement(obj, measurement)
+      class << obj
+        self
+      end.send(:define_method, :measurement) do
+        measurement
+      end
+
+      obj
+    end
   end
 end
 
