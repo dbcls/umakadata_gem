@@ -24,24 +24,24 @@ module Umakadata
           break if activities.last&.response&.status == 200
         end
 
-        if block_given?
-          measurement = Umakadata::Measurement.new(MEASUREMENT_NAMES[__method__], nil, activities) do |m|
-            m.comment = case activities.last&.response&.status
-                        when 100..199, 300..499
-                          'It is unknown whether the endpoint is alive or dead.'
-                        when 200..299
-                          'The endpoint is alive.'
-                        when 500..599
-                          'The endpoint is dead.'
-                        else
-                          'Errors occurred in checking liveness of the endpoint.'
-                        end
-          end
+        test = activities.last&.response&.status == 200 || false
 
-          yield measurement
+        measurement = Umakadata::Measurement.new(MEASUREMENT_NAMES[__method__], nil, activities) do |m|
+          m.comment = case activities.last&.response&.status
+                      when 100..199, 300..499
+                        'It is unknown whether the endpoint is alive or dead.'
+                      when 200..299
+                        'The endpoint is alive.'
+                      when 500..599
+                        'The endpoint is dead.'
+                      else
+                        'Errors occurred in checking liveness of the endpoint.'
+                      end
         end
 
-        activities.last&.response&.status == 200 || false
+        yield measurement if block_given?
+
+        inject_measurement(test, measurement)
       end
 
       private

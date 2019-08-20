@@ -29,9 +29,11 @@ module Umakadata
           break
         end
 
-        yield Measurement.new(MEASUREMENT_NAMES[__method__], comment, []) if block_given?
+        measurement = Measurement.new(MEASUREMENT_NAMES[__method__], comment, [])
 
-        date&.utc&.to_s
+        yield measurement if block_given?
+
+        inject_measurement(date&.utc&.to_s, measurement)
       end
 
       private

@@ -23,9 +23,11 @@ module Umakadata
                     'The endpoint does not provide Service Description.'
                   end
 
-        yield Measurement.new(MEASUREMENT_NAMES[__method__], comment, [activity]) if block_given?
+        measurement = Measurement.new(MEASUREMENT_NAMES[__method__], comment, [activity])
 
-        test
+        yield measurement if block_given?
+
+        inject_measurement(test, measurement)
       end
 
       # Check whether if the endpoint provides VoID
@@ -43,9 +45,12 @@ module Umakadata
                     'The endpoint does not provide VoID.'
                   end
 
-        yield Measurement.new(MEASUREMENT_NAMES[__method__], comment, [activity]) if block_given?
+        measurement = Measurement.new(MEASUREMENT_NAMES[__method__], comment, [activity])
 
-        test
+        yield measurement if block_given?
+
+        inject_measurement(test, measurement)
+
       end
     end
   end
