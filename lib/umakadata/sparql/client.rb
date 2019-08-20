@@ -25,7 +25,7 @@ module Umakadata
       DEFAULT_PROTOCOL = 1.0
 
       DEFAULT_OPTIONS = {
-        read_timeout: 120
+        read_timeout: 300
       }.freeze
 
       NULL_LOGGER = ::Logger.new(nil)
