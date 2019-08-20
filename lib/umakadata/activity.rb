@@ -137,6 +137,7 @@ module Umakadata
     attr_accessor :request
     attr_accessor :response
 
+    attr_accessor :type
     attr_accessor :result
     attr_accessor :comment
 
