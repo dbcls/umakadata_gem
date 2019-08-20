@@ -190,12 +190,13 @@ module Umakadata
       def call_query_method(method, *args)
         client = self
         result = ::SPARQL::Client::Query.send(method, *args)
-        (
+
         class << result
           self
-        end).send(:define_method, :execute) do
+        end.send(:define_method, :execute) do
           client.query(self)
         end
+
         result
       end
 
