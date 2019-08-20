@@ -8,14 +8,14 @@ module Umakadata
       #
       # @return [true, false] true if the endpoint support graph keyword
       def graph_keyword_supported?
-        graph_keyword_support.response.status == 200
+        graph_keyword_support.response&.status == 200
       end
 
       # Check whether if the endpoint support service keyword
       #
       # @return [true, false] true if the endpoint support service keyword
       def service_keyword_supported?
-        service_keyword_support.response.status == 200
+        service_keyword_support.response&.status == 200
       end
 
       # Execute query to check graph keyword support

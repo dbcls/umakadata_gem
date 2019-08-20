@@ -50,9 +50,9 @@ module Umakadata
           http.get('/.well-known/void', Accept: Umakadata::SPARQL::Client::GRAPH_ALL).tap do |act|
             act.type = Activity::Type::VOID
             act.comment = if act.result.is_a?(Array) && act.result.first.is_a?(RDF::Statement)
-                            "Obtained VoID from #{act.response.url}"
+                            "Obtained VoID from #{act.response&.url || 'N/A'}"
                           else
-                            "Failed to obtain VoID from #{act.response.url}"
+                            "Failed to obtain VoID from #{act.response&.url || 'N/A'}"
                           end
 
             class << act

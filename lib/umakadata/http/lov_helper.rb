@@ -35,7 +35,7 @@ module Umakadata
 
         activity = Umakadata::HTTP::Client.new(url).get(url, Accept: 'application/json')
 
-        return unless activity.response.status == 200
+        return unless (200..299).include?(activity.response&.status)
 
         Array(activity.result).tap do |result|
           yield result if block_given?

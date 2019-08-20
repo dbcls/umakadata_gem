@@ -21,9 +21,9 @@ module Umakadata
           http.get(::URI.parse(url).request_uri, Accept: Umakadata::SPARQL::Client::GRAPH_ALL).tap do |act|
             act.type = Activity::Type::SERVICE_DESCRIPTION
             act.comment = if act.result.is_a?(Array) && act.result.first.is_a?(RDF::Statement)
-                            "Obtained Service Description from #{act.response.url}"
+                            "Obtained Service Description from #{act.response&.url || 'N/A'}"
                           else
-                            "Failed to obtain Service Description from #{act.response.url}"
+                            "Failed to obtain Service Description from #{act.response&.url || 'N/A'}"
                           end
 
             class << act

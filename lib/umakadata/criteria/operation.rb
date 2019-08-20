@@ -17,7 +17,7 @@ module Umakadata
       def service_description?
         activity = endpoint.service_description
 
-        comment = if (test = (200..299).include?(activity.response.status) && activity.result.present?)
+        comment = if (test = (200..299).include?(activity.response&.status) && activity.result.present?)
                     'The endpoint provides Service Description.'
                   else
                     'The endpoint does not provide Service Description.'
@@ -37,7 +37,7 @@ module Umakadata
       def void?
         activity = endpoint.void
 
-        comment = if (test = (200..299).include?(activity.response.status) && activity.result.present?)
+        comment = if (test = (200..299).include?(activity.response&.status) && activity.result.present?)
                     'The endpoint provides VoID.'
                   else
                     'The endpoint does not provide VoID.'
