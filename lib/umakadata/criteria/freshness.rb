@@ -20,7 +20,7 @@ module Umakadata
       # @return [String]
       def last_updated
         date = nil
-        comment = 'No statements about update information found in either VoID or ServiceDescription'
+        comment = 'No statements about update information found in either VoID or Service Description'
 
         %i[void service_description].each do |method|
           next unless (date = update_date(method))

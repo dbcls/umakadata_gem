@@ -1,6 +1,6 @@
 module Umakadata
   class Endpoint
-    # Helper methods to evaluate endpoint's service description
+    # Helper methods to evaluate endpoint's Service Description
     #
     # @see https://www.w3.org/TR/sparql11-service-description/
     #
@@ -13,13 +13,20 @@ module Umakadata
         service_description.supported_languages
       end
 
-      # Execute query to obtain service description
+      # Execute query to obtain Service Description
       #
       # @return [Umakadata::Activity]
       def service_description
         cache(:service_description) do
-          http.get(::URI.parse(url).request_uri, Accept: Umakadata::SPARQL::Client::GRAPH_ALL).tap do |sd|
-            class << sd
+          http.get(::URI.parse(url).request_uri, Accept: Umakadata::SPARQL::Client::GRAPH_ALL).tap do |act|
+            act.type = Activity::Type::SERVICE_DESCRIPTION
+            act.comment = if act.result.is_a?(Array) && act.result.first.is_a?(RDF::Statement)
+                            "Obtained Service Description from #{act.response.url}"
+                          else
+                            "Failed to obtain Service Description from #{act.response.url}"
+                          end
+
+            class << act
               # @return [Array<String>]
               def supported_languages
                 @supported_languages ||= Array(result

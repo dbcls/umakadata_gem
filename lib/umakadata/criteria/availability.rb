@@ -15,7 +15,10 @@ module Umakadata
         activities = []
 
         [check_liveness_with_graph, check_liveness_without_graph].each do |query|
-          activities << query.execute
+          activities << (query.execute.tap do |act|
+            act.type = Activity::Type::ALIVE
+            act.comment = "The endpoint returns #{act.response.status} #{act.response.reason_phrase}"
+          end)
           break if activities.last&.response&.status == 200
         end
 

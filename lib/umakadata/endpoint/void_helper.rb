@@ -20,19 +20,19 @@ module Umakadata
         # @return [Array<String>]
         def publishers
           @publishers ||= Array(result
-                                 &.filter_by_property(RDF::Vocab::DC.publisher)
-                                 &.map(&:object)
-                                 &.map(&:value)
-                                 &.uniq)
+                                  &.filter_by_property(RDF::Vocab::DC.publisher)
+                                  &.map(&:object)
+                                  &.map(&:value)
+                                  &.uniq)
         end
 
         # @return [Array<String>]
         def licenses
           @licenses ||= Array(result
-                               &.filter_by_property(RDF::Vocab::DC.license)
-                               &.map(&:object)
-                               &.map(&:value)
-                               &.uniq)
+                                &.filter_by_property(RDF::Vocab::DC.license)
+                                &.map(&:object)
+                                &.map(&:value)
+                                &.uniq)
         end
       end
 
@@ -47,8 +47,15 @@ module Umakadata
       #   See https://www.w3.org/TR/void/#discovery-links
       def void
         cache(:void) do
-          http.get('/.well-known/void', Accept: Umakadata::SPARQL::Client::GRAPH_ALL).tap do |void|
-            class << void
+          http.get('/.well-known/void', Accept: Umakadata::SPARQL::Client::GRAPH_ALL).tap do |act|
+            act.type = Activity::Type::VOID
+            act.comment = if act.result.is_a?(Array) && act.result.first.is_a?(RDF::Statement)
+                            "Obtained VoID from #{act.response.url}"
+                          else
+                            "Failed to obtain VoID from #{act.response.url}"
+                          end
+
+            class << act
               include VoIDMethods
             end
           end

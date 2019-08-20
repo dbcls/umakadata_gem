@@ -81,6 +81,21 @@ module Umakadata
       end
     end
 
+    module Type
+      ALIVE = :alive
+      CLASSES = :classes
+      CLASSES_HAVING_INSTANCE = :classes_having_instance
+      CORS_SUPPORT = :cors_support
+      GRAPH_KEYWORD_SUPPORT = :graph_keyword_support
+      GRAPHS = :graphs
+      LABELS = :labels
+      LABELS_OF_CLASSES = :labels_of_classes
+      NUMBER_OF_STATEMENTS = :number_of_statements
+      SERVICE_DESCRIPTION = :service_description
+      SERVICE_KEYWORD_SUPPORT = :service_keyword_support
+      VOID = :void
+    end
+
     # A class that represents HTTP response
     #
     # @!attribute [r] method

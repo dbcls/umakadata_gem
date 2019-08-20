@@ -18,11 +18,15 @@ module Umakadata
       # @return [Umakadata::Activity]
       def cors_support
         cache(:cors_support) do
-          sparql
-            .ask(%i[s p o])
-            .execute
+          sparql.ask(%i[s p o]).execute.tap do |act|
+            act.type = Activity::Type::CORS_SUPPORT
+            act.comment = if act.response&.headers&.dig('Access-Control-Allow-Origin') == '*'
+                            "The response header includes 'Access-Control-Allow-Origin = *'."
+                          else
+                            "The response header does not include 'Access-Control-Allow-Origin = *'."
+                          end
+          end
         end
-
       end
     end
   end
