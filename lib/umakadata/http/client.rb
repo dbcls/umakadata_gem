@@ -74,8 +74,6 @@ module Umakadata
                 log(:warn, 'response_parser') { msg } if msg.present?
               end
             end
-
-            yield act if block_given?
           rescue StandardError => e
             log(:error, 'http_client') { e }
           ensure
