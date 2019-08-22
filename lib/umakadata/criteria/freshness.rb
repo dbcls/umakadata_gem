@@ -67,7 +67,7 @@ module Umakadata
       # @param [Symbol] method :void or :service_description
       # @return [Array<RDF::Literal>]
       def extract_update_date(method)
-        statements = endpoint.send(method).first.result
+        statements = endpoint.send(method).result
         return [] unless statements.present?
 
         dataset = RDF::Dataset.new(statements: statements)

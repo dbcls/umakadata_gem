@@ -7,13 +7,13 @@ module Umakadata
     # @since 1.0.0
     module VoIDHelper
       # @return [Array<String>]
-      def publisher
-        void.publisher
+      def publishers
+        void.publishers
       end
 
       # @return [Array<String>]
-      def license
-        void.license
+      def licenses
+        void.licenses
       end
 
       module VoIDMethods
@@ -38,7 +38,7 @@ module Umakadata
 
       # Execute query to obtain VoID
       #
-      # @return [Array<Umakadata::Activity>]
+      # @return [Umakadata::Activity]
       #
       # @see https://www.w3.org/TR/void/#discovery
       #
