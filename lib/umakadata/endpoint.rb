@@ -42,8 +42,6 @@ module Umakadata
     def_delegators :sparql, :query
     def_delegators :http, :get
 
-    private
-
     def availability
       @criteria[:availability] ||= Criteria::Availability.new(self)
     end
