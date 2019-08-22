@@ -66,16 +66,17 @@ module Umakadata
           begin
             request(method, path, body, headers) do |req, res|
               act.request = Activity::Request.new(**req.to_env(connection).to_h)
-              act.response = Activity::Response.new(**res.env.to_h)
+              act.response = Activity::Response.new(**(res&.env&.to_h || {}))
             end
 
-            if (200..299).include?(act.response.status)
+            if (200..299).include?(act.response&.status)
               act.result = ResponseParser.parse(act.response) do |_, msg|
                 log(:warn, 'response_parser') { msg } if msg.present?
               end
             end
-          rescue StandardError => e
-            log(:error, 'http_client') { e }
+          rescue StandardError
+            sleep(1) # some servers refuse following connection without sleep
+            act
           ensure
             act.errors = @errors
             act.warnings = @warnings
@@ -110,11 +111,15 @@ module Umakadata
       protected
 
       def execute_request(request, &block)
-        response = connection.builder.build_response(connection, request)
-
-        block_given? ? block.call(request, response) : response
-      rescue Net::HTTP::Persistent::Error
-        nil
+        response = nil
+        begin
+          response = connection.builder.build_response(connection, request)
+        rescue StandardError => e
+          log(:error, 'http_client') { e }
+          raise e
+        ensure
+          block_given? ? block.call(request, response) : response
+        end
       end
 
       def make_get_request(path, _body = nil, **headers)
@@ -148,7 +153,7 @@ module Umakadata
 
       def log(level, progname = nil, &block)
         if (ex = block&.call).respond_to?(:message)
-          block = proc { ex.message }
+          block = proc { "#{ex.class} - #{ex.message}" }
         end
         logger.send(level, progname, &block) if %i[debug info warn error fatal].include?(level)
 
