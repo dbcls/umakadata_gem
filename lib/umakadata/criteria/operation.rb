@@ -10,46 +10,38 @@ module Umakadata
 
       # Check whether if the endpoint provides service description
       #
-      # @yield [measurement]
-      # @yieldparam [Umakadata::Measurement]
-      #
-      # @return [true, false] true if the endpoint provides service description
+      # @return [Umakadata::Measurement]
       def service_description?
         activity = endpoint.service_description
 
-        comment = if (test = (200..299).include?(activity.response&.status) && activity.result.present?)
-                    'The endpoint provides Service Description.'
-                  else
-                    'The endpoint does not provide Service Description.'
-                  end
-
-        measurement = Measurement.new(MEASUREMENT_NAMES[__method__], comment, [activity])
-
-        yield measurement if block_given?
-
-        inject_measurement(test, measurement)
+        Measurement.new do |m|
+          m.name = MEASUREMENT_NAMES[__method__]
+          m.value = (test = (200..299).include?(activity.response&.status))
+          m.comment = if test && activity.result.present?
+                        'The endpoint provides Service Description.'
+                      else
+                        'The endpoint does not provide Service Description.'
+                      end
+          m.activities << activity
+        end
       end
 
       # Check whether if the endpoint provides VoID
       #
-      # @yield [measurement]
-      # @yieldparam [Umakadata::Measurement]
-      #
-      # @return [true, false] true if the endpoint provides VoID
+      # @return [Umakadata::Measurement]
       def void?
         activity = endpoint.void
 
-        comment = if (test = (200..299).include?(activity.response&.status) && activity.result.present?)
-                    'The endpoint provides VoID.'
-                  else
-                    'The endpoint does not provide VoID.'
-                  end
-
-        measurement = Measurement.new(MEASUREMENT_NAMES[__method__], comment, [activity])
-
-        yield measurement if block_given?
-
-        inject_measurement(test, measurement)
+        Measurement.new do |m|
+          m.name = MEASUREMENT_NAMES[__method__]
+          m.value = (test = (200..299).include?(activity.response&.status))
+          m.comment = if test && activity.result.present?
+                        'The endpoint provides VoID.'
+                      else
+                        'The endpoint does not provide VoID.'
+                      end
+          m.activities << activity
+        end
       end
     end
   end

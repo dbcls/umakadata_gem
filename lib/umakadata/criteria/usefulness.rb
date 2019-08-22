@@ -16,10 +16,7 @@ module Umakadata
       }.freeze
 
       #
-      # @yield [measurement]
-      # @yieldparam [Umakadata::Measurement]
-      #
-      # @return [true, false] true if the endpoint is alive
+      # @return [Umakadata::Measurement]
       def metadata
         activities = []
         activities << endpoint.graph_keyword_support
@@ -28,29 +25,23 @@ module Umakadata
           activities << (grs = graphs)
 
           grs.result.map { |r| r.bindings[:g] }.each do |g|
-            next if graph_in_exclude_list(grs, g)
-
-            activities << classes_having_instance(graph: g)
-            activities << labels_of_classes(classes(graph: g).result.map { |r| r.bindings[:c] }, graph: g)
+            activities.push(*metadata_on_graph(graph: g)) unless graph_in_exclude_list(grs, g)
           end
         end
 
-        activities << classes_having_instance
-        activities << labels_of_classes(classes.result.map { |r| r.bindings[:c] })
+        activities.push(*metadata_on_graph)
 
-        n = (target = activities.filter { |a| a.result.is_a? Array }).size
-        avg = target.inject(0) { |memo, t| memo + (t.result.size.positive? ? 0 : 100) } / n.to_f
-        comment = if n.positive?
-                    "Metadata score is #{avg}"
-                  else
-                    'There are no effective graphs.'
-                  end
-
-        measurement = Measurement.new(MEASUREMENT_NAMES[__method__], comment, activities)
-
-        yield measurement if block_given?
-
-        avg
+        Measurement.new do |m|
+          n = (target = activities.filter { |a| a.result.is_a? Array }).size
+          m.name = MEASUREMENT_NAMES[__method__]
+          m.value = (avg = target.inject(0) { |memo, t| memo + (t.result.size.positive? ? 0 : 100) } / n.to_f)
+          m.comment = if n.positive?
+                        "Metadata score is #{avg}"
+                      else
+                        'There are no effective graphs.'
+                      end
+          m.activities = activities
+        end
       end
 
       def ontology
@@ -69,6 +60,14 @@ module Umakadata
       end
 
       private
+
+      def metadata_on_graph(name = nil)
+        options = { graph: name }.compact
+        activities = []
+        activities << classes_having_instance(options)
+        activities << labels_of_classes(classes(options).result.map { |r| r.bindings[:c] }, options)
+        activities
+      end
 
       def graph_in_exclude_list(activity, graph)
         uri = RDF::URI(graph)

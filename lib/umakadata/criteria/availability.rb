@@ -12,10 +12,7 @@ module Umakadata
 
       # Check whether if the endpoint is alive or dead
       #
-      # @yield [measurement]
-      # @yieldparam [Umakadata::Measurement]
-      #
-      # @return [true, false] true if the endpoint is alive
+      # @return [Umakadata::Measurement]
       def alive?
         activities = []
         status = nil
@@ -25,9 +22,9 @@ module Umakadata
           break if (status = activities.last&.response&.status) == 200
         end
 
-        test = status == 200 || false
-
-        measurement = Umakadata::Measurement.new(MEASUREMENT_NAMES[__method__], nil, activities) do |m|
+        Umakadata::Measurement.new do |m|
+          m.name = MEASUREMENT_NAMES[__method__]
+          m.value = status == 200 || false
           m.comment = case status
                       when 100..199, 300..499
                         'It is unknown whether the endpoint is alive or dead.'
@@ -38,11 +35,8 @@ module Umakadata
                       else
                         'Errors occurred in checking liveness of the endpoint.'
                       end
+          m.activities = activities
         end
-
-        yield measurement if block_given?
-
-        inject_measurement(test, measurement)
       end
     end
   end

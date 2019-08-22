@@ -26,7 +26,7 @@ RSpec.describe Umakadata::Criteria::Availability do
           .to_return(response)
       end
 
-      it { expect(availability.alive?).to be_falsey }
+      it { expect(availability.alive?.value).to be_falsey }
     end
 
     context 'endpoint supports GRAPH keyword' do

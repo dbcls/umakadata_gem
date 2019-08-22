@@ -15,10 +15,7 @@ module Umakadata
 
       # Obtain the date that the endpoint was updated
       #
-      # @yield [measurement]
-      # @yieldparam [Umakadata::Measurement]
-      #
-      # @return [String]
+      # @return [Umakadata::Measurement]
       def last_updated
         date = nil
         comment = 'No statements about update information found in either VoID or Service Description'
@@ -30,11 +27,11 @@ module Umakadata
           break
         end
 
-        measurement = Measurement.new(MEASUREMENT_NAMES[__method__], comment, [])
-
-        yield measurement if block_given?
-
-        inject_measurement(date&.utc&.to_s, measurement)
+        Measurement.new do |m|
+          m.name = MEASUREMENT_NAMES[__method__]
+          m.value = date&.utc&.to_s
+          m.comment = comment
+        end
       end
 
       private
