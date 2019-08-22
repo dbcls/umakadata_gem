@@ -8,14 +8,13 @@ require 'rdf/statement_ext'
 
 # Namespace for Umakadata
 module Umakadata
-  require 'umakadata/activity'
   require 'umakadata/configuration'
   require 'umakadata/crawler'
   require 'umakadata/criteria'
   require 'umakadata/endpoint'
   require 'umakadata/http'
   require 'umakadata/logger'
-  require 'umakadata/measurement'
+  require 'umakadata/models'
   require 'umakadata/sparql'
   require 'umakadata/version'
 end
