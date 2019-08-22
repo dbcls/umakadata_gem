@@ -1,8 +1,8 @@
-require 'date'
+require 'umakadata/criteria/base'
 
 module Umakadata
-  class Criteria
-    class Operation < Criteria
+  module Criteria
+    class Operation < Base
       MEASUREMENT_NAMES = {
         service_description?: 'operation.service_description',
         void?: 'operation.void'

@@ -1,6 +1,8 @@
+require 'umakadata/criteria/base'
+
 module Umakadata
-  class Criteria
-    class Availability < Criteria
+  module Criteria
+    class Availability < Base
       MEASUREMENT_NAMES = {
         alive?: 'availability.alive'
       }.freeze

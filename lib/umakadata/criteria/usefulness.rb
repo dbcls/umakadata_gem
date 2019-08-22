@@ -1,11 +1,9 @@
+require 'umakadata/criteria/base'
 require 'umakadata/criteria/helpers/usefulness_helper'
-require 'umakadata/util/cacheable'
-require 'umakadata/util/string'
 
 module Umakadata
-  class Criteria
-    class Usefulness < Criteria
-      include Cacheable
+  module Criteria
+    class Usefulness < Base
       include Helpers::UsefulnessHelper
 
       MEASUREMENT_NAMES = {

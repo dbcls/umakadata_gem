@@ -2,7 +2,7 @@ require 'umakadata/util/cacheable'
 require 'umakadata/util/string'
 
 module Umakadata
-  class Criteria
+  module Criteria
     module Helpers
       module UsefulnessHelper
         include Cacheable

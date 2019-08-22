@@ -1,8 +1,9 @@
 require 'date'
+require 'umakadata/criteria/base'
 
 module Umakadata
-  class Criteria
-    class Freshness < Criteria
+  module Criteria
+    class Freshness < Base
       MEASUREMENT_NAMES = {
         last_updated: 'freshness.last_updated'
       }.freeze
