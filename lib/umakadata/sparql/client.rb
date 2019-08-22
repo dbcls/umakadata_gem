@@ -3,7 +3,7 @@ require 'active_support/core_ext'
 require 'faraday'
 require 'forwardable'
 
-require 'umakadata/faraday_middleware/method_fallback'
+require 'umakadata/http/faraday_middleware/method_fallback'
 require 'umakadata/util/numeric'
 
 module Umakadata
