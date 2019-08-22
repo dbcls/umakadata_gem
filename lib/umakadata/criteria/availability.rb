@@ -1,8 +1,11 @@
 require 'umakadata/criteria/base'
+require 'umakadata/criteria/helpers/availability_helper'
 
 module Umakadata
   module Criteria
     class Availability < Base
+      include Helpers::AvailabilityHelper
+
       MEASUREMENT_NAMES = {
         alive?: 'availability.alive'
       }.freeze
@@ -15,21 +18,17 @@ module Umakadata
       # @return [true, false] true if the endpoint is alive
       def alive?
         activities = []
+        status = nil
 
-        [check_liveness_with_graph, check_liveness_without_graph].each do |query|
-          activities << (query.execute.tap do |act|
-            act.type = Activity::Type::ALIVE
-            status = act.response&.status || 'N/A'
-            reason = act.response&.reason_phrase || 'N/A'
-            act.comment = "The endpoint returns #{status} #{reason}"
-          end)
-          break if activities.last&.response&.status == 200
+        [true, false].each do |bool|
+          activities << __send__(:liveness, graph: bool)
+          break if (status = activities.last&.response&.status) == 200
         end
 
-        test = activities.last&.response&.status == 200 || false
+        test = status == 200 || false
 
         measurement = Umakadata::Measurement.new(MEASUREMENT_NAMES[__method__], nil, activities) do |m|
-          m.comment = case activities.last&.response&.status
+          m.comment = case status
                       when 100..199, 300..499
                         'It is unknown whether the endpoint is alive or dead.'
                       when 200..299
@@ -44,21 +43,6 @@ module Umakadata
         yield measurement if block_given?
 
         inject_measurement(test, measurement)
-      end
-
-      private
-
-      def check_liveness_with_graph
-        check_liveness_without_graph
-          .graph(:g)
-      end
-
-      def check_liveness_without_graph
-        endpoint
-          .sparql
-          .construct(%i[s p o])
-          .where(%i[s p o])
-          .limit(1)
       end
     end
   end
