@@ -4,6 +4,7 @@ RSpec.describe Umakadata::Endpoint::HTTPHelper do
 
   let(:helper) do
     class Helper
+      include Umakadata::Cacheable
       include Umakadata::Endpoint::HTTPHelper
     end
     Helper.new

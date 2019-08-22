@@ -4,7 +4,7 @@ RSpec.describe Umakadata::Endpoint::VoIDHelper do
 
   let(:helper) do
     class Helper
-      include Umakadata::Endpoint::CacheHelper
+      include Umakadata::Cacheable
       include Umakadata::Endpoint::VoIDHelper
     end
     Helper.new
