@@ -51,7 +51,7 @@ RSpec.describe Umakadata::Endpoint::VoIDHelper do
           .to_return(response)
       end
 
-      it { expect(helper.publisher).to match ['http://uri.dbcls.rois.ac.jp/'] }
+      it { expect(helper.publishers).to match ['http://uri.dbcls.rois.ac.jp/'] }
     end
 
     context 'the endpoint provides VoID but it does not contain publisher' do
@@ -66,7 +66,7 @@ RSpec.describe Umakadata::Endpoint::VoIDHelper do
           .to_return(response)
       end
 
-      it { expect(helper.publisher).to be_empty }
+      it { expect(helper.publishers).to be_empty }
     end
 
     context 'the endpoint does not provide VoID' do
@@ -92,7 +92,7 @@ RSpec.describe Umakadata::Endpoint::VoIDHelper do
           .to_return(response)
       end
 
-      it { expect(helper.publisher).to be_empty }
+      it { expect(helper.publishers).to be_empty }
     end
   end
 end
