@@ -163,7 +163,7 @@ module Umakadata
 
       def logger
         @logger ||= begin
-          options = LOGGER_DEFAULT_OPTIONS.merge(@options[:logger] || {})
+          options = Umakadata::Crawler.config.logger.options.merge(@options[:logger] || {})
 
           device = options.key?(:logdev) ? options.fetch(:logdev) : STDERR
           options = options.slice(:level, :progname, :formatter, :datetime_format, :shift_period_suffix)
