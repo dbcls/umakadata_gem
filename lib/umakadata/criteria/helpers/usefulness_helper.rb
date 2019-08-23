@@ -114,6 +114,59 @@ module Umakadata
           end
         end
 
+        # @param [Hash{Symbol => Object}] options
+        # @option options [String] :graph
+        # @return [Umakadata::Activity]
+        def properties(**options)
+          cache(:properties, options) do
+            g = options[:graph]
+            endpoint
+              .sparql
+              .select(:p)
+              .distinct
+              .tap { |x| x.graph(g) if g }
+              .where(%i[s p o])
+              .execute
+              .tap do |act|
+              act.type = Activity::Type::PROPERTIES
+              act.comment = if act.result.present?
+                              "#{pluralize(act.result.count, 'property')} found"
+                            else
+                              'No properties found'
+                            end
+              act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
+            end
+          end
+        end
+
+        BIND_FOR_EXTRACTING_PREFIX = 'IF(CONTAINS(STR(?p), "#"), REPLACE(STR(?p), "#[^#]*$", "#"), '\
+                                     'REPLACE(STR(?p), "/[^/]*$", "/")) AS ?prefix'.freeze
+
+        # @param [Hash{Symbol => Object}] options
+        # @option options [String] :graph
+        # @return [Umakadata::Activity]
+        def vocabulary_prefixes(**options)
+          cache(:vocabulary_prefixes, options) do
+            g = options[:graph]
+            endpoint
+              .sparql
+              .select(:prefix)
+              .distinct
+              .where(endpoint.sparql.select(:p).distinct.tap { |x| x.graph(g) if g }.where(%i[s p o]))
+              .tap { |x| (x.options[:filters] ||= []) << ::SPARQL::Client::Query::Bind.new(BIND_FOR_EXTRACTING_PREFIX) }
+              .execute
+              .tap do |act|
+              act.type = Activity::Type::VOCABULARY_PREFIXES
+              act.comment = if act.result.present?
+                              "#{pluralize(act.result.count, 'candidate')} for vocabulary prefix found"
+                            else
+                              'No candidates for vocabulary prefix found'
+                            end
+              act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
+            end
+          end
+        end
+
         # @return [Umakadata::Activity]
         def number_of_statements(**options)
           cache(:number_of_statements, options) do
