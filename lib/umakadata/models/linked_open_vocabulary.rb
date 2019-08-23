@@ -1,19 +1,19 @@
 require 'fileutils'
 
 module Umakadata
-  # Helper methods to obtain Linked Open Vocabularies
+  # A class that represents data model for Linked Open Vocabularies
   #
   # @see https://lov.linkeddata.es/dataset/lov/
   #
   # @since 1.0.0
-  module HTTP
-    module LOVHelper
+  class LinkedOpenVocabulary
+    class << self
       LOV_CACHE_FILE_NAME = 'lov.json'.freeze
 
       # Obtain a list of Linked Open Vocabularies
       #
       # @return [Array<Object>, nil]
-      def linked_open_vocabulary
+      def all
         path = File.join(Umakadata::Crawler.config.app_home, LOV_CACHE_FILE_NAME)
 
         lov_from_cache(path) || lov_from_remote do |lov|
