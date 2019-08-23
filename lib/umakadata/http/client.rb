@@ -6,7 +6,6 @@ require 'forwardable'
 require 'umakadata/http/faraday_middleware/follow_redirects'
 require 'umakadata/http/faraday_middleware/logger'
 require 'umakadata/http/faraday_middleware/retry'
-require 'umakadata/http/lov_helper'
 require 'umakadata/logger'
 require 'umakadata/util/string'
 
@@ -19,16 +18,10 @@ module Umakadata
       extend Forwardable
 
       include StringExt
-      extend LOVHelper
 
       METHODS = Set.new %i[get post put delete head patch options]
 
       USER_AGENT = "Umaka-Crawler/#{Umakadata::VERSION} by DBCLS (umakadata@dbcls.jp)".freeze
-
-      LOGGER_DEFAULT_OPTIONS = {
-        level: ::Logger::INFO,
-        formatter: Umakadata::Logger::Formatter.new
-      }.freeze
 
       #
       # @param [String] url
