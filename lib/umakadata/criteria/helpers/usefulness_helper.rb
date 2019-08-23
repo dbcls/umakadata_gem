@@ -31,9 +31,10 @@ module Umakadata
         # @return [Umakadata::Activity]
         def classes(**options)
           cache(:classes, options) do
+            g = options[:graph]
             buffer = ['PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>']
             buffer << 'SELECT DISTINCT ?c WHERE {'
-            buffer << "GRAPH <#{options[:graph]}> {" if options[:graph]
+            buffer << "GRAPH <#{g}> {" if g
             buffer << '{ ?c a rdfs:Class . }'
             buffer << 'UNION { [] a ?c . }'
             buffer << 'UNION { [] rdfs:domain ?c . }'
@@ -46,10 +47,11 @@ module Umakadata
             endpoint.sparql.query(buffer.join(' ')).tap do |act|
               act.type = Activity::Type::CLASSES
               act.comment = if act.result.present?
-                              "#{pluralize(act.result.count, 'class')} found."
+                              "#{pluralize(act.result.count, 'class')} found"
                             else
-                              'No classes found.'
+                              'No classes found'
                             end
+              act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
             end
           end
         end
@@ -59,20 +61,22 @@ module Umakadata
         # @return [Umakadata::Activity]
         def classes_having_instance(**options)
           cache(:classes_having_instance, options) do
+            g = options[:graph]
             endpoint
               .sparql
               .select(:c)
               .distinct
-              .tap { |x| x.graph(options[:graph]) if options[:graph] }
+              .tap { |x| x.graph(g) if g }
               .where([::RDF::BlankNode.new, ::RDF::RDFV.type, :c])
               .execute
               .tap do |act|
               act.type = Activity::Type::CLASSES_HAVING_INSTANCE
               act.comment = if act.result.present?
-                              "#{pluralize(act.result.count, 'instance')} found."
+                              "#{pluralize(act.result.count, 'class')} having instances found"
                             else
-                              'No instances found.'
+                              'No instances found'
                             end
+              act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
             end
           end
         end
@@ -90,21 +94,23 @@ module Umakadata
             end
           end
 
+          g = options[:graph]
           endpoint
             .sparql
             .select(:c, :label)
             .distinct
-            .tap { |x| x.graph(options[:graph]) if options[:graph] }
+            .tap { |x| x.graph(g) if g }
             .where([:c, ::RDF::Vocab::RDFS.label, :label])
             .values(:c, *Array(classes))
             .execute
             .tap do |act|
             act.type = Activity::Type::LABELS_OF_CLASSES
             act.comment = if act.result.present?
-                            "#{pluralize(act.result.count, 'instance')} found."
+                            "#{pluralize(act.result.count, 'label')} of classes found"
                           else
-                            'No instances found.'
+                            'No instances found'
                           end
+            act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
           end
         end
 
@@ -114,13 +120,13 @@ module Umakadata
             endpoint
               .sparql
               .select(count: { '*' => :count })
-              .where(%i[s p o])
               .tap { |x| x.graph(:g) if options[:graph] }
+              .where(%i[s p o])
               .execute
               .tap do |act|
               act.type = Activity::Type::NUMBER_OF_STATEMENTS
               act.comment = if act.result.is_a?(Array) && (c = act.result.map { |r| r.bindings[:count] }.first)
-                              "The number of statements is #{c}."
+                              "#{pluralize(c, 'statement')} in the dataset."
                             else
                               'Failed to count the number of statements.'
                             end
