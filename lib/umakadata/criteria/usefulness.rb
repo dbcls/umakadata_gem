@@ -7,8 +7,8 @@ module Umakadata
       include Helpers::UsefulnessHelper
 
       MEASUREMENT_NAMES = {
-        ontology: 'usefulness.ontology',
         metadata: 'usefulness.metadata',
+        ontology: 'usefulness.ontology',
         links_to_other_datasets: 'usefulness.links_to_other_datasets',
         data_entry: 'usefulness.data_entry',
         content_negotiation_supported?: 'usefulness.content_negotiation_supported',
@@ -25,21 +25,16 @@ module Umakadata
           activities << (grs = graphs)
 
           grs.result.map { |r| r.bindings[:g] }.each do |g|
-            activities.push(*metadata_on_graph(graph: g)) unless graph_in_exclude_list(grs, g)
+            activities.push(*metadata_on_graph(g)) unless graph_in_exclude_list(grs, g)
           end
         end
 
         activities.push(*metadata_on_graph)
 
         Measurement.new do |m|
-          n = (target = activities.filter { |a| a.result.is_a? Array }).size
           m.name = MEASUREMENT_NAMES[__method__]
-          m.value = (avg = target.inject(0) { |memo, t| memo + (t.result.size.positive? ? 0 : 100) } / n.to_f)
-          m.comment = if n.positive?
-                        "Metadata score is #{avg}"
-                      else
-                        'There are no effective graphs.'
-                      end
+          m.value = (score = metadata_score(activities))
+          m.comment = "Metadata score is #{score}"
           m.activities = activities
         end
       end
@@ -60,6 +55,22 @@ module Umakadata
       end
 
       private
+
+      def metadata_score(activities)
+        graphs = activities.find { |act| act.type == Activity::Type::GRAPHS }
+
+        return 0 unless graphs.result.is_a?(Array)
+
+        sum = 0
+        activities.filter { |act| act.type == Activity::Type::CLASSES_HAVING_INSTANCE }.each do |act|
+          sum += 50 if act.result.is_a?(Array) && act.result.size.positive?
+        end
+        activities.filter { |act| act.type == Activity::Type::LABELS_OF_CLASSES }.each do |act|
+          sum += 50 if act.result.is_a?(Array) && act.result.size.positive?
+        end
+
+        sum.to_f / (graphs.result.size + 1)
+      end
 
       def metadata_on_graph(name = nil)
         options = { graph: name }.compact
