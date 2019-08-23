@@ -12,42 +12,40 @@ module Umakadata
 
       # Obtain a list of Linked Open Vocabularies
       #
-      # @return [Array<Object>, nil]
+      # @return [Array<Object>]
       def all
-        update
-        lov_from_cache.map { |x| x['nsp'] }
+        @all ||= from_cache.map { |x| x['nsp'] }
       end
 
       def update(force: false)
         if File.exist?(cache_path)
-          return unless force || expired?
+          return unless force || cache_expired?
         end
 
         logger.info('Updating cache for Linked Open Vocabularies')
 
-        lov_from_remote do |lov|
+        from_remote do |lov|
           File.open(cache_path, 'w') { |f| f.write JSON.dump(lov) }
+          @lov_from_cache = nil
           logger.info('Successfully updated cache for Linked Open Vocabularies')
         end
       end
 
-      def expired?
+      def cache_expired?
         return unless File.exist?(cache_path)
 
         Time.now - File::Stat.new(cache_path).mtime > 60 * 60 * 24 # 1 day
       end
 
-      private
-
-      def cache_path
-        File.join(Umakadata::Crawler.config.app_home, LOV_CACHE_FILE_NAME)
+      def from_cache
+        if File.exist?(cache_path)
+          JSON.parse(File.read(cache_path))
+        else
+          []
+        end
       end
 
-      def lov_from_cache
-        JSON.parse(File.read(cache_path)) if File.exist?(cache_path)
-      end
-
-      def lov_from_remote
+      def from_remote
         url = Umakadata::Crawler.config.lov
 
         activity = Umakadata::HTTP::Client.new(url).get(url, Accept: 'application/json')
@@ -57,6 +55,12 @@ module Umakadata
         Array(activity.result).tap do |result|
           yield result if block_given?
         end
+      end
+
+      private
+
+      def cache_path
+        File.join(Umakadata::Crawler.config.app_home, LOV_CACHE_FILE_NAME)
       end
 
       def logger
