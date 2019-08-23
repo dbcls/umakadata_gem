@@ -91,6 +91,8 @@ module Umakadata
       LABELS = :labels
       LABELS_OF_CLASSES = :labels_of_classes
       NUMBER_OF_STATEMENTS = :number_of_statements
+      VOCABULARY_PREFIXES = :vocabulary_prefixes
+      PROPERTIES = :properties
       SERVICE_DESCRIPTION = :service_description
       SERVICE_KEYWORD_SUPPORT = :service_keyword_support
       VOID = :void
