@@ -1,3 +1,5 @@
+require 'rdf'
+
 module RDF
   class BlankNode < Node
     def initialize
