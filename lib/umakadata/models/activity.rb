@@ -150,6 +150,11 @@ module Umakadata
     attr_accessor :errors
 
     def initialize
+      @request = nil
+      @response = nil
+      @type = nil
+      @result = nil
+      @comment = nil
       @trace = []
       @warnings = []
       @errors = []
