@@ -34,6 +34,15 @@ module Umakadata
                                 &.map(&:value)
                                 &.uniq)
         end
+
+        # @return [Integer]
+        def triples
+          @triples ||= result
+                         &.filter_by_property(RDF::Vocab::VOID.triples)
+                         &.map(&:object)
+                         &.map(&:object)
+                         &.sum
+        end
       end
 
       # Execute query to obtain VoID
