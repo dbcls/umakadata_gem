@@ -181,10 +181,11 @@ module Umakadata
         # @return [Umakadata::Activity]
         def number_of_statements(**options)
           cache(:number_of_statements, options) do
+            g = options[:graph]
             endpoint
               .sparql
               .select(count: { '*' => :count })
-              .tap { |x| x.graph(:g) if options[:graph] }
+              .tap { |x| x.graph(g) if g }
               .where(%i[s p o])
               .execute
               .tap do |act|
