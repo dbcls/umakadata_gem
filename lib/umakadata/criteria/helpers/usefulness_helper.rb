@@ -189,11 +189,12 @@ module Umakadata
               .execute
               .tap do |act|
               act.type = Activity::Type::NUMBER_OF_STATEMENTS
-              act.comment = if act.result.is_a?(Array) && (c = act.result.map { |r| r.bindings[:count] }.first)
-                              "#{pluralize(c, 'statement')} in the dataset."
+              act.comment = if act.result.is_a?(Array) && (c = act.result.map { |r| r.bindings[:count] }.first&.object)
+                              "Count #{pluralize(c, 'triple')}"
                             else
-                              'Failed to count the number of statements.'
+                              'Failed to count the number of triples'
                             end
+              act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
             end
           end
         end
