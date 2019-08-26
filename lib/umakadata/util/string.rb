@@ -1,5 +1,8 @@
+require 'active_support'
+require 'active_support/core_ext/numeric/conversions'
+
 module StringExt
   def pluralize(count, word)
-    "#{count} #{word.pluralize(count)}"
+    "#{Integer(count).to_s(:delimited)} #{word.pluralize(count)}"
   end
 end
