@@ -8,6 +8,10 @@ module Umakadata
     class << self
       CACHE_FILE_NAME = 'vocabulary_prefix.json'.freeze
 
+      EXCLUDE_PATTERNS = [
+        /www.openlinksw.com/
+      ].freeze
+
       # Obtain a list of Linked Open Vocabularies
       #
       # @return [Array<String>]
@@ -17,6 +21,10 @@ module Umakadata
                  else
                    []
                  end
+      end
+
+      def exclude_patterns
+        EXCLUDE_PATTERNS
       end
 
       private
