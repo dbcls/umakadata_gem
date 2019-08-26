@@ -14,16 +14,33 @@ module Umakadata
             if endpoint.graph_keyword_supported?
               endpoint.sparql.select(:g).distinct.graph(:g).where(%i[s p o]).execute.tap do |act|
                 act.type = Activity::Type::GRAPHS
-                act.comment = if act.result.present?
-                                "#{pluralize(act.result.count, 'graph')} found."
-                              else
-                                'No graphs found.'
-                              end
+
+                if (result = act.result).is_a?(Array)
+                  exclude, act.result = result.partition { |r| excluded_graph?(r.bindings[:g].value) }
+
+                  act.comment = "#{pluralize(act.result.count, 'graph')} found."
+                  exclude.each do |r|
+                    act.comment += "\n- #{r.bindings[:g].value} is omitted."
+                  end
+                else
+                  act.comment = 'No graphs found.'
+                end
               end
             else
               endpoint.graph_keyword_support
             end
           end
+        end
+
+        def excluded_graph?(graph)
+          return true if graph.nil? && (list = endpoint.options[:exclude_graph]) && Array(list).any?(&:blank?)
+          return true if (list = endpoint.options[:exclude_graph]) && Array(list).include?(graph)
+
+          uri = RDF::URI(graph)
+          return true unless uri.scheme.match?(/https?/)
+          return true if uri.host == 'www.w3.org' || uri.host == 'www.openlinksw.com' || uri.path.match?(%r{/DAV/?})
+
+          false
         end
 
         # @param [Hash{Symbol => Object}] options
@@ -74,7 +91,7 @@ module Umakadata
               act.comment = if act.result.present?
                               "#{pluralize(act.result.count, 'class')} having instances found"
                             else
-                              'No instances found'
+                              'No classes having instances found'
                             end
               act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
             end
@@ -86,13 +103,7 @@ module Umakadata
         # @option options [String] :graph
         # @return [Umakadata::Activity]
         def labels_of_classes(classes, **options)
-          if Array(classes).empty?
-            return Activity.new do |act|
-              act.result = []
-              act.type = Activity::Type::LABELS_OF_CLASSES
-              act.comment = 'Classes empty.'
-            end
-          end
+          return nil if Array(classes).empty?
 
           g = options[:graph]
           endpoint
@@ -108,7 +119,7 @@ module Umakadata
             act.comment = if act.result.present?
                             "#{pluralize(act.result.count, 'label')} of classes found"
                           else
-                            'No instances found'
+                            'No labels of classes found'
                           end
             act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
           end

@@ -21,6 +21,7 @@ module Umakadata
     include VoIDHelper
 
     attr_reader :url
+    attr_reader :options
 
     # @param [String] url an URL of the SPARQL endpoint
     def initialize(url, **options)

@@ -25,16 +25,16 @@ module Umakadata
           activities << (grs = graphs)
 
           grs.result.map { |r| r.bindings[:g] }.each do |g|
-            activities.push(*metadata_on_graph(g)) unless graph_in_exclude_list(grs, g)
+            activities.push(*metadata_on_graph(g)) unless excluded_graph?(g)
           end
         end
 
-        activities.push(*metadata_on_graph)
+        activities.push(*metadata_on_graph) unless excluded_graph?(nil)
 
         Measurement.new do |m|
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = (score = metadata_score(activities))
-          m.comment = "Metadata score is #{score}"
+          m.comment = "Metadata score is #{score.round(1)}"
           m.activities = activities
         end
       end
@@ -49,17 +49,19 @@ module Umakadata
           activities << (grs = graphs)
 
           grs.result.map { |r| r.bindings[:g] }.each do |g|
-            activities.push(*ontology_on_graph(g)) unless graph_in_exclude_list(grs, g)
+            activities.push(*ontology_on_graph(g)) unless excluded_graph?(g)
           end
         end
 
-        activities.push(*ontology_on_graph)
+        activities.push(*ontology_on_graph) unless excluded_graph?(nil)
 
         Measurement.new do |m|
-          score, in_lov = ontology_score(activities)
+          score, noe, nolov = ontology_score(activities)
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = score
-          m.comment = "Metadata score is #{score} (#{pluralize(in_lov, 'prefix')} found in LinkedOpenVocabulary.)"
+          m.comment = "Ontology score is #{score.round(1)}.\n"\
+                      "- #{pluralize(nolov, 'prefix')} found in Linked Open Vocabulary.\n"\
+                      "- #{pluralize(noe, 'prefix')} found in other endpoint."
           m.activities = activities
         end
       end
@@ -81,7 +83,7 @@ module Umakadata
       def metadata_score(activities)
         graphs = activities.find { |act| act.type == Activity::Type::GRAPHS }
 
-        return 0 unless graphs.result.is_a?(Array)
+        return 0 unless graphs&.result&.is_a?(Array)
 
         sum = 0
         activities.filter { |act| act.type == Activity::Type::CLASSES_HAVING_INSTANCE }.each do |act|
@@ -91,7 +93,7 @@ module Umakadata
           sum += 50 if act.result.is_a?(Array) && act.result.size.positive?
         end
 
-        sum.to_f / (graphs.result.size + 1)
+        (n = graphs.result.size + (excluded_graph?(nil) ? 0 : 1)).positive? ? sum.to_f / n : 0
       end
 
       def ontology_score(activities)
@@ -105,7 +107,7 @@ module Umakadata
         noe = prefixes.inject(0) { |m, p| m + (LinkedOpenVocabulary.all.find { |x| p.start_with?(x) } ? 1 : 0) }
         nolov = prefixes.inject(0) { |m, p| m + (VocabularyPrefix.all.find { |x| p.start_with?(x) } ? 1 : 0) }
 
-        [50.0 * (nolov.size.to_f + noe.size.to_f) / prefixes.size, nolov.size]
+        [prefixes.size.positive? ? 50.0 * (nolov.size.to_f + noe.size.to_f) / prefixes.size : 0, noe.size, nolov.size]
       end
 
       def metadata_on_graph(name = nil)
@@ -113,28 +115,12 @@ module Umakadata
         activities = []
         activities << classes_having_instance(options)
         activities << labels_of_classes(classes(options).result.map { |r| r.bindings[:c] }, options)
-        activities
+        activities.compact
       end
 
       def ontology_on_graph(name = nil)
         options = { graph: name }.compact
         [vocabulary_prefixes(options)]
-      end
-
-      def graph_in_exclude_list(activity, graph)
-        uri = RDF::URI(graph)
-
-        unless uri.scheme.match?(/https?/)
-          activity.comment += "\n#{graph} is omitted because the URI does not start with http:// or https://."
-          return true
-        end
-
-        if uri.host == 'www.w3.org' || uri.host == 'www.openlinksw.com' || uri.path == '/DAV'
-          activity.comment += "\n#{graph} is omitted because the URI seems to be prepared by the triple store as default."
-          return true
-        end
-
-        false
       end
     end
   end
