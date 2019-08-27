@@ -12,35 +12,18 @@ module Umakadata
         def graphs(**options)
           cache(:graphs, options) do
             if endpoint.graph_keyword_supported?
-              endpoint.sparql.select(:g).distinct.graph(:g).where(%i[s p o]).execute.tap do |act|
-                act.type = Activity::Type::GRAPHS
-
-                if (result = act.result).is_a?(Array)
-                  exclude, act.result = result.partition { |r| excluded_graph?(r.bindings[:g].value) }
-
-                  act.comment = "#{pluralize(act.result.count, 'graph')} found."
-                  exclude.each do |r|
-                    act.comment += "\n- #{r.bindings[:g].value} is omitted."
-                  end
-                else
-                  act.comment = 'No graphs found.'
-                end
-              end
+              endpoint
+                .sparql
+                .select(:g)
+                .distinct
+                .where(%i[s p o])
+                .graph(:g)
+                .execute
+                .tap(&post_graphs)
             else
               endpoint.graph_keyword_support
             end
           end
-        end
-
-        def excluded_graph?(graph)
-          return true if graph.nil? && (list = endpoint.options[:exclude_graph]) && Array(list).any?(&:blank?)
-          return true if (list = endpoint.options[:exclude_graph]) && Array(list).include?(graph)
-
-          uri = RDF::URI(graph)
-          return true unless uri.scheme.match?(/https?/)
-          return true if uri.host == 'www.w3.org' || uri.host == 'www.openlinksw.com' || uri.path.match?(%r{/DAV/?})
-
-          false
         end
 
         # @param [Hash{Symbol => Object}] options
@@ -61,15 +44,7 @@ module Umakadata
             buffer << '}' if options[:graph]
             buffer << '} LIMIT 100'
 
-            endpoint.sparql.query(buffer.join(' ')).tap do |act|
-              act.type = Activity::Type::CLASSES
-              act.comment = if act.result.present?
-                              "#{pluralize(act.result.count, 'class')} found"
-                            else
-                              'No classes found'
-                            end
-              act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
-            end
+            endpoint.sparql.query(buffer.join(' ')).tap(&post_classes(g))
           end
         end
 
@@ -83,18 +58,10 @@ module Umakadata
               .sparql
               .select(:c)
               .distinct
-              .tap { |x| x.graph(g) if g }
               .where([::RDF::BlankNode.new, ::RDF::RDFV.type, :c])
+              .tap { |x| x.graph(g) if g }
               .execute
-              .tap do |act|
-              act.type = Activity::Type::CLASSES_HAVING_INSTANCE
-              act.comment = if act.result.present?
-                              "#{pluralize(act.result.count, 'class')} having instances found"
-                            else
-                              'No classes having instances found'
-                            end
-              act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
-            end
+              .tap(&post_classes_having_instance(g))
           end
         end
 
@@ -110,19 +77,11 @@ module Umakadata
             .sparql
             .select(:c, :label)
             .distinct
-            .tap { |x| x.graph(g) if g }
             .where([:c, ::RDF::Vocab::RDFS.label, :label])
             .values(:c, *Array(classes))
+            .tap { |x| x.graph(g) if g }
             .execute
-            .tap do |act|
-            act.type = Activity::Type::LABELS_OF_CLASSES
-            act.comment = if act.result.present?
-                            "#{pluralize(act.result.count, 'label')} of classes found"
-                          else
-                            'No labels of classes found'
-                          end
-            act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
-          end
+            .tap(&post_labels_of_classes(g))
         end
 
         # @param [Hash{Symbol => Object}] options
@@ -135,18 +94,10 @@ module Umakadata
               .sparql
               .select(:p)
               .distinct
-              .tap { |x| x.graph(g) if g }
               .where(%i[s p o])
+              .tap { |x| x.graph(g) if g }
               .execute
-              .tap do |act|
-              act.type = Activity::Type::PROPERTIES
-              act.comment = if act.result.present?
-                              "#{pluralize(act.result.count, 'property')} found"
-                            else
-                              'No properties found'
-                            end
-              act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
-            end
+              .tap(&post_properties(g))
           end
         end
 
@@ -166,15 +117,7 @@ module Umakadata
               .where(endpoint.sparql.select(:p).distinct.tap { |x| x.graph(g) if g }.where(%i[s p o]))
               .tap { |x| (x.options[:filters] ||= []) << ::SPARQL::Client::Query::Bind.new(BIND_FOR_EXTRACTING_PREFIX) }
               .execute
-              .tap do |act|
-              act.type = Activity::Type::VOCABULARY_PREFIXES
-              act.comment = if act.result.present?
-                              "#{pluralize(act.result.count, 'candidate')} for vocabulary prefix found"
-                            else
-                              'No candidates for vocabulary prefix found'
-                            end
-              act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
-            end
+              .tap(&post_vocabulary_prefixes(g))
           end
         end
 
@@ -185,18 +128,112 @@ module Umakadata
             endpoint
               .sparql
               .select(count: { '*' => :count })
-              .tap { |x| x.graph(g) if g }
               .where(%i[s p o])
+              .tap { |x| x.graph(g) if g }
               .execute
-              .tap do |act|
-              act.type = Activity::Type::NUMBER_OF_STATEMENTS
-              act.comment = if act.result.is_a?(Array) && (c = act.result.map { |r| r.bindings[:count] }.first&.object)
-                              "Count #{pluralize(c, 'triple')}"
-                            else
-                              'Failed to count the number of triples'
-                            end
-              act.comment << " on #{g ? "graph <#{g}>" : 'default graph'}."
+              .tap(&post_number_of_statements(g))
+          end
+        end
+
+        private
+
+        def excluded_graph?(graph)
+          return true if graph.nil? && (list = endpoint.options[:exclude_graph]) && Array(list).any?(&:blank?)
+          return true if (list = endpoint.options[:exclude_graph]) && Array(list).include?(graph)
+
+          uri = RDF::URI(graph)
+          return true unless uri.scheme.match?(/https?/)
+          return true if uri.host == 'www.w3.org' || uri.host == 'www.openlinksw.com' || uri.path.match?(%r{/DAV/?})
+
+          false
+        end
+
+        def post_graphs
+          lambda do |activity|
+            activity.type = Activity::Type::GRAPHS
+
+            if (result = activity.result).is_a?(Array)
+              exclude, activity.result = result.partition { |r| excluded_graph?(r.bindings[:g].value) }
+
+              activity.comment = "#{pluralize(activity.result.count, 'graph')} found."
+              exclude.each do |r|
+                activity.comment += "\n- #{r.bindings[:g].value} is omitted."
+              end
+            else
+              activity.comment = 'No graphs found.'
             end
+          end
+        end
+
+        def post_classes(graph = nil)
+          lambda do |activity|
+            activity.type = Activity::Type::CLASSES
+            activity.comment = if activity.result.present?
+                                 "#{pluralize(activity.result.count, 'class')} found"
+                               else
+                                 'No classes found'
+                               end
+            activity.comment << " on #{graph ? "graph <#{graph}>" : 'default graph'}."
+          end
+        end
+
+        def post_classes_having_instance(graph = nil)
+          lambda do |activity|
+            activity.type = Activity::Type::CLASSES_HAVING_INSTANCE
+            activity.comment = if activity.result.present?
+                                 "#{pluralize(activity.result.count, 'class')} having instances found"
+                               else
+                                 'No classes having instances found'
+                               end
+            activity.comment << " on #{graph ? "graph <#{graph}>" : 'default graph'}."
+          end
+        end
+
+        def post_labels_of_classes(graph = nil)
+          lambda do |act|
+            act.type = Activity::Type::LABELS_OF_CLASSES
+            act.comment = if act.result.present?
+                            "#{pluralize(act.result.count, 'label')} of classes found"
+                          else
+                            'No labels of classes found'
+                          end
+            act.comment << " on #{graph ? "graph <#{graph}>" : 'default graph'}."
+          end
+        end
+
+        def post_properties(graph = nil)
+          lambda do |act|
+            act.type = Activity::Type::PROPERTIES
+            act.comment = if act.result.present?
+                            "#{pluralize(act.result.count, 'property')} found"
+                          else
+                            'No properties found'
+                          end
+            act.comment << " on #{graph ? "graph <#{graph}>" : 'default graph'}."
+          end
+        end
+
+        def post_vocabulary_prefixes(graph = nil)
+          lambda do |act|
+            act.type = Activity::Type::VOCABULARY_PREFIXES
+            act.comment = if act.result.present?
+                            "#{pluralize(act.result.count, 'candidate')} for vocabulary prefix found"
+                          else
+                            'No candidates for vocabulary prefix found'
+                          end
+            act.comment << " on #{graph ? "graph <#{graph}>" : 'default graph'}."
+          end
+        end
+
+        def post_number_of_statements(graph = nil)
+          lambda do |act|
+            act.type = Activity::Type::NUMBER_OF_STATEMENTS
+            act.comment = if act.result.is_a?(Array) && (c = act.result.map { |r| r.bindings[:count] }.first&.object)
+                            "Count #{pluralize(c, 'triple')}"
+                          else
+                            'Failed to count the number of triples'
+                          end
+            act.comment << " on #{graph ? "graph <#{graph}>" : 'default graph'}."
           end
         end
       end
