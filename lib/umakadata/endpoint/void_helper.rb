@@ -22,7 +22,7 @@ module Umakadata
           pattern [:s, RDF::Vocab::VOID.triples, :triples]
         end
 
-        LINKSETS = RDF::Query.new do
+        LINK_SETS = RDF::Query.new do
           pattern [:s, RDF.type, RDF::Vocab::VOID[:Linkset]]
           pattern [:s, RDF::Vocab::VOID.target, :target]
         end
@@ -48,8 +48,8 @@ module Umakadata
           @triples ||= statements.query(Query::TRIPLES).map { |x| x.bindings[:triples].object }.sum
         end
 
-        def linksets
-          @linksets ||= statements.query(Query::LINKSETS).map { |x| x.bindings[:target].value }
+        def link_sets
+          @link_sets ||= statements.query(Query::LINK_SETS).map { |x| x.bindings[:target].value }
         end
       end
 
