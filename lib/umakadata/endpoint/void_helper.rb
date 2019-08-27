@@ -6,42 +6,50 @@ module Umakadata
     #
     # @since 1.0.0
     module VoIDHelper
-      # @return [Array<String>]
-      def publishers
-        void.publishers
-      end
+      module Query
+        PUBLISHERS = RDF::Query.new do
+          pattern [:s, RDF.type, RDF::Vocab::VOID[:Dataset]]
+          pattern [:s, RDF::Vocab::DC.publisher, :publisher]
+        end
 
-      # @return [Array<String>]
-      def licenses
-        void.licenses
+        LICENSES = RDF::Query.new do
+          pattern [:s, RDF.type, RDF::Vocab::VOID[:Dataset]]
+          pattern [:s, RDF::Vocab::DC.license, :license]
+        end
+
+        TRIPLES = RDF::Query.new do
+          pattern [:s, RDF.type, RDF::Vocab::VOID[:Dataset]]
+          pattern [:s, RDF::Vocab::VOID.triples, :triples]
+        end
+
+        LINKSETS = RDF::Query.new do
+          pattern [:s, RDF.type, RDF::Vocab::VOID[:Linkset]]
+          pattern [:s, RDF::Vocab::VOID.target, :target]
+        end
       end
 
       module VoIDMethods
+        def statements
+          @statements ||= RDF::Dataset.new(statements: result || [])
+        end
+
         # @return [Array<String>]
         def publishers
-          @publishers ||= Array(result
-                                  &.filter_by_property(RDF::Vocab::DC.publisher)
-                                  &.map(&:object)
-                                  &.map(&:value)
-                                  &.uniq)
+          @publishers ||= statements.query(Query::PUBLISHERS).map { |x| x.bindings[:publisher].value }.uniq
         end
 
         # @return [Array<String>]
         def licenses
-          @licenses ||= Array(result
-                                &.filter_by_property(RDF::Vocab::DC.license)
-                                &.map(&:object)
-                                &.map(&:value)
-                                &.uniq)
+          @licenses ||= statements.query(Query::LICENSES).map { |x| x.bindings[:license].value }.uniq
         end
 
         # @return [Integer]
         def triples
-          @triples ||= result
-                         &.filter_by_property(RDF::Vocab::VOID.triples)
-                         &.map(&:object)
-                         &.map(&:object)
-                         &.sum
+          @triples ||= statements.query(Query::TRIPLES).map { |x| x.bindings[:triples].object }.sum
+        end
+
+        def linksets
+          @linksets ||= statements.query(Query::LINKSETS).map { |x| x.bindings[:target].value }
         end
       end
 

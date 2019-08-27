@@ -29,7 +29,7 @@ RSpec.describe Umakadata::Endpoint::ServiceDescriptionHelper do
           .to_return(response)
       end
 
-      it { expect(helper.supported_languages).to match ['http://www.w3.org/ns/sparql-service-description#SPARQL11Query'] }
+      it { expect(helper.service_description.supported_languages).to match ['SPARQL11Query'] }
     end
 
     context 'the endpoint provides service description but it does not contain supported language' do
@@ -52,7 +52,7 @@ RSpec.describe Umakadata::Endpoint::ServiceDescriptionHelper do
           .to_return(response)
       end
 
-      it { expect(helper.supported_languages).to be_empty }
+      it { expect(helper.service_description.supported_languages).to be_empty }
     end
 
     context 'the endpoint does not provide service description' do
@@ -78,7 +78,7 @@ RSpec.describe Umakadata::Endpoint::ServiceDescriptionHelper do
           .to_return(response)
       end
 
-      it { expect(helper.supported_languages).to be_empty }
+      it { expect(helper.service_description.supported_languages).to be_empty }
     end
   end
 end

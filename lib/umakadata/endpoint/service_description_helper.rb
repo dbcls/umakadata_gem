@@ -6,11 +6,26 @@ module Umakadata
     #
     # @since 1.0.0
     module ServiceDescriptionHelper
-      SD = RDF::Vocabulary.new('http://www.w3.org/ns/sparql-service-description#')
+      SSD = RDF::Vocabulary.new('http://www.w3.org/ns/sparql-service-description#')
 
-      # @return [Array<String>]
-      def supported_languages
-        service_description.supported_languages
+      module Query
+        SUPPORTED_LANGUAGES = RDF::Query.new do
+          pattern [:s, RDF.type, SSD[:Service]]
+          pattern [:s, SSD[:supportedLanguage], :language]
+        end
+      end
+
+      module ServiceDescriptionMethods
+        def statements
+          @statements ||= RDF::Dataset.new(statements: result || [])
+        end
+
+        # @return [Array<String>]
+        def supported_languages
+          @supported_languages ||= statements.query(Query::SUPPORTED_LANGUAGES)
+                                     .map { |x| (m = (v = x.bindings[:language].value).match(/#(.+)/)) ? m[1] : v }
+                                     .uniq
+        end
       end
 
       # Execute query to obtain Service Description
@@ -27,14 +42,7 @@ module Umakadata
                           end
 
             class << act
-              # @return [Array<String>]
-              def supported_languages
-                @supported_languages ||= Array(result
-                                                &.filter_by_property(SD.supported_language)
-                                                &.map(&:object)
-                                                &.map(&:value)
-                                                &.uniq)
-              end
+              include ServiceDescriptionMethods
             end
           end
         end
