@@ -58,10 +58,5 @@ module Umakadata
     def usefulness
       @criteria[:operation] ||= Criteria::Usefulness.new(self)
     end
-
-    def_delegator :availability, :alive?
-    def_delegator :freshness, :last_updated
-    def_delegators :operation, :service_description?, :void?
-    def_delegators :usefulness, :metadata
   end
 end

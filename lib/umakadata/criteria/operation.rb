@@ -4,14 +4,14 @@ module Umakadata
   module Criteria
     class Operation < Base
       MEASUREMENT_NAMES = {
-        service_description?: 'operation.service_description',
-        void?: 'operation.void'
+        service_description: 'operation.service_description',
+        void: 'operation.void'
       }.freeze
 
       # Check whether if the endpoint provides service description
       #
       # @return [Umakadata::Measurement]
-      def service_description?
+      def service_description
         activity = endpoint.service_description
 
         Measurement.new do |m|
@@ -29,7 +29,7 @@ module Umakadata
       # Check whether if the endpoint provides VoID
       #
       # @return [Umakadata::Measurement]
-      def void?
+      def void
         activity = endpoint.void
 
         Measurement.new do |m|
