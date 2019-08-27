@@ -7,24 +7,24 @@ module Umakadata
       include Helpers::AvailabilityHelper
 
       MEASUREMENT_NAMES = {
-        alive?: 'availability.alive'
+        alive: 'availability.alive'
       }.freeze
 
       # Check whether if the endpoint is alive or dead
       #
       # @return [Umakadata::Measurement]
-      def alive?
+      def alive
         activities = []
         status = nil
 
         [true, false].each do |bool|
-          activities << __send__(:liveness, graph: bool)
+          activities << __send__(:check_alive, graph: bool)
           break if (status = activities.last&.response&.status) == 200
         end
 
         Umakadata::Measurement.new do |m|
           m.name = MEASUREMENT_NAMES[__method__]
-          m.value = status == 200 || false
+          m.value = status == 200
           m.comment = case status
                       when 100..199, 300..499
                         'It is unknown whether the endpoint is alive or dead.'
@@ -33,7 +33,7 @@ module Umakadata
                       when 500..599
                         'The endpoint is dead.'
                       else
-                        'Errors occurred in checking liveness of the endpoint.'
+                        "Errors occurred in checking liveness of the endpoint. (status = #{status})"
                       end
           m.activities = activities
         end

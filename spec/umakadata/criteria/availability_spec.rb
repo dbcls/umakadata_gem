@@ -8,7 +8,7 @@ RSpec.describe Umakadata::Criteria::Availability do
     WebMock.enable!
   end
 
-  describe '#alive?' do
+  describe '#alive' do
     context 'endpoint returns 500 status for any queries' do
       let(:response) do
         {
@@ -26,7 +26,7 @@ RSpec.describe Umakadata::Criteria::Availability do
           .to_return(response)
       end
 
-      it { expect(availability.alive?.value).to be_falsey }
+      it { expect(availability.alive.value).to be_falsey }
     end
 
     context 'endpoint supports GRAPH keyword' do
@@ -44,7 +44,7 @@ RSpec.describe Umakadata::Criteria::Availability do
           }
         end
 
-        it { expect(availability.alive?).to be_truthy }
+        it { expect(availability.alive).to be_truthy }
       end
 
       context 'endpoint returns response but content type is inconsistent' do
@@ -56,7 +56,7 @@ RSpec.describe Umakadata::Criteria::Availability do
           }
         end
 
-        it { suppress_stderr { expect(availability.alive?).to be_truthy } }
+        it { suppress_stderr { expect(availability.alive).to be_truthy } }
       end
 
       context 'endpoint returns empty response' do
@@ -68,7 +68,7 @@ RSpec.describe Umakadata::Criteria::Availability do
           }
         end
 
-        it { expect(availability.alive?).to be_truthy }
+        it { expect(availability.alive).to be_truthy }
       end
     end
 
@@ -94,7 +94,7 @@ RSpec.describe Umakadata::Criteria::Availability do
           }
         end
 
-        it { expect(availability.alive?).to be_truthy }
+        it { expect(availability.alive).to be_truthy }
       end
     end
   end
