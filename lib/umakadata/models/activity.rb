@@ -95,6 +95,7 @@ module Umakadata
       LABELS_OF_CLASSES = :labels_of_classes
       NUMBER_OF_STATEMENTS = :number_of_statements
       PROPERTIES = :properties
+      RETRIEVE_URI = :retrieve_uri
       SERVICE_DESCRIPTION = :service_description
       SERVICE_KEYWORD_SUPPORT = :service_keyword_support
       VOCABULARY_PREFIXES = :vocabulary_prefixes

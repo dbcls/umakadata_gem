@@ -11,8 +11,9 @@ module Umakadata
         ontology: 'usefulness.ontology',
         links_to_other_datasets: 'usefulness.links_to_other_datasets',
         data_entry: 'usefulness.data_entry',
-        content_negotiation_supported?: 'usefulness.content_negotiation_supported',
-        turtle_format_supported?: 'usefulness.turtle_format_supported'
+        support_html_format: 'usefulness.support_html_format',
+        support_rdfxml_format: 'usefulness.support_rdfxml_format',
+        support_turtle_format: 'usefulness.support_turtle_format'
       }.freeze
 
       #
@@ -67,6 +68,10 @@ module Umakadata
       end
 
       def links_to_other_datasets
+        Measurement.new do |m|
+          m.name = MEASUREMENT_NAMES[__method__]
+          m.value = (v = endpoint.void.link_sets).present? ? v.link_sets.join("\n") : 'N/A'
+        end
       end
 
       def data_entry
@@ -102,13 +107,46 @@ module Umakadata
         end
       end
 
-      def content_negotiation_supported?
+      def support_html_format
+        content_negotiate(ResourceURI::NegotiationTypes::HTML, __method__)
       end
 
-      def turtle_format_supported?
+      def support_rdfxml_format
+        content_negotiate(ResourceURI::NegotiationTypes::RDFXML, __method__)
+      end
+
+      def support_turtle_format
+        content_negotiate(ResourceURI::NegotiationTypes::TURTLE, __method__)
       end
 
       private
+
+      def content_negotiate(type, method)
+        activities = []
+
+        endpoint.resource_uri.each do |p|
+          activities.push(*check_content_negotiation(p, type))
+        end
+
+        Measurement.new do |m|
+          m.name = MEASUREMENT_NAMES[method]
+          m.value = activities.any?(&negotiation_succeed?(type))
+          m.comment = if m.value
+                        "The endpoint supports content negotiation for #{type}"
+                      else
+                        "The endpoint does not support content negotiation for #{type}"
+                      end
+          m.activities = activities
+        end
+      end
+
+      def negotiation_succeed?(type)
+        lambda do |act|
+          act.type.to_s.match?('content_negotiation_') &&
+            act.response&.status == 200 &&
+            act.response&.headers&.content_type.to_s.include?(type)
+        end
+      end
 
       def metadata_score(activities)
         graphs = activities.find { |act| act.type == Activity::Type::GRAPHS }
