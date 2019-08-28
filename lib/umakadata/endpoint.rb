@@ -11,6 +11,12 @@ module Umakadata
   #
   # @!attribute [r] url
   #   @return [String] the URL of the SPARQL endpoint
+  # @!attribute [r] options
+  #   @return [Hash]
+  # @!attribute [r] exclude_graph
+  #   @return [Array<String>]
+  # @!attribute [r] resource_uri
+  #   @return [Array<ResourceURI>]
   class Endpoint
     extend Forwardable
 
@@ -22,11 +28,16 @@ module Umakadata
 
     attr_reader :url
     attr_reader :options
+    attr_reader :exclude_graph
+    attr_reader :resource_uri
 
     # @param [String] url an URL of the SPARQL endpoint
+    # @param [Hash{Symbol => Object}] options
     def initialize(url, **options)
       @url = url
       @options = options
+      @exclude_graph = Array(options.delete(:exclude_graph))
+      @resource_uri = Array(options.delete(:resource_uri))
       @criteria = {}
     end
 
