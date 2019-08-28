@@ -6,7 +6,8 @@ module Umakadata
     class ResponseParser
       extend Forwardable
 
-      APPLICATION_JSON = Regexp.new(Regexp.escape('application/json')).freeze
+      APPLICATION_JSON = %r{application/json}.freeze
+      TEXT_HTML = %r{text/html}.freeze
 
       # SPARQL Result
       RESULT_BOOL = Regexp.new(Regexp.escape(::SPARQL::Client::RESULT_BOOL)).freeze
@@ -32,8 +33,9 @@ module Umakadata
         #
         # @param [Umakadata::Activity::Response] response
         # @return [RDF::Query::Solutions, RDF::Enumerable, true, false, nil]
-        def parse(response, &block)
-          new(response.body, url: response.url, content_type: response.headers.content_type, callback: block).parse
+        def parse(response, **options, &block)
+          new(response.body, url: response.url, content_type: response.headers.content_type, callback: block)
+            .parse(**options.slice(:content_type, :strict))
         end
       end
 
@@ -54,11 +56,15 @@ module Umakadata
       #
       # @param [Hash{Symbol => Object}] options
       # @option options [String] :content_type
+      # @option options [true, false] :strict
       # @return [RDF::Query::Solutions, RDF::Enumerable, true, false, nil]
       def parse(**options)
         return if @data.blank?
 
         options = @options.merge(options)
+        strict = options.delete(:strict)
+
+        return @data if strict && options[:content_type].match?(TEXT_HTML)
 
         case options[:content_type]
         when APPLICATION_JSON
@@ -74,7 +80,13 @@ module Umakadata
         when RESULT_TSV
           parse_tsv_bindings(@data)
         else
-          parse_rdf_serialization(options) || parse_any_rdf_serialization(options) || parse_any_rdf_bindings(options)
+          if strict
+            parse_rdf_serialization(options)
+          else
+            parse_rdf_serialization(options) ||
+              parse_any_rdf_serialization(options) ||
+              parse_any_rdf_bindings(options)
+          end
         end
       end
 

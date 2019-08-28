@@ -32,6 +32,7 @@ module Umakadata
       # @option options [Hash] :retry
       # @option options [Hash] :redirect
       # @option options [Hash] :logger disable logging if { logdev => nil }
+      # @option options [Hash] :response_parser
       def initialize(url, **options)
         @url = ::URI.parse(url.to_s)
         @options = options
@@ -63,7 +64,7 @@ module Umakadata
             end
 
             if (200..299).include?(act.response&.status)
-              act.result = ResponseParser.parse(act.response) do |_, msg|
+              act.result = ResponseParser.parse(act.response, **@options.fetch(:response_parser, {})) do |_, msg|
                 log(:warn, 'response_parser') { msg } if msg.present?
               end
             end
