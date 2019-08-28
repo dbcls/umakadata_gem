@@ -83,6 +83,9 @@ module Umakadata
 
     module Type
       ALIVE = :alive
+      CONTENT_NEGOTIATION_HTML = :content_negotiation_html
+      CONTENT_NEGOTIATION_TURTLE = :content_negotiation_turtle
+      CONTENT_NEGOTIATION_RDFXML = :content_negotiation_rdfxml
       CLASSES = :classes
       CLASSES_HAVING_INSTANCE = :classes_having_instance
       CORS_SUPPORT = :cors_support
@@ -96,6 +99,8 @@ module Umakadata
       SERVICE_KEYWORD_SUPPORT = :service_keyword_support
       VOCABULARY_PREFIXES = :vocabulary_prefixes
       VOID = :void
+
+      UNKNOWN = :unknown
     end
 
     # A class that represents HTTP response
