@@ -1,9 +1,11 @@
 require 'umakadata/criteria/base'
+require 'umakadata/criteria/helpers/content_negotiation_helper'
 require 'umakadata/criteria/helpers/usefulness_helper'
 
 module Umakadata
   module Criteria
     class Usefulness < Base
+      include Helpers::ContentNegotiationHelper
       include Helpers::UsefulnessHelper
 
       MEASUREMENT_NAMES = {
@@ -108,45 +110,18 @@ module Umakadata
       end
 
       def support_html_format
-        content_negotiate(ResourceURI::NegotiationTypes::HTML, __method__)
+        content_negotiate(ResourceURI::NegotiationTypes::HTML, MEASUREMENT_NAMES[__method__])
       end
 
       def support_rdfxml_format
-        content_negotiate(ResourceURI::NegotiationTypes::RDFXML, __method__)
+        content_negotiate(ResourceURI::NegotiationTypes::RDFXML, MEASUREMENT_NAMES[__method__])
       end
 
       def support_turtle_format
-        content_negotiate(ResourceURI::NegotiationTypes::TURTLE, __method__)
+        content_negotiate(ResourceURI::NegotiationTypes::TURTLE, MEASUREMENT_NAMES[__method__])
       end
 
       private
-
-      def content_negotiate(type, method)
-        activities = []
-
-        endpoint.resource_uri.each do |p|
-          activities.push(*check_content_negotiation(p, type))
-        end
-
-        Measurement.new do |m|
-          m.name = MEASUREMENT_NAMES[method]
-          m.value = activities.any?(&negotiation_succeed?(type))
-          m.comment = if m.value
-                        "The endpoint supports content negotiation for #{type}"
-                      else
-                        "The endpoint does not support content negotiation for #{type}"
-                      end
-          m.activities = activities
-        end
-      end
-
-      def negotiation_succeed?(type)
-        lambda do |act|
-          act.type.to_s.match?('content_negotiation_') &&
-            act.response&.status == 200 &&
-            act.response&.headers&.content_type.to_s.include?(type)
-        end
-      end
 
       def metadata_score(activities)
         graphs = activities.find { |act| act.type == Activity::Type::GRAPHS }
