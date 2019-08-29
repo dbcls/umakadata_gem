@@ -4,6 +4,7 @@ module Umakadata
       TURTLE = 'text/turtle'.freeze
       RDFXML = 'application/rdf+xml'.freeze
       HTML = 'text/html'.freeze
+      ANY = '*/*'.freeze
     end
 
     class << self
@@ -17,6 +18,8 @@ module Umakadata
           Activity::Type::CONTENT_NEGOTIATION_TURTLE
         when RDFXML
           Activity::Type::CONTENT_NEGOTIATION_RDFXML
+        when ANY
+          Activity::Type::CONTENT_NEGOTIATION_ANY
         else
           Activity::Type::UNKNOWN
         end
