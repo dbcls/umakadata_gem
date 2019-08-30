@@ -69,6 +69,9 @@ module Umakadata
     def usefulness
       @criteria[:usefulness] ||= Criteria::Usefulness.new(self)
     end
+
+    def validity
+      @criteria[:validity] ||= Criteria::Validity.new(self)
     end
   end
 end
