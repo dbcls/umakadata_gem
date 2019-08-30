@@ -94,6 +94,8 @@ module Umakadata
       GRAPHS = :graphs
       LABELS = :labels
       LABELS_OF_CLASSES = :labels_of_classes
+      LINK_TO_OTHER_URI = :link_to_other_uri
+      NON_HTTP_URI_SUBJECT = :non_http_uri_subject
       NUMBER_OF_STATEMENTS = :number_of_statements
       PROPERTIES = :properties
       RETRIEVE_URI = :retrieve_uri
