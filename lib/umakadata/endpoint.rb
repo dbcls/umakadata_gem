@@ -67,7 +67,8 @@ module Umakadata
     end
 
     def usefulness
-      @criteria[:operation] ||= Criteria::Usefulness.new(self)
+      @criteria[:usefulness] ||= Criteria::Usefulness.new(self)
+    end
     end
   end
 end
