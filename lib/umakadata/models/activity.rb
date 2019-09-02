@@ -90,6 +90,7 @@ module Umakadata
       CLASSES = :classes
       CLASSES_HAVING_INSTANCE = :classes_having_instance
       CORS_SUPPORT = :cors_support
+      EXECUTION_TIME = :execution_time
       GRAPH_KEYWORD_SUPPORT = :graph_keyword_support
       GRAPHS = :graphs
       LABELS = :labels
@@ -164,6 +165,9 @@ module Umakadata
       @type = nil
       @result = nil
       @comment = nil
+
+      @elapsed_time = 0
+
       @trace = []
       @warnings = []
       @errors = []
