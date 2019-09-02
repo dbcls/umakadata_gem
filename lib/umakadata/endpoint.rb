@@ -66,6 +66,10 @@ module Umakadata
       @criteria[:operation] ||= Criteria::Operation.new(self)
     end
 
+    def performance
+      @criteria[:performance] ||= Criteria::Performance.new(self)
+    end
+
     def usefulness
       @criteria[:usefulness] ||= Criteria::Usefulness.new(self)
     end

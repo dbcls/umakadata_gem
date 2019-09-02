@@ -1,5 +1,6 @@
 require 'umakadata/criteria/availability'
 require 'umakadata/criteria/freshness'
 require 'umakadata/criteria/operation'
+require 'umakadata/criteria/performance'
 require 'umakadata/criteria/usefulness'
 require 'umakadata/criteria/validity'
