@@ -21,5 +21,14 @@ module Umakadata
 
       yield self if block_given?
     end
+
+    def to_h
+      {
+        name: @name,
+        value: @value,
+        comment: @comment,
+        activities: @activities.map(&:to_h)
+      }
+    end
   end
 end

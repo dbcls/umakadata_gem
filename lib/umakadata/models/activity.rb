@@ -174,5 +174,18 @@ module Umakadata
 
       yield self if block_given?
     end
+
+    def to_h
+      {
+        name: @type,
+        request: @request.to_h,
+        response: @response.to_h,
+        comment: @comment,
+        elapsed_time: @elapsed_time,
+        trace: @trace,
+        warnings: @warnings,
+        exceptions: @exceptions.map.with_index(1) { |e, i| [i, e.backtrace.unshift(e.message)] }.to_h
+      }
+    end
   end
 end
