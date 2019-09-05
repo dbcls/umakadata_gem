@@ -13,7 +13,8 @@ module Umakadata
         cool_uri: 'validity.cool_uri',
         http_uri: 'validity.http_uri',
         subject_uri_provides_information: 'validity.subject_uri_provides_information',
-        links_to_other_uri: 'validity.links_to_other_uri'
+        provide_useful_information: 'validity.provide_useful_information',
+        link_to_other_uri: 'validity.links_to_other_uri'
       }.freeze
 
       #
@@ -48,6 +49,7 @@ module Umakadata
       # @return [Umakadata::Measurement]
       def provide_useful_information
         content_negotiate(ResourceURI::NegotiationTypes::ANY, MEASUREMENT_NAMES[__method__]) do |m|
+          m.name = MEASUREMENT_NAMES[__method__]
           m.value = m.activities.any? { |act| act.response&.status == 200 }
           m.comment = "The endpoint #{m.value ? 'provides' : 'does not provide'} useful information "\
                       'by looking up a URI.'
