@@ -157,7 +157,7 @@ module Umakadata
 
     attr_accessor :trace
     attr_accessor :warnings
-    attr_accessor :errors
+    attr_accessor :exceptions
 
     def initialize
       @request = nil
@@ -170,7 +170,7 @@ module Umakadata
 
       @trace = []
       @warnings = []
-      @errors = []
+      @exceptions = []
 
       yield self if block_given?
     end

@@ -72,7 +72,7 @@ module Umakadata
             sleep(1) # some servers refuse following connection without sleep
             act
           ensure
-            act.errors = @errors
+            act.exceptions = @exceptions
             act.warnings = @warnings
             act.trace = @trace
             act.elapsed_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) - t0
@@ -95,7 +95,7 @@ module Umakadata
       def request(method, path, body = nil, **headers, &block)
         raise ArgumentError, "unsupported http method: #{method}" unless METHODS.include?(method)
 
-        @errors = []
+        @exceptions = []
         @warnings = []
         @trace = []
 
@@ -157,7 +157,7 @@ module Umakadata
         when :warn
           @warnings.push(block&.call || progname)
         when :error
-          @errors.push(ex)
+          @exceptions.push(ex)
           @trace.push('Connection closed due to timeout.') if ex.is_a?(Faraday::TimeoutError)
         end
       end

@@ -31,7 +31,7 @@ RSpec.describe Umakadata::SPARQL::Client do
         result = client.query(query.to_s)
 
         expect(result).to be_a_kind_of Umakadata::Activity
-        expect(result.errors).to match_array []
+        expect(result.exceptions).to match_array []
         expect(result.warnings).to match_array []
       end
     end
@@ -52,7 +52,7 @@ RSpec.describe Umakadata::SPARQL::Client do
         result = client.query(query.to_s)
 
         expect(result).to be_a_kind_of Umakadata::Activity
-        expect(result.errors).to match_array []
+        expect(result.exceptions).to match_array []
         expect(result.warnings.at(0)).to match(/Inconsistent content type/)
       end
     end
@@ -78,7 +78,7 @@ RSpec.describe Umakadata::SPARQL::Client do
         expect(result).to be_a_kind_of Umakadata::Activity
         expect(result.response.status).to be 500
         expect(result.response.body).to eq 'Internal Server Error'
-        expect(result.errors).to match_array []
+        expect(result.exceptions).to match_array []
         expect(result.warnings).to match_array []
       end
     end
