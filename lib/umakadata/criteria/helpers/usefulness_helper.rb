@@ -138,7 +138,7 @@ module Umakadata
         private
 
         def excluded_graph?(graph)
-          return true if graph.nil? && (list = endpoint.exclude_graph).present? && Array(list).any?(&:blank?)
+          return Array(endpoint.exclude_graph).any?(&:blank?) if graph.nil?
           return true if (list = endpoint.exclude_graph).present? && Array(list).include?(graph)
 
           uri = RDF::URI(graph)
