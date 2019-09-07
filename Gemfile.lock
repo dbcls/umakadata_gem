@@ -1,3 +1,12 @@
+GIT
+  remote: https://github.com/dsatoh/sparql-client.git
+  revision: 618967341aa177c975b4bfa69bd2e0d351e7300f
+  branch: fix_name_error
+  specs:
+    sparql-client (3.0.1)
+      net-http-persistent (>= 2.9, < 4)
+      rdf (~> 3.0)
+
 PATH
   remote: .
   specs:
@@ -90,7 +99,7 @@ GEM
     minitest (5.11.3)
     multi_json (1.13.1)
     multipart-post (2.1.1)
-    net-http-persistent (3.0.1)
+    net-http-persistent (3.1.0)
       connection_pool (~> 2.2)
     nokogiri (1.10.3)
       mini_portile2 (~> 2.4.0)
@@ -189,9 +198,6 @@ GEM
       rdf-xsd (~> 3.0)
       sparql-client (~> 3.0)
       sxp (~> 1.0)
-    sparql-client (3.0.1)
-      net-http-persistent (>= 2.9, < 4)
-      rdf (~> 3.0)
     sxp (1.0.2)
       rdf (~> 3.0)
     temple (0.8.1)
@@ -214,6 +220,7 @@ DEPENDENCIES
   pry-byebug (~> 3.7)
   rake (~> 10.0)
   rspec (~> 3.8)
+  sparql-client!
   umakadata!
   webmock (~> 3.6)
   yard (~> 0.9.12)
