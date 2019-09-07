@@ -142,7 +142,7 @@ module Umakadata
           return true if (list = endpoint.exclude_graph).present? && Array(list).include?(graph)
 
           uri = RDF::URI(graph)
-          return true unless uri.scheme.match?(/https?/)
+          return true unless uri.scheme&.match?(/https?/)
           return true if uri.host == 'www.w3.org' || uri.host == 'www.openlinksw.com' || uri.path.match?(%r{/DAV/?})
 
           false
