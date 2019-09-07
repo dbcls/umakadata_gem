@@ -178,9 +178,9 @@ module Umakadata
     def to_h
       {
         name: @type,
+        comment: @comment,
         request: @request.to_h,
         response: @response.to_h,
-        comment: @comment,
         elapsed_time: @elapsed_time,
         trace: @trace,
         warnings: @warnings,

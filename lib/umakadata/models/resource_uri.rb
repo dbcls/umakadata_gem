@@ -27,23 +27,25 @@ module Umakadata
     end
 
     attr_reader :uri
-    attr_reader :as_regex
     attr_reader :allow
     attr_reader :deny
+    attr_reader :regex
     attr_reader :case_insensitive
 
     def initialize(attributes = {})
+      Hash(attributes).symbolize_keys!
+
       @uri = attributes[:uri]
-      @as_regex = attributes.fetch(:as_regex, false)
       @allow = attributes[:allow]
       @deny = attributes[:deny]
+      @regex = attributes.fetch(:regex, false)
       @case_insensitive = attributes.fetch(:case_insensitive, false)
     end
 
     def filter
       return if @uri.present?
 
-      @as_regex ? regex : str_starts
+      @regex ? regex : str_starts
     end
 
     private
