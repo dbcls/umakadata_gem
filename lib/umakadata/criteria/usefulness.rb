@@ -70,7 +70,7 @@ module Umakadata
       def links_to_other_datasets
         Measurement.new do |m|
           m.name = MEASUREMENT_NAMES[__method__]
-          m.value = (v = endpoint.void.link_sets).present? ? v.link_sets.join("\n") : 'N/A'
+          m.value = endpoint.void.link_sets.presence&.join("\n")
         end
       end
 
