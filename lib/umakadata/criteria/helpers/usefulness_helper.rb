@@ -152,9 +152,10 @@ module Umakadata
           lambda do |activity|
             activity.type = Activity::Type::GRAPHS
 
-            if (result = activity.result).is_a?(Array)
-              exclude, activity.result = result.partition { |r| excluded_graph?(r.bindings[:g].value) }
+            if (result = activity.result).is_a?(RDF::Query::Solutions)
+              exclude = result.dup.filter { |r| excluded_graph?(r.bindings[:g].value) }
 
+              activity.result = result.minus(exclude)
               activity.comment = "#{pluralize(activity.result.count, 'graph')} found."
               exclude.each do |r|
                 activity.comment += "\n- #{r.bindings[:g].value} is omitted."
@@ -228,7 +229,7 @@ module Umakadata
         def post_number_of_statements(graph = nil)
           lambda do |act|
             act.type = Activity::Type::NUMBER_OF_STATEMENTS
-            act.comment = if act.result.is_a?(Array) && (c = act.result.map { |r| r.bindings[:count] }.first&.object)
+            act.comment = if act.result.is_a?(RDF::Query::Solutions) && (c = act.result.map { |r| r.bindings[:count] }.first&.object)
                             "Count #{pluralize(c, 'triple')}"
                           else
                             'Failed to count the number of triples'

@@ -95,7 +95,7 @@ module Umakadata
             activities << number_of_statements unless excluded_graph?(nil)
 
             m.value = activities
-                        .filter { |act| act.type == Activity::Type::NUMBER_OF_STATEMENTS && act.result.is_a?(Array) }
+                        .filter { |act| act.type == Activity::Type::NUMBER_OF_STATEMENTS && act.result.is_a?(RDF::Query::Solutions) }
                         .inject(0) { |memo, act| memo + (act.result.map { |r| r.bindings[:count] }.first&.object || 0) }
             m.comment = "Count #{pluralize(m.value, 'triple')}."
           end
@@ -121,14 +121,14 @@ module Umakadata
       def metadata_score(activities)
         graphs = activities.find { |act| act.type == Activity::Type::GRAPHS }
 
-        return 0 unless graphs&.result&.is_a?(Array)
+        return 0 unless graphs&.result&.is_a?(RDF::Query::Solutions)
 
         sum = 0
         activities.filter { |act| act.type == Activity::Type::CLASSES_HAVING_INSTANCE }.each do |act|
-          sum += 50 if act.result.is_a?(Array) && act.result.size.positive?
+          sum += 50 if act.result.is_a?(RDF::Query::Solutions) && act.result.size.positive?
         end
         activities.filter { |act| act.type == Activity::Type::LABELS_OF_CLASSES }.each do |act|
-          sum += 50 if act.result.is_a?(Array) && act.result.size.positive?
+          sum += 50 if act.result.is_a?(RDF::Query::Solutions) && act.result.size.positive?
         end
 
         (n = graphs.result.size + (excluded_graph?(nil) ? 0 : 1)).positive? ? sum.to_f / n : 0
@@ -137,7 +137,7 @@ module Umakadata
       def ontology_score(activities)
         prefixes = activities
                      .filter { |act| act.type == Activity::Type::VOCABULARY_PREFIXES }
-                     .map { |act| act.result.is_a?(Array) ? act.result.map { |x| x.bindings[:prefix].value } : [] }
+                     .map { |act| (r = act.result).is_a?(RDF::Query::Solutions) ? r.map { |x| x.bindings[:prefix].value } : [] }
                      .flatten
                      .uniq
                      .reject { |x| VocabularyPrefix.exclude_patterns.find { |p| x.match?(p) } }

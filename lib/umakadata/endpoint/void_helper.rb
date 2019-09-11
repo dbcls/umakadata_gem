@@ -73,7 +73,7 @@ module Umakadata
 
             act.type = Activity::Type::VOID
 
-            if act.result.is_a?(Array) && act.result.first.is_a?(RDF::Statement)
+            if act.result.is_a?(RDF::Enumerable)
               act.comment = "Obtained VoID from #{act.response&.url || 'N/A'}"
             else
               act.comment = "Failed to obtain VoID from #{act.response&.url || 'N/A'}"

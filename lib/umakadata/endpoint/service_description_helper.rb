@@ -56,7 +56,7 @@ module Umakadata
         cache(:service_description) do
           http.get(::URI.parse(url).request_uri, Accept: Umakadata::SPARQL::Client::GRAPH_ALL).tap do |act|
             act.type = Activity::Type::SERVICE_DESCRIPTION
-            act.comment = if act.result.is_a?(Array) && act.result.first.is_a?(RDF::Statement)
+            act.comment = if act.result.is_a?(RDF::Enumerable)
                             "Obtained Service Description from #{act.response&.url || 'N/A'}"
                           else
                             "Failed to obtain Service Description from #{act.response&.url || 'N/A'}"
