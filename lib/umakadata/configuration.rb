@@ -26,6 +26,7 @@ module Umakadata
     end
 
     attr_accessor :logger
+    attr_accessor :backtrace
     attr_accessor :lov
 
     def app_home
@@ -40,6 +41,7 @@ module Umakadata
 
     def set_default
       @logger = LoggerConfig.new(::Logger::INFO)
+      @backtrace = false
       @lov = ENV['UMAKADATA_LOV_URL'] || DEFAULT_LOV_URL
     end
   end
