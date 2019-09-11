@@ -66,7 +66,7 @@ module Umakadata
 
         Measurement.new do |m|
           m.name = MEASUREMENT_NAMES[__method__]
-          m.value = m.activities.any? { |act| (r = act.result).is_a?(RDF::Query::Solutions) && r.count.positive? }
+          m.value = activities.any? { |act| (r = act.result).is_a?(RDF::Query::Solutions) && r.count.positive? }
           m.comment = "The endpoint #{m.value ? 'has' : 'does not have'} links to other URIs."
           m.activities = activities
         end
