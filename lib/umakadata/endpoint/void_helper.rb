@@ -29,6 +29,8 @@ module Umakadata
       end
 
       module VoIDMethods
+        attr_writer :statements
+
         def statements
           @statements ||= RDF::Dataset.new(statements: result || [])
         end
@@ -65,15 +67,17 @@ module Umakadata
       def void
         cache(:void) do
           http.get('/.well-known/void', Accept: Umakadata::SPARQL::Client::GRAPH_ALL).tap do |act|
-            act.type = Activity::Type::VOID
-            act.comment = if act.result.is_a?(Array) && act.result.first.is_a?(RDF::Statement)
-                            "Obtained VoID from #{act.response&.url || 'N/A'}"
-                          else
-                            "Failed to obtain VoID from #{act.response&.url || 'N/A'}"
-                          end
-
             class << act
               include VoIDMethods
+            end
+
+            act.type = Activity::Type::VOID
+
+            if act.result.is_a?(Array) && act.result.first.is_a?(RDF::Statement)
+              act.comment = "Obtained VoID from #{act.response&.url || 'N/A'}"
+            else
+              act.comment = "Failed to obtain VoID from #{act.response&.url || 'N/A'}"
+              act.statements = RDF::Dataset.new(statements: service_description.void_descriptions.statements)
             end
           end
         end

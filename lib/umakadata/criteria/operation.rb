@@ -32,11 +32,16 @@ module Umakadata
       def void
         activity = endpoint.void
 
+        via_http = (200..299).include?(activity.response&.status) && activity.result.present?
+        in_sd = (sd = endpoint.service_description).respond_to?(:void_descriptions) && sd.void_descriptions.present?
+
         Measurement.new do |m|
           m.name = MEASUREMENT_NAMES[__method__]
-          m.value = (test = (200..299).include?(activity.response&.status))
-          m.comment = if test && activity.result.present?
+          m.value = via_http || in_sd
+          m.comment = if via_http
                         'The endpoint provides VoID.'
+                      elsif in_sd
+                        'The endpoint provides VoID via Service Description.'
                       else
                         'The endpoint does not provide VoID.'
                       end

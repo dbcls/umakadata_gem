@@ -26,6 +26,27 @@ module Umakadata
                                      .map { |x| (m = (v = x.bindings[:language].value).match(/#(.+)/)) ? m[1] : v }
                                      .uniq
         end
+
+        # @return [RDF::Queryable]
+        def void_descriptions
+          @void_descriptions = begin
+            op = ::SPARQL::Algebra::Expression.parse(<<~EXP.gsub(/\n\s*/, ' '))
+              (describe (?s)
+                (union
+                  (union
+                    (union
+                      (bgp (triple ?s <#{RDF.type}> <#{RDF::Vocab::VOID[:Dataset]}>))
+                      (bgp (triple ?s <#{RDF.type}> <#{RDF::Vocab::VOID[:DatasetDescription]}>))
+                    )
+                    (bgp (triple ?s <#{RDF.type}> <#{RDF::Vocab::VOID[:Linkset]}>))
+                  )
+                  (bgp (triple ?s <#{RDF.type}> <#{RDF::Vocab::VOID[:TechnicalFeature]}>))
+                )
+              )
+            EXP
+            statements.query(op)
+          end
+        end
       end
 
       # Execute query to obtain Service Description
