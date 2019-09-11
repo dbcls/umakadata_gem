@@ -22,7 +22,6 @@ module Umakadata
       # @return [Umakadata::Measurement]
       def metadata
         activities = []
-        activities << endpoint.graph_keyword_support
 
         if endpoint.graph_keyword_supported?
           activities << (grs = graphs)
@@ -46,7 +45,6 @@ module Umakadata
       # @return [Umakadata::Measurement]
       def ontology
         activities = []
-        activities << endpoint.graph_keyword_support
 
         if endpoint.graph_keyword_supported?
           activities << (grs = graphs)
@@ -77,34 +75,31 @@ module Umakadata
       end
 
       def data_entry
-        activities = []
-
-        count = if (v = endpoint.void).triples.present?
-                  activities << v
-
-                  v.triples
-                else
-                  activities << endpoint.graph_keyword_support
-
-                  if endpoint.graph_keyword_supported?
-                    activities << (grs = graphs)
-
-                    grs.result.map { |r| r.bindings[:g] }.each do |g|
-                      activities << number_of_statements(graph: g) unless excluded_graph?(g)
-                    end
-                  end
-
-                  activities << number_of_statements unless excluded_graph?(nil)
-
-                  activities
-                    .filter { |act| act.type == Activity::Type::NUMBER_OF_STATEMENTS && act.result.is_a?(Array) }
-                    .inject(0) { |memo, act| memo + (act.result.map { |r| r.bindings[:count] }.first&.object || 0) }
-                end
-
         Measurement.new do |m|
+          activities = []
+
           m.name = MEASUREMENT_NAMES[__method__]
-          m.value = count
-          m.comment = "Count #{pluralize(count, 'triple')}."
+
+          if (v = endpoint.void&.triples)&.positive?
+            m.value = v
+            m.comment = "Count #{pluralize(v, 'triple')} from VoID."
+          else
+            if endpoint.graph_keyword_supported?
+              activities << (grs = graphs)
+
+              grs.result.map { |r| r.bindings[:g] }.each do |g|
+                activities << number_of_statements(graph: g) unless excluded_graph?(g)
+              end
+            end
+
+            activities << number_of_statements unless excluded_graph?(nil)
+
+            m.value = activities
+                        .filter { |act| act.type == Activity::Type::NUMBER_OF_STATEMENTS && act.result.is_a?(Array) }
+                        .inject(0) { |memo, act| memo + (act.result.map { |r| r.bindings[:count] }.first&.object || 0) }
+            m.comment = "Count #{pluralize(m.value, 'triple')}."
+          end
+
           m.activities = activities
         end
       end
