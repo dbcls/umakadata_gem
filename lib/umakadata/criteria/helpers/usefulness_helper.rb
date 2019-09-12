@@ -143,7 +143,7 @@ module Umakadata
 
           uri = RDF::URI(graph)
           return true unless uri.scheme&.match?(/https?/)
-          return true if uri.host == 'www.w3.org' || uri.host == 'www.openlinksw.com' || uri.path.match?(%r{/DAV/?})
+          return true if uri.host == 'www.w3.org' || uri.host == 'www.openlinksw.com' || uri.path&.match?(%r{/DAV/?})
 
           false
         end
