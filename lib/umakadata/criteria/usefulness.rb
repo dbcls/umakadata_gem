@@ -121,7 +121,7 @@ module Umakadata
       def metadata_score(activities)
         graphs = activities.find { |act| act.type == Activity::Type::GRAPHS }
 
-        return 0 unless graphs&.result&.is_a?(RDF::Query::Solutions)
+        return 0 if graphs && !graphs.result.is_a?(RDF::Query::Solutions)
 
         sum = 0
         activities.filter { |act| act.type == Activity::Type::CLASSES_HAVING_INSTANCE }.each do |act|
@@ -131,7 +131,9 @@ module Umakadata
           sum += 50 if act.result.is_a?(RDF::Query::Solutions) && act.result.size.positive?
         end
 
-        (n = graphs.result.size + (excluded_graph?(nil) ? 0 : 1)).positive? ? sum.to_f / n : 0
+        ngraphs = (graphs ? graphs.result.size : 0) + (excluded_graph?(nil) ? 0 : 1)
+
+        ngraphs.positive? ? sum.to_f / ngraphs : 0
       end
 
       def ontology_score(activities)
@@ -152,7 +154,8 @@ module Umakadata
         options = { graph: name }.compact
         activities = []
         activities << classes_having_instance(options)
-        activities << labels_of_classes(classes(options).result.map { |r| r.bindings[:c] }, options)
+        activities << (classes = classes(options))
+        activities << labels_of_classes(classes.result.map { |r| r.bindings[:c] }, options) if classes
         activities.compact
       end
 
