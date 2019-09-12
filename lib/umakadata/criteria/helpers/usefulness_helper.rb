@@ -153,12 +153,16 @@ module Umakadata
             activity.type = Activity::Type::GRAPHS
 
             if (result = activity.result).is_a?(RDF::Query::Solutions)
-              exclude = result.dup.filter { |r| excluded_graph?(r.bindings[:g].value) }
+              uri, not_uri = result.dup.bindings.fetch(:g, []).partition { |g| g.is_a?(RDF::URI) }
+              exclude = uri.select { |g| excluded_graph?(g.value) }
 
-              activity.result = result.minus(exclude)
+              activity.result = uri - exclude # activity.result is no longer a RDF::Query::Solutions just an Array
               activity.comment = "#{pluralize(activity.result.count, 'graph')} found."
               exclude.each do |r|
                 activity.comment += "\n- #{r.bindings[:g].value} is omitted."
+              end
+              not_uri.each do |r|
+                activity.comment += "\n- #{r.bindings[:g].value} is not URI."
               end
             else
               activity.comment = 'No graphs found.'
