@@ -10,6 +10,10 @@ module Umakadata
         alive: 'availability.alive'
       }.freeze
 
+      def measurements
+        MEASUREMENT_NAMES.keys.map { |x| method(x) }
+      end
+
       # Check whether if the endpoint is alive or dead
       #
       # @return [Umakadata::Measurement]

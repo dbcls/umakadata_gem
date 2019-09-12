@@ -13,6 +13,10 @@ module Umakadata
         void: 'VoID'
       }.freeze
 
+      def measurements
+        MEASUREMENT_NAMES.keys.map { |x| method(x) }
+      end
+
       # Obtain the date that the endpoint was updated
       #
       # @return [Umakadata::Measurement]

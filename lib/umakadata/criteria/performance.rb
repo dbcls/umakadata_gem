@@ -10,6 +10,10 @@ module Umakadata
         execution_time: 'performance.execution_time'
       }.freeze
 
+      def measurements
+        MEASUREMENT_NAMES.keys.map { |x| method(x) }
+      end
+
       #
       # @return [Umakadata::Measurement]
       def execution_time

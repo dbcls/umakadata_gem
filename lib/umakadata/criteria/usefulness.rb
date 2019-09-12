@@ -18,6 +18,10 @@ module Umakadata
         support_turtle_format: 'usefulness.support_turtle_format'
       }.freeze
 
+      def measurements
+        MEASUREMENT_NAMES.keys.map { |x| method(x) }
+      end
+
       #
       # @return [Umakadata::Measurement]
       def metadata

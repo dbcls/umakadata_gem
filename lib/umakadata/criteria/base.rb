@@ -14,6 +14,10 @@ module Umakadata
         @endpoint = endpoint
         @options = options
       end
+
+      def measurements
+        raise NotImplementedError
+      end
     end
   end
 end

@@ -8,6 +8,10 @@ module Umakadata
         void: 'operation.void'
       }.freeze
 
+      def measurements
+        MEASUREMENT_NAMES.keys.map { |x| method(x) }
+      end
+
       # Check whether if the endpoint provides service description
       #
       # @return [Umakadata::Measurement]

@@ -17,6 +17,10 @@ module Umakadata
         link_to_other_uri: 'validity.links_to_other_uri'
       }.freeze
 
+      def measurements
+        MEASUREMENT_NAMES.keys.map { |x| method(x) }
+      end
+
       #
       # @return [Umakadata::Measurement]
       def cool_uri
