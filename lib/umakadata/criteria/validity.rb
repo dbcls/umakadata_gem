@@ -24,27 +24,17 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def cool_uri
-        m = Umakadata::Measurement.new
-
-        begin
+        Umakadata::Measurement.new.safe do |m|
           score, comments = cool_uri_score
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = score
           m.comment = "Cool URI score is #{score}\n" + comments.map { |x| "- #{x}" }.join("\n")
-        rescue StandardError => e
-          m.comment = e.message
-          m.exceptions = e
-        ensure
-          m
         end
-
       end
 
       # @return [Umakadata::Measurement]
       def http_uri
-        m = Umakadata::Measurement.new
-
-        begin
+        Umakadata::Measurement.new.safe do |m|
           activity = non_http_uri_subject
 
           m.name = MEASUREMENT_NAMES[__method__]
@@ -57,11 +47,6 @@ module Umakadata
                         'Failed to evaluate result.'
                       end
           m.activities = [activity]
-        rescue StandardError => e
-          m.comment = e.message
-          m.exceptions = e
-        ensure
-          m
         end
       end
 
@@ -77,9 +62,7 @@ module Umakadata
 
       # @return [Umakadata::Measurement]
       def link_to_other_uri
-        m = Umakadata::Measurement.new
-
-        begin
+        Umakadata::Measurement.new.safe do |m|
           activities = []
 
           endpoint.resource_uri.each do |p|
@@ -90,11 +73,6 @@ module Umakadata
           m.value = activities.any? { |act| (r = act.result).is_a?(RDF::Query::Solutions) && r.count.positive? }
           m.comment = "The endpoint #{m.value ? 'has' : 'does not have'} links to other URIs."
           m.activities = activities
-        rescue StandardError => e
-          m.comment = e.message
-          m.exceptions = e
-        ensure
-          m
         end
       end
 

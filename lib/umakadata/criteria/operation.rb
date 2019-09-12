@@ -16,9 +16,7 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def service_description
-        m = Umakadata::Measurement.new
-
-        begin
+        Umakadata::Measurement.new.safe do |m|
           activity = endpoint.service_description
 
           m.name = MEASUREMENT_NAMES[__method__]
@@ -29,22 +27,14 @@ module Umakadata
                         'The endpoint does not provide Service Description.'
                       end
           m.activities << activity
-        rescue StandardError => e
-          m.comment = e.message
-          m.exceptions = e
-        ensure
-          m
         end
-
       end
 
       # Check whether if the endpoint provides VoID
       #
       # @return [Umakadata::Measurement]
       def void
-        m = Umakadata::Measurement.new
-
-        begin
+        Umakadata::Measurement.new.safe do |m|
           activity = endpoint.void
 
           via_http = (200..299).include?(activity.response&.status) && activity.result.present?
@@ -60,13 +50,7 @@ module Umakadata
                         'The endpoint does not provide VoID.'
                       end
           m.activities << activity
-        rescue StandardError => e
-          m.comment = e.message
-          m.exceptions = e
-        ensure
-          m
         end
-
       end
     end
   end

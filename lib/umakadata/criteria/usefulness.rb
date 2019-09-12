@@ -25,9 +25,7 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def metadata
-        m = Umakadata::Measurement.new
-
-        begin
+        Umakadata::Measurement.new.safe do |m|
           activities = []
 
           if endpoint.graph_keyword_supported?
@@ -44,21 +42,13 @@ module Umakadata
           m.value = (score = metadata_score(activities))
           m.comment = "Metadata score is #{score.round(1)}"
           m.activities = activities
-        rescue StandardError => e
-          m.comment = e.message
-          m.exceptions = e
-        ensure
-          m
         end
-
       end
 
       #
       # @return [Umakadata::Measurement]
       def ontology
-        m = Umakadata::Measurement.new
-
-        begin
+        Umakadata::Measurement.new.safe do |m|
           activities = []
 
           if endpoint.graph_keyword_supported?
@@ -78,32 +68,18 @@ module Umakadata
                       "- #{pluralize(nolov, 'prefix')} found in Linked Open Vocabulary.\n"\
                       "- #{pluralize(noe, 'prefix')} found in other endpoint."
           m.activities = activities
-        rescue StandardError => e
-          m.comment = e.message
-          m.exceptions = e
-        ensure
-          m
         end
       end
 
       def links_to_other_datasets
-        m = Umakadata::Measurement.new
-
-        begin
+        Umakadata::Measurement.new.safe do |m|
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = endpoint.void.link_sets.presence&.join("\n")
-        rescue StandardError => e
-          m.comment = e.message
-          m.exceptions = e
-        ensure
-          m
         end
       end
 
       def data_entry
-        m = Umakadata::Measurement.new
-
-        begin
+        Umakadata::Measurement.new.safe do |m|
           activities = []
 
           m.name = MEASUREMENT_NAMES[__method__]
@@ -129,13 +105,7 @@ module Umakadata
           end
 
           m.activities = activities
-        rescue StandardError => e
-          m.comment = e.message
-          m.exceptions = e
-        ensure
-          m
         end
-
       end
 
       def support_html_format

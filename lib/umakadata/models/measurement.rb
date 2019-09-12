@@ -25,6 +25,17 @@ module Umakadata
       yield self if block_given?
     end
 
+    def safe
+      begin
+        yield self
+      rescue StandardError => e
+        @comment = e.message
+        @exceptions = e
+      end
+
+      self
+    end
+
     def to_h
       {
         name: @name,

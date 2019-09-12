@@ -18,9 +18,7 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def alive
-        m = Umakadata::Measurement.new
-
-        begin
+        Umakadata::Measurement.new.safe do |m|
           activities = []
           status = nil
 
@@ -42,11 +40,6 @@ module Umakadata
                         "Errors occurred in checking liveness of the endpoint. (status = #{status})"
                       end
           m.activities = activities
-        rescue StandardError => e
-          m.comment = e.message
-          m.exceptions = e
-        ensure
-          m
         end
       end
     end
