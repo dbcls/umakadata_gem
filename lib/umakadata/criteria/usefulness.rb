@@ -25,42 +25,52 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def metadata
-        activities = []
+        m = Umakadata::Measurement.new
 
-        if endpoint.graph_keyword_supported?
-          activities << (grs = graphs)
+        begin
+          activities = []
 
-          grs.result.map { |r| r.bindings[:g] }.each do |g|
-            activities.push(*metadata_on_graph(g)) unless excluded_graph?(g)
+          if endpoint.graph_keyword_supported?
+            activities << (grs = graphs)
+
+            grs.result.map { |r| r.bindings[:g] }.each do |g|
+              activities.push(*metadata_on_graph(g)) unless excluded_graph?(g)
+            end
           end
-        end
 
-        activities.push(*metadata_on_graph) unless excluded_graph?(nil)
+          activities.push(*metadata_on_graph) unless excluded_graph?(nil)
 
-        Measurement.new do |m|
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = (score = metadata_score(activities))
           m.comment = "Metadata score is #{score.round(1)}"
           m.activities = activities
+        rescue StandardError => e
+          m.comment = e.message
+          m.exceptions = e
+        ensure
+          m
         end
+
       end
 
       #
       # @return [Umakadata::Measurement]
       def ontology
-        activities = []
+        m = Umakadata::Measurement.new
 
-        if endpoint.graph_keyword_supported?
-          activities << (grs = graphs)
+        begin
+          activities = []
 
-          grs.result.map { |r| r.bindings[:g] }.each do |g|
-            activities.push(*ontology_on_graph(g)) unless excluded_graph?(g)
+          if endpoint.graph_keyword_supported?
+            activities << (grs = graphs)
+
+            grs.result.map { |r| r.bindings[:g] }.each do |g|
+              activities.push(*ontology_on_graph(g)) unless excluded_graph?(g)
+            end
           end
-        end
 
-        activities.push(*ontology_on_graph) unless excluded_graph?(nil)
+          activities.push(*ontology_on_graph) unless excluded_graph?(nil)
 
-        Measurement.new do |m|
           score, noe, nolov = ontology_score(activities)
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = score
@@ -68,18 +78,32 @@ module Umakadata
                       "- #{pluralize(nolov, 'prefix')} found in Linked Open Vocabulary.\n"\
                       "- #{pluralize(noe, 'prefix')} found in other endpoint."
           m.activities = activities
+        rescue StandardError => e
+          m.comment = e.message
+          m.exceptions = e
+        ensure
+          m
         end
       end
 
       def links_to_other_datasets
-        Measurement.new do |m|
+        m = Umakadata::Measurement.new
+
+        begin
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = endpoint.void.link_sets.presence&.join("\n")
+        rescue StandardError => e
+          m.comment = e.message
+          m.exceptions = e
+        ensure
+          m
         end
       end
 
       def data_entry
-        Measurement.new do |m|
+        m = Umakadata::Measurement.new
+
+        begin
           activities = []
 
           m.name = MEASUREMENT_NAMES[__method__]
@@ -105,7 +129,13 @@ module Umakadata
           end
 
           m.activities = activities
+        rescue StandardError => e
+          m.comment = e.message
+          m.exceptions = e
+        ensure
+          m
         end
+
       end
 
       def support_html_format

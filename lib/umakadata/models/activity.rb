@@ -17,7 +17,7 @@ module Umakadata
   # @!attribute warnings
   #   @return [Array<String>]
   # @!attribute errors
-  #   @return [Array<StandardError>]
+  #   @return [Array<Exception>]
   #
   # @since 1.0.0
   class Activity

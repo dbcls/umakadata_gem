@@ -18,15 +18,17 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def alive
-        activities = []
-        status = nil
+        m = Umakadata::Measurement.new
 
-        [true, false].each do |bool|
-          activities << __send__(:check_alive, graph: bool)
-          break if (status = activities.last&.response&.status) == 200
-        end
+        begin
+          activities = []
+          status = nil
 
-        Umakadata::Measurement.new do |m|
+          [true, false].each do |bool|
+            activities << __send__(:check_alive, graph: bool)
+            break if (status = activities.last&.response&.status) == 200
+          end
+
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = status == 200
           m.comment = case status
@@ -40,6 +42,11 @@ module Umakadata
                         "Errors occurred in checking liveness of the endpoint. (status = #{status})"
                       end
           m.activities = activities
+        rescue StandardError => e
+          m.comment = e.message
+          m.exceptions = e
+        ensure
+          m
         end
       end
     end

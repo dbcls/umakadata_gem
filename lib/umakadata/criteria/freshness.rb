@@ -21,20 +21,27 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def last_updated
-        date = nil
-        comment = 'No statements about update information found in either VoID or Service Description'
+        m = Umakadata::Measurement.new
 
-        %i[void service_description].each do |method|
-          next unless (date = update_date(method))
+        begin
+          date = nil
+          comment = 'No statements about update information found in either VoID or Service Description'
 
-          comment = "A statement about update information is found in #{SOURCE_LAST_UPDATED[method]}."
-          break
-        end
+          %i[void service_description].each do |method|
+            next unless (date = update_date(method))
 
-        Measurement.new do |m|
+            comment = "A statement about update information is found in #{SOURCE_LAST_UPDATED[method]}."
+            break
+          end
+
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = date&.utc&.to_s
           m.comment = comment
+        rescue StandardError => e
+          m.comment = e.message
+          m.exceptions = e
+        ensure
+          m
         end
       end
 

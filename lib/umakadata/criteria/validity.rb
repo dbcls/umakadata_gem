@@ -24,19 +24,29 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def cool_uri
-        Measurement.new do |m|
+        m = Umakadata::Measurement.new
+
+        begin
           score, comments = cool_uri_score
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = score
           m.comment = "Cool URI score is #{score}\n" + comments.map { |x| "- #{x}" }.join("\n")
+        rescue StandardError => e
+          m.comment = e.message
+          m.exceptions = e
+        ensure
+          m
         end
+
       end
 
       # @return [Umakadata::Measurement]
       def http_uri
-        activity = non_http_uri_subject
+        m = Umakadata::Measurement.new
 
-        Measurement.new do |m|
+        begin
+          activity = non_http_uri_subject
+
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = (r = activity.result).is_a?(RDF::Query::Solutions) && r.count.zero?
           m.comment = if m.value
@@ -47,6 +57,11 @@ module Umakadata
                         'Failed to evaluate result.'
                       end
           m.activities = [activity]
+        rescue StandardError => e
+          m.comment = e.message
+          m.exceptions = e
+        ensure
+          m
         end
       end
 
@@ -62,17 +77,24 @@ module Umakadata
 
       # @return [Umakadata::Measurement]
       def link_to_other_uri
-        activities = []
+        m = Umakadata::Measurement.new
 
-        endpoint.resource_uri.each do |p|
-          activities.push(check_link_to_other_uri(p))
-        end
+        begin
+          activities = []
 
-        Measurement.new do |m|
+          endpoint.resource_uri.each do |p|
+            activities.push(check_link_to_other_uri(p))
+          end
+
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = activities.any? { |act| (r = act.result).is_a?(RDF::Query::Solutions) && r.count.positive? }
           m.comment = "The endpoint #{m.value ? 'has' : 'does not have'} links to other URIs."
           m.activities = activities
+        rescue StandardError => e
+          m.comment = e.message
+          m.exceptions = e
+        ensure
+          m
         end
       end
 
