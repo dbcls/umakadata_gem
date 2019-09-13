@@ -149,7 +149,7 @@ module Umakadata
         if (ex = block&.call).respond_to?(:message)
           block = proc { "#{ex.class} - #{ex.message}" }
         end
-        logger.send(level, progname, &block) if %i[debug info warn error fatal].include?(level)
+        @logger.send(level, progname, &block) if %i[debug info warn error fatal].include?(level)
 
         case level
         when :info, :trace
