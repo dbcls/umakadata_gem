@@ -30,7 +30,7 @@ module Umakadata
         yield self
       rescue StandardError => e
         @comment = e.message
-        @exceptions = e
+        @exceptions << e
       end
 
       self
