@@ -32,7 +32,7 @@ module Umakadata
             break
           end
 
-          m.value = date&.utc&.to_s
+          m.value = date if date.is_a?(Date)
           m.comment = comment
         end
       end
