@@ -20,8 +20,8 @@ module Umakadata
           activity = endpoint.service_description
 
           m.name = MEASUREMENT_NAMES[__method__]
-          m.value = (test = (200..299).include?(activity.response&.status))
-          m.comment = if test && activity.result.present?
+          m.value = (r = activity.result).is_a?(RDF::Enumerable) ? r.to_ttl : nil
+          m.comment = if (200..299).include?(activity.response&.status) && m.value.present?
                         'The endpoint provides Service Description.'
                       else
                         'The endpoint does not provide Service Description.'
@@ -41,7 +41,7 @@ module Umakadata
           in_sd = (sd = endpoint.service_description).respond_to?(:void_descriptions) && sd.void_descriptions.present?
 
           m.name = MEASUREMENT_NAMES[__method__]
-          m.value = via_http || in_sd
+          m.value = (r = activity.result).is_a?(RDF::Enumerable) ? r.to_ttl : nil
           m.comment = if via_http
                         'The endpoint provides VoID.'
                       elsif in_sd
