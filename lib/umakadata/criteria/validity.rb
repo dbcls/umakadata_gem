@@ -12,7 +12,6 @@ module Umakadata
       MEASUREMENT_NAMES = {
         cool_uri: 'validity.cool_uri',
         http_uri: 'validity.http_uri',
-        subject_uri_provides_information: 'validity.subject_uri_provides_information',
         provide_useful_information: 'validity.provide_useful_information',
         link_to_other_uri: 'validity.links_to_other_uri'
       }.freeze
