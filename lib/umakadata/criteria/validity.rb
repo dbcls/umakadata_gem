@@ -24,9 +24,8 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def cool_uri
-        Umakadata::Measurement.new.safe do |m|
+        Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           score, comments = cool_uri_score
-          m.name = MEASUREMENT_NAMES[__method__]
           m.value = score
           m.comment = "Cool URI score is #{score}\n" + comments.map { |x| "- #{x}" }.join("\n")
         end
@@ -34,10 +33,9 @@ module Umakadata
 
       # @return [Umakadata::Measurement]
       def http_uri
-        Umakadata::Measurement.new.safe do |m|
+        Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activity = non_http_uri_subject
 
-          m.name = MEASUREMENT_NAMES[__method__]
           m.value = (r = activity.result).is_a?(RDF::Query::Solutions) && r.count.zero?
           m.comment = if m.value
                         'All subjects are URI or blank node.'
@@ -62,14 +60,13 @@ module Umakadata
 
       # @return [Umakadata::Measurement]
       def link_to_other_uri
-        Umakadata::Measurement.new.safe do |m|
+        Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activities = []
 
           endpoint.resource_uri.each do |p|
             activities.push(check_link_to_other_uri(p))
           end
 
-          m.name = MEASUREMENT_NAMES[__method__]
           m.value = activities.any? { |act| (r = act.result).is_a?(RDF::Query::Solutions) && r.count.positive? }
           m.comment = "The endpoint #{m.value ? 'has' : 'does not have'} links to other URIs."
           m.activities = activities

@@ -8,16 +8,13 @@ module Umakadata
 
         # @return [Umakadata::Measurement]
         def content_negotiate(type, measurement_name)
-          m = Umakadata::Measurement.new
-
-          begin
+          Umakadata::Measurement.new(name: measurement_name).safe do |m|
             activities = []
 
             endpoint.resource_uri.each do |p|
               activities.push(*check_content_negotiation(p, type))
             end
 
-            m.name = measurement_name
             m.value = activities.any?(&negotiation_succeed?(type))
             m.comment = if m.value
                           "The endpoint supports content negotiation for #{type}"
@@ -27,11 +24,6 @@ module Umakadata
             m.activities = activities
 
             yield m if block_given?
-          rescue StandardError => e
-            m.comment = e.message
-            m.exceptions = e
-          ensure
-            m
           end
         end
 

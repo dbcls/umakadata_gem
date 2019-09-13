@@ -25,7 +25,7 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def metadata
-        Umakadata::Measurement.new.safe do |m|
+        Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activities = []
 
           if endpoint.graph_keyword_supported?
@@ -38,7 +38,6 @@ module Umakadata
 
           activities.push(*metadata_on_graph) unless excluded_graph?(nil)
 
-          m.name = MEASUREMENT_NAMES[__method__]
           m.value = (score = metadata_score(activities))
           m.comment = "Metadata score is #{score.round(1)}"
           m.activities = activities
@@ -48,7 +47,7 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def ontology
-        Umakadata::Measurement.new.safe do |m|
+        Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activities = []
 
           if endpoint.graph_keyword_supported?
@@ -62,7 +61,7 @@ module Umakadata
           activities.push(*ontology_on_graph) unless excluded_graph?(nil)
 
           score, noe, nolov = ontology_score(activities)
-          m.name = MEASUREMENT_NAMES[__method__]
+
           m.value = score
           m.comment = "Ontology score is #{score.round(1)}.\n"\
                       "- #{pluralize(nolov, 'prefix')} found in Linked Open Vocabulary.\n"\
@@ -72,17 +71,14 @@ module Umakadata
       end
 
       def links_to_other_datasets
-        Umakadata::Measurement.new.safe do |m|
-          m.name = MEASUREMENT_NAMES[__method__]
+        Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           m.value = endpoint.void.link_sets.presence&.join("\n")
         end
       end
 
       def data_entry
-        Umakadata::Measurement.new.safe do |m|
+        Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activities = []
-
-          m.name = MEASUREMENT_NAMES[__method__]
 
           if (v = endpoint.void&.triples)&.positive?
             m.value = v

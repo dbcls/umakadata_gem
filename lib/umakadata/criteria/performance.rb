@@ -17,7 +17,7 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def execution_time
-        Umakadata::Measurement.new.safe do |m|
+        Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activities = []
 
           times = 3.times.map { |t| measure_execution_time(t * 100) }.map do |acts, time|
@@ -25,7 +25,6 @@ module Umakadata
             time
           end
 
-          m.name = MEASUREMENT_NAMES[__method__]
           m.value = times.sum / times.size.to_f
           m.comment = "It takes #{pluralize(m.value.round(3), 'second')} (average) to obtain distinct classes."
           m.activities = activities

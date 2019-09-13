@@ -21,7 +21,7 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def last_updated
-        Umakadata::Measurement.new.safe do |m|
+        Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           date = nil
           comment = 'No statements about update information found in either VoID or Service Description'
 
@@ -32,7 +32,6 @@ module Umakadata
             break
           end
 
-          m.name = MEASUREMENT_NAMES[__method__]
           m.value = date&.utc&.to_s
           m.comment = comment
         end

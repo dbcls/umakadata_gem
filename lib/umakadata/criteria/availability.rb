@@ -18,7 +18,7 @@ module Umakadata
       #
       # @return [Umakadata::Measurement]
       def alive
-        Umakadata::Measurement.new.safe do |m|
+        Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activities = []
           status = nil
 
@@ -27,7 +27,6 @@ module Umakadata
             break if (status = activities.last&.response&.status) == 200
           end
 
-          m.name = MEASUREMENT_NAMES[__method__]
           m.value = status == 200
           m.comment = case status
                       when 100..199, 300..499
