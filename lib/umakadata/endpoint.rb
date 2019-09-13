@@ -41,6 +41,14 @@ module Umakadata
       @criteria = {}
     end
 
+    def basic_information
+      {
+        service_keyword: service_keyword_supported?,
+        graph_keyword: graph_keyword_supported?,
+        cors: cors_supported?
+      }
+    end
+
     # @return [Umakadata::SPARQL::Client] SPARQL Client
     def sparql
       @sparql ||= Umakadata::SPARQL::Client.new(url, **@options)

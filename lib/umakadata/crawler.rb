@@ -1,6 +1,10 @@
+require 'forwardable'
+
 module Umakadata
   # A class for crawling and evaluating SPARQL endpoint
   class Crawler
+    extend Forwardable
+
     class << self
       def config
         @config ||= Configuration.new
@@ -24,6 +28,8 @@ module Umakadata
         end
       end
     end
+
+    def_delegator :ep, :basic_information
 
     private
 
