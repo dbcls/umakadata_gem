@@ -31,14 +31,14 @@ module Umakadata
       # @option options [Integer] :read_timeout
       # @option options [Hash] :retry
       # @option options [Hash] :redirect
-      # @option options [Hash] :logger disable logging if { logdev => nil }
       # @option options [Hash] :response_parser
       def initialize(url, **options)
         @url = ::URI.parse(url.to_s)
+        @logger = Umakadata::Crawler.config.logger
         @options = options
       end
 
-      def_delegators :logger, :debug, :info, :warn, :error, :fatal
+      def_delegators :@logger, :debug, :info, :warn, :error, :fatal
 
       # Executes a GET request
       #
@@ -162,17 +162,6 @@ module Umakadata
         end
       end
 
-      def logger
-        @logger ||= begin
-          options = Umakadata::Crawler.config.logger.options.merge(@options[:logger] || {})
-
-          device = options.key?(:logdev) ? options.fetch(:logdev) : STDERR
-          options = options.slice(:level, :progname, :formatter, :datetime_format, :shift_period_suffix)
-
-          ::Logger.new(device, options)
-        end
-      end
-
       private
 
       def connection
@@ -191,7 +180,7 @@ module Umakadata
         Faraday.new(url: @url) do |conn|
           conn.use Umakadata::FaradayMiddleware::Retry, retry_options
           conn.use Umakadata::FaradayMiddleware::FollowRedirects, redirect_options
-          conn.use Umakadata::FaradayMiddleware::Logger, logger, logger_options
+          conn.use Umakadata::FaradayMiddleware::Logger, @logger, logger_options
           conn.use Faraday::Request::BasicAuthentication, @url.user, @url.password if @url.user
 
           yield conn if block_given?
@@ -225,9 +214,9 @@ module Umakadata
       end
 
       def logger_options
-        @options
-          .fetch(:logger) { {} }
-          .merge(callback: ->(env) { log(:trace) { "#{env.method.upcase} #{env.url}" } })
+        {
+          callback: ->(env) { log(:trace) { "#{env.method.upcase} #{env.url}" } }
+        }
       end
     end
   end

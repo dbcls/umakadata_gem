@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'forwardable'
 
 module Umakadata
   # A class that represents data model for Linked Open Vocabularies
@@ -8,6 +9,8 @@ module Umakadata
   # @since 1.0.0
   class LinkedOpenVocabulary
     class << self
+      extend Forwardable
+
       LOV_CACHE_FILE_NAME = 'lov.json'.freeze
 
       # Obtain a list of Linked Open Vocabularies
@@ -19,15 +22,16 @@ module Umakadata
 
       def update(force: false)
         if File.exist?(cache_path)
+          info('LinkedOpenVocabulary') { 'Already up-to-date.' }
           return unless force || cache_expired?
         end
 
-        logger.info('Updating cache for Linked Open Vocabularies')
+        info('LinkedOpenVocabulary') { 'Updating cache file...' }
 
         from_remote do |lov|
           File.open(cache_path, 'w') { |f| f.write JSON.dump(lov) }
           @lov_from_cache = nil
-          logger.info('Successfully updated cache for Linked Open Vocabularies')
+          info('LinkedOpenVocabulary') { 'Successfully updated cache.' }
         end
       end
 
@@ -64,8 +68,10 @@ module Umakadata
       end
 
       def logger
-        @logger ||= ::Logger.new((options = Umakadata::Crawler.config.logger.options).delete(:logdev), options)
+        Umakadata::Crawler.config.logger
       end
+
+      def_delegators :logger, :debug, :info, :warn, :error, :fatal
     end
   end
 end

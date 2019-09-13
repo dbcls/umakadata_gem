@@ -10,22 +10,13 @@ module Umakadata
 
     DEFAULT_LOV_URL = 'https://lov.linkeddata.es/dataset/lov/api/v2/vocabulary/list'.freeze
 
-    LoggerConfig = Struct.new(:level) do
-      def options
-        {
-          logdev: STDERR,
-          level: level,
-          formatter: Umakadata::Logger::Formatter.new
-        }
-      end
-    end
-
     def initialize
       set_default
       yield self if block_given?
     end
 
-    attr_accessor :logger
+    attr_writer :logger
+    attr_accessor :logger_config
     attr_accessor :backtrace
     attr_accessor :lov
 
@@ -37,10 +28,18 @@ module Umakadata
       end
     end
 
+    def logger
+      @logger ||= ::Logger.new((options = @logger_config.dup).delete(:logdev), options)
+    end
+
     private
 
     def set_default
-      @logger = LoggerConfig.new(::Logger::INFO)
+      @logger_config = {
+        logdev: STDERR,
+        level: ::Logger::INFO,
+        formatter: Umakadata::Logger::Formatter.new
+      }
       @backtrace = false
       @lov = ENV['UMAKADATA_LOV_URL'] || DEFAULT_LOV_URL
     end
