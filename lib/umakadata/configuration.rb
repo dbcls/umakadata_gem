@@ -1,6 +1,15 @@
 require 'umakadata/logger'
 
 module Umakadata
+
+  # A class that represents Umakadata crawler configuration
+  #
+  # @!attribute backtrace
+  #   @return [True, False] whther if store backtraces for exceptions
+  # @!attribute logger
+  #   @return [Logger] a logger instance
+  # @!attribute lov
+  #   @return [String] an URL
   class Configuration
     class << self
       def configure(&block)
@@ -15,9 +24,8 @@ module Umakadata
       yield self if block_given?
     end
 
-    attr_writer :logger
-    attr_accessor :logger_config
     attr_accessor :backtrace
+    attr_accessor :logger
     attr_accessor :lov
 
     def app_home
@@ -28,20 +36,13 @@ module Umakadata
       end
     end
 
-    def logger
-      @logger ||= ::Logger.new((options = @logger_config.dup).delete(:logdev), options)
-    end
-
     private
 
     def set_default
-      @logger_config = {
-        logdev: STDERR,
-        level: ::Logger::INFO,
-        formatter: Umakadata::Logger::Formatter.new
-      }
       @backtrace = false
       @lov = ENV['UMAKADATA_LOV_URL'] || DEFAULT_LOV_URL
+      options = Umakadata::Logger::DEFAULT_CONFIG.dup
+      @logger = ::Logger.new(options.delete(:logdev), options)
     end
   end
 end

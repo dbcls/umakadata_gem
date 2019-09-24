@@ -144,10 +144,10 @@ module Umakadata
                      .uniq
                      .reject { |x| VocabularyPrefix.exclude_patterns.find { |p| x.match?(p) } }
 
-        noe = prefixes.inject(0) { |m, p| m + (LinkedOpenVocabulary.all.find { |x| p.start_with?(x) } ? 1 : 0) }
-        nolov = prefixes.inject(0) { |m, p| m + (VocabularyPrefix.all.find { |x| p.start_with?(x) } ? 1 : 0) }
+        noe = prefixes.inject(0) { |m, p| m + (endpoint.vocabulary_prefix.find { |x| p.start_with?(x) } ? 1 : 0) }
+        nolov = prefixes.inject(0) { |m, p| m + (LinkedOpenVocabulary.all.find { |x| p.start_with?(x) } ? 1 : 0) }
 
-        [prefixes.size.positive? ? 50.0 * (nolov.size.to_f + noe.size.to_f) / prefixes.size : 0, noe.size, nolov.size]
+        [prefixes.size.positive? ? 50.0 * (nolov.to_f + noe.to_f) / prefixes.size : 0, noe, nolov]
       end
 
       def metadata_on_graph(name = nil)

@@ -15,5 +15,11 @@ module Umakadata
         format(FORMAT, severity[0..0], format_datetime(time), $PID, severity, progname, msg2str(msg))
       end
     end
+
+    DEFAULT_CONFIG = {
+      logdev: STDERR,
+      level: ::Logger::INFO,
+      formatter: Umakadata::Logger::Formatter.new
+    }.freeze
   end
 end

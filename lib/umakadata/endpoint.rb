@@ -30,6 +30,7 @@ module Umakadata
     attr_reader :options
     attr_reader :exclude_graph
     attr_reader :resource_uri
+    attr_reader :vocabulary_prefix
 
     # @param [String] url an URL of the SPARQL endpoint
     # @param [Hash{Symbol => Object}] options
@@ -38,6 +39,7 @@ module Umakadata
       @options = options
       @exclude_graph = Array(options.delete(:exclude_graph))
       @resource_uri = Array(options.delete(:resource_uri))
+      @vocabulary_prefix = Array(options.delete(:vocabulary_prefix))
       @criteria = {}
     end
 
