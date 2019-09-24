@@ -31,7 +31,7 @@ module Umakadata
           if endpoint.graph_keyword_supported?
             activities << (grs = graphs)
 
-            grs.result.map { |r| r.bindings[:g] }.each do |g|
+            grs.result.each do |g|
               activities.push(*metadata_on_graph(g)) unless excluded_graph?(g)
             end
           end
@@ -53,7 +53,7 @@ module Umakadata
           if endpoint.graph_keyword_supported?
             activities << (grs = graphs)
 
-            grs.result.map { |r| r.bindings[:g] }.each do |g|
+            grs.result.each do |g|
               activities.push(*ontology_on_graph(g)) unless excluded_graph?(g)
             end
           end
@@ -87,7 +87,7 @@ module Umakadata
             if endpoint.graph_keyword_supported?
               activities << (grs = graphs)
 
-              grs.result.map { |r| r.bindings[:g] }.each do |g|
+              grs.result.each do |g|
                 activities << number_of_statements(graph: g) unless excluded_graph?(g)
               end
             end
@@ -121,7 +121,7 @@ module Umakadata
       def metadata_score(activities)
         graphs = activities.find { |act| act.type == Activity::Type::GRAPHS }
 
-        return 0 if graphs && !graphs.result.is_a?(RDF::Query::Solutions)
+        return 0 if graphs && !graphs.result.is_a?(Array)
 
         sum = 0
         activities.filter { |act| act.type == Activity::Type::CLASSES_HAVING_INSTANCE }.each do |act|

@@ -159,10 +159,10 @@ module Umakadata
               activity.result = uri - exclude # activity.result is no longer a RDF::Query::Solutions just an Array
               activity.comment = "#{pluralize(activity.result.count, 'graph')} found."
               exclude.each do |r|
-                activity.comment += "\n- #{r.bindings[:g].value} is omitted."
+                activity.comment += "\n- #{r.value} is omitted."
               end
               not_uri.each do |r|
-                activity.comment += "\n- #{r.bindings[:g].value} is not URI."
+                activity.comment += "\n- #{r.value} is not URI."
               end
             else
               activity.comment = 'No graphs found.'
