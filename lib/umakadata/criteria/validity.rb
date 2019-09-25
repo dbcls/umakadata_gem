@@ -13,7 +13,7 @@ module Umakadata
         cool_uri: 'validity.cool_uri',
         http_uri: 'validity.http_uri',
         provide_useful_information: 'validity.provide_useful_information',
-        link_to_other_uri: 'validity.links_to_other_uri'
+        link_to_other_uri: 'validity.link_to_other_uri'
       }.freeze
 
       def measurements

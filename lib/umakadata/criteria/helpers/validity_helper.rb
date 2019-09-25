@@ -25,7 +25,7 @@ module Umakadata
 
         # @return [Umakadata::Activity]
         def check_link_to_other_uri(resource_uri)
-          cache(:check_links_to_other_uri, resource_uri) do
+          cache(:check_link_to_other_uri, resource_uri) do
             buffer = endpoint
                        .sparql
                        .select
@@ -41,7 +41,7 @@ module Umakadata
               buffer.sub!('{ }', "{ { ?s owl:sameAs ?o . } UNION { ?s rdfs:seeAlso ?o . } FILTER(#{resource_uri.filter}) }")
             end
 
-            endpoint.sparql.query(buffer).tap(&post_check_links_to_other_uri)
+            endpoint.sparql.query(buffer).tap(&post_check_link_to_other_uri)
           end
         end
 
@@ -85,7 +85,7 @@ module Umakadata
           end
         end
 
-        def post_check_links_to_other_uri
+        def post_check_link_to_other_uri
           lambda do |activity|
             activity.type = Activity::Type::LINK_TO_OTHER_URI
 
