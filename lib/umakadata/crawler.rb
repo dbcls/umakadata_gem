@@ -33,7 +33,7 @@ module Umakadata
       end
     end
 
-    def_delegator :ep, :basic_information
+    def_delegators :ep, :basic_information, :vocabulary_prefix
 
     private
 

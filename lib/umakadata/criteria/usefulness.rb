@@ -144,7 +144,9 @@ module Umakadata
                      .uniq
                      .reject { |x| VocabularyPrefix.exclude_patterns.find { |p| x.match?(p) } }
 
-        noe = prefixes.inject(0) { |m, p| m + (endpoint.vocabulary_prefix.find { |x| p.start_with?(x) } ? 1 : 0) }
+        endpoint.vocabulary_prefix = prefixes
+
+        noe = prefixes.inject(0) { |m, p| m + (endpoint.vocabulary_prefix_others.find { |x| p.start_with?(x) } ? 1 : 0) }
         nolov = prefixes.inject(0) { |m, p| m + (LinkedOpenVocabulary.all.find { |x| p.start_with?(x) } ? 1 : 0) }
 
         [prefixes.size.positive? ? 50.0 * (nolov.to_f + noe.to_f) / prefixes.size : 0, noe, nolov]
