@@ -25,10 +25,18 @@ module Umakadata
     #
     # @since 1.0.0
     def run
+      alive = true
+
       criteria.each do |criterion|
         criterion.measurements.each do |measurement|
+          next unless alive
+
           debug('Crawler') { "call #{criterion.class.name.demodulize}.#{measurement.name}" }
-          yield measurement.call
+          m = measurement.call
+
+          alive = m.value if m.name == 'availability.alive'
+
+          yield m
         end
       end
     end
