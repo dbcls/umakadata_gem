@@ -39,7 +39,13 @@ module Umakadata
         activities << (t1 = base_query)
         activities << (t2 = heavy_query(query_offset))
 
-        [activities, t2.elapsed_time - t1.elapsed_time]
+        elapsed_time = begin
+          t2.elapsed_time - t1.elapsed_time
+        rescue
+          0
+        end
+
+        [activities, [elapsed_time, 0].max]
       end
     end
   end
