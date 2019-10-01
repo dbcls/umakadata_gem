@@ -70,12 +70,16 @@ module Umakadata
         end
       end
 
+      #
+      # @return [Umakadata::Measurement]
       def links_to_other_datasets
         Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           m.value = endpoint.void.link_sets.presence&.join("\n")
         end
       end
 
+      #
+      # @return [Umakadata::Measurement]
       def data_entry
         Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activities = []
