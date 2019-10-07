@@ -23,7 +23,7 @@ RSpec.describe Umakadata::Criteria::Freshness do
           .to_return(void)
       end
 
-      it { expect(freshness.last_updated.value).to eq '2016-01-25 06:40:35 UTC' }
+      it { expect(freshness.last_updated.value).to eq DateTime.parse('2016-01-25T06:40:35.439Z2016-01-25T06:40:35.439Z') }
     end
 
     context 'endpoint does not returns VoID but ServiceDescription using VoID vocabularies' do

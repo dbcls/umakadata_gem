@@ -6,6 +6,7 @@ RSpec.describe Umakadata::Endpoint::VoIDHelper do
     class Helper
       include Umakadata::Cacheable
       include Umakadata::Endpoint::VoIDHelper
+      include Umakadata::Endpoint::ServiceDescriptionHelper
     end
     Helper.new
   end
@@ -89,6 +90,8 @@ RSpec.describe Umakadata::Endpoint::VoIDHelper do
         }
 
         stub_request(:any, 'http://example.com/.well-known/void')
+          .to_return(response)
+        stub_request(:any, 'http://example.com/sparql')
           .to_return(response)
       end
 
