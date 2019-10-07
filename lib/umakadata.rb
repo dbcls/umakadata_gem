@@ -7,6 +7,8 @@ require 'sparql/client/query_ext'
 
 # Namespace for Umakadata
 module Umakadata
+  require 'umakadata/version'
+
   require 'umakadata/configuration'
   require 'umakadata/crawler'
   require 'umakadata/criteria'
@@ -15,5 +17,4 @@ module Umakadata
   require 'umakadata/logger'
   require 'umakadata/models'
   require 'umakadata/sparql'
-  require 'umakadata/version'
 end
