@@ -10,7 +10,7 @@ GIT
 PATH
   remote: .
   specs:
-    umakadata (1.0.0.pre.dev)
+    umakadata (1.0.0)
       activesupport (~> 5.2)
       faraday (~> 0.15.4)
       faraday_middleware (~> 0.13.1)
@@ -226,4 +226,4 @@ DEPENDENCIES
   yard (~> 0.9.12)
 
 BUNDLED WITH
-   1.17.2
+   1.17.3
