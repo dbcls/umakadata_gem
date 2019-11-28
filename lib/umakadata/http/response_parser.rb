@@ -34,15 +34,20 @@ module Umakadata
         # @param [Umakadata::Activity::Response] response
         # @return [RDF::Query::Solutions, RDF::Enumerable, true, false, nil]
         def parse(response, **options, &block)
-          new(response.body, url: response.url, content_type: response.headers.content_type, callback: block)
-            .parse(**options.slice(:content_type, :strict))
+          options = {
+            base_uri: URI.parse(response.url).tap { |x| x.query = nil }.to_s,
+            content_type: response.headers.content_type,
+            callback: block
+          }.merge(options)
+
+          new(response.body, **options).parse
         end
       end
 
       #
       # @param [String] data response body
       # @param [Hash{Symbol => Object}] options
-      # @option options [#to_s] :url used if response turtle uses <> as IRI
+      # @option options [#to_s] :base_uri
       # @option options [String] :content_type
       # @option options [String] :callback
       def initialize(data, **options)
@@ -98,16 +103,10 @@ module Umakadata
         options = @options.merge(options)
         return unless (reader = RDF::Reader.for(options))
 
-        data = @data
         begin
           options = options.merge(validate: true, logger: ::Logger.new(nil))
-          reader.new(data, options).to_a.tap { callback&.call(reader, nil) }
+          reader.new(@data, options).to_a.tap { callback&.call(reader, nil) }
         rescue StandardError
-          if !@retry && RDF::Turtle::Format.content_type.include?(options[:content_type])
-            data = data.gsub(/<(#[^>]*)?>/, options[:url] ? "<#{options[:url]}\\1>" : '[]')
-            @retry = true
-            retry
-          end
           nil
         end
       end

@@ -19,7 +19,7 @@ module Umakadata
         Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activity = endpoint.service_description
 
-          m.value = (r = activity.result).is_a?(RDF::Enumerable) ? r.to_ttl : nil
+          m.value = activity.result.is_a?(RDF::Enumerable) ? activity.response.body : nil
           m.comment = if (200..299).include?(activity.response&.status) && m.value.present?
                         'The endpoint provides Service Description.'
                       else
