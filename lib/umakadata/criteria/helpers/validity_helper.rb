@@ -13,7 +13,7 @@ module Umakadata
           cache(:non_http_uri_subject, options) do
             endpoint
               .sparql
-              .select
+              .select(:s)
               .where(%i[s p o])
               .filter(filter_for_non_http_subjects)
               .tap { |x| x.graph(:g) if endpoint.graph_keyword_supported? }
@@ -47,7 +47,7 @@ module Umakadata
 
         private
 
-        FILTER_HTTP_SUBJECTS = '!isBLANK(?s) && !REGEX(STR(?s), "^https?://", "i")'.freeze
+        FILTER_HTTP_SUBJECTS = 'isURI(?s) && (STRSTARTS(str(?s), "http") || STRSTARTS(str(?s), "HTTP"))'.freeze
 
         def filter_for_non_http_subjects
           if endpoint.graph_keyword_supported?
