@@ -1,3 +1,5 @@
+require 'umakadata/rdf/vocabulary'
+
 module Umakadata
   module RDF
     class VoID
@@ -7,8 +9,8 @@ module Umakadata
             (in
               ?type
               <#{::RDF::Vocab::VOID[:Dataset]}>
-              <#{SPARQL::ServiceDescription::SSD[:Dataset]}>
-              <#{SPARQL::ServiceDescription::SSD[:Graph]}>
+              <#{RDF::Vocabulary::SSD[:Dataset]}>
+              <#{RDF::Vocabulary::SSD[:Graph]}>
             )
             (join
               (bgp (triple ?s <#{::RDF.type}> ?type))
@@ -22,8 +24,8 @@ module Umakadata
             (in
               ?type
               <#{::RDF::Vocab::VOID[:Dataset]}>
-              <#{SPARQL::ServiceDescription::SSD[:Dataset]}>
-              <#{SPARQL::ServiceDescription::SSD[:Graph]}>
+              <#{RDF::Vocabulary::SSD[:Dataset]}>
+              <#{RDF::Vocabulary::SSD[:Graph]}>
             )
             (join
               (bgp (triple ?s <#{::RDF.type}> ?type))
@@ -37,8 +39,8 @@ module Umakadata
             (in
               ?type
               <#{::RDF::Vocab::VOID[:Dataset]}>
-              <#{SPARQL::ServiceDescription::SSD[:Dataset]}>
-              <#{SPARQL::ServiceDescription::SSD[:Graph]}>
+              <#{RDF::Vocabulary::SSD[:Dataset]}>
+              <#{RDF::Vocabulary::SSD[:Graph]}>
             )
             (join
               (bgp (triple ?s <#{::RDF.type}> ?type))

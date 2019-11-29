@@ -1,12 +1,12 @@
+require 'umakadata/rdf/vocabulary'
+
 module Umakadata
   module SPARQL
     class ServiceDescription
-      SSD = ::RDF::Vocabulary.new('http://www.w3.org/ns/sparql-service-description#')
-
       module Query
         SUPPORTED_LANGUAGES = ::RDF::Query.new do
-          pattern [:s, ::RDF.type, SSD[:Service]]
-          pattern [:s, SSD[:supportedLanguage], :language]
+          pattern [:s, ::RDF.type, RDF::Vocabulary::SSD[:Service]]
+          pattern [:s, RDF::Vocabulary::SSD[:supportedLanguage], :language]
         end
 
         VOID_DESCRIPTION = ::SPARQL::Algebra::Expression.parse(<<~EXP.gsub(/\n\s*/, ' '))
@@ -16,8 +16,8 @@ module Umakadata
                 (union
                   (union
                     (union
-                      (bgp (triple ?s <#{::RDF.type}> <#{SSD[:Dataset]}>))
-                      (bgp (triple ?s <#{::RDF.type}> <#{SSD[:Graph]}>))
+                      (bgp (triple ?s <#{::RDF.type}> <#{RDF::Vocabulary::SSD[:Dataset]}>))
+                      (bgp (triple ?s <#{::RDF.type}> <#{RDF::Vocabulary::SSD[:Graph]}>))
                     )
                     (bgp (triple ?s <#{::RDF.type}> <#{::RDF::Vocab::VOID[:Dataset]}>))
                   )
