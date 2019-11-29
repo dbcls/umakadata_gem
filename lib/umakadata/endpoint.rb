@@ -1,10 +1,6 @@
 require 'forwardable'
-require 'umakadata/criteria'
-require 'umakadata/endpoint/http_helper'
-require 'umakadata/endpoint/service_description_helper'
-require 'umakadata/endpoint/syntax_helper'
-require 'umakadata/endpoint/void_helper'
-require 'umakadata/util/cacheable'
+
+require 'umakadata/concerns/cacheable'
 
 module Umakadata
   # A SPARQL endpoint for Umakadata
@@ -21,10 +17,6 @@ module Umakadata
     extend Forwardable
 
     include Cacheable
-    include HTTPHelper
-    include ServiceDescriptionHelper
-    include SyntaxHelper
-    include VoIDHelper
 
     attr_reader :url
     attr_reader :options
@@ -58,36 +50,185 @@ module Umakadata
       @sparql ||= Umakadata::SPARQL::Client.new(url, **@options)
     end
 
+    def_delegators :sparql, :query
+
     # @return [Umakadata::HTTP::Client] HTTP Client
     def http
       @http ||= Umakadata::HTTP::Client.new(url, **@options)
     end
 
-    def_delegators :sparql, :query
     def_delegators :http, :get
 
-    def availability
-      @criteria[:availability] ||= Criteria::Availability.new(self)
-    end
+    module Criteria
+      def availability
+        @criteria[:availability] ||= Criteria::Availability.new(self)
+      end
 
-    def freshness
-      @criteria[:freshness] ||= Criteria::Freshness.new(self)
-    end
+      def freshness
+        @criteria[:freshness] ||= Criteria::Freshness.new(self)
+      end
 
-    def operation
-      @criteria[:operation] ||= Criteria::Operation.new(self)
-    end
+      def operation
+        @criteria[:operation] ||= Criteria::Operation.new(self)
+      end
 
-    def performance
-      @criteria[:performance] ||= Criteria::Performance.new(self)
-    end
+      def performance
+        @criteria[:performance] ||= Criteria::Performance.new(self)
+      end
 
-    def usefulness
-      @criteria[:usefulness] ||= Criteria::Usefulness.new(self)
-    end
+      def usefulness
+        @criteria[:usefulness] ||= Criteria::Usefulness.new(self)
+      end
 
-    def validity
-      @criteria[:validity] ||= Criteria::Validity.new(self)
+      def validity
+        @criteria[:validity] ||= Criteria::Validity.new(self)
+      end
     end
+    include Criteria
+
+    module CORS
+      # Check whether if the endpoint returns CORS header
+      #
+      # @return [true, false] true if the endpoint returns CORS header
+      #
+      # @see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+      def cors_supported?
+        cors_support.response&.headers&.dig('Access-Control-Allow-Origin') == '*'
+      end
+
+      # Execute query to check CORS support
+      #
+      # @return [Umakadata::Activity]
+      def cors_support
+        cache do
+          sparql.ask(%i[s p o]).execute.tap do |act|
+            act.type = Activity::Type::CORS_SUPPORT
+            act.comment = if act.response&.headers&.dig('Access-Control-Allow-Origin') == '*'
+                            "The response header includes 'Access-Control-Allow-Origin = *'."
+                          else
+                            "The response header does not include 'Access-Control-Allow-Origin = *'."
+                          end
+          end
+        end
+      end
+    end
+    include CORS
+
+    module ServiceDescription
+      # Execute query to obtain Service Description
+      #
+      # @return [Umakadata::Activity]
+      def service_description
+        cache do
+          http.get(::URI.parse(url).request_uri, Accept: Umakadata::SPARQL::Client::GRAPH_ALL).tap do |act|
+            act.type = Activity::Type::SERVICE_DESCRIPTION
+            act.comment = if act.result.is_a?(::RDF::Enumerable)
+                            "Obtained Service Description from #{act.response&.url || 'N/A'}"
+                          else
+                            "Failed to obtain Service Description from #{act.response&.url || 'N/A'}"
+                          end
+
+            class << act
+              extend Forwardable
+
+              attr_accessor :sd
+              def_delegators :@sd, :supported_languages, :void_descriptions
+            end
+
+            act.sd = Umakadata::SPARQL::ServiceDescription.new(act.result)
+          end
+        end
+      end
+    end
+    include ServiceDescription
+
+    module VoID
+      # Execute query to obtain VoID
+      #
+      # @return [Umakadata::Activity]
+      #
+      # @see https://www.w3.org/TR/void/#discovery
+      #
+      # @todo Concern about "Discovery via links in the dataset's documents"
+      #   It might be necessary to obtain metadata by SPARQL query.
+      #   See https://www.w3.org/TR/void/#discovery-links
+      def void
+        cache do
+          http.get('/.well-known/void', Accept: Umakadata::SPARQL::Client::GRAPH_ALL).tap do |act|
+            act.type = Activity::Type::VOID
+
+            statements = []
+            act.comment = "Failed to obtain VoID from #{act.response&.url || 'N/A'}"
+
+            if act.result.is_a?(::RDF::Enumerable)
+              statements = act.result
+              act.comment = "Obtained VoID from #{act.response&.url || 'N/A'}"
+            elsif (s = service_description.void_descriptions.statements).present?
+              statements = s
+              act.comment = 'Obtained VoID from ServiceDescription'
+            end
+
+            class << act
+              extend Forwardable
+
+              attr_accessor :void
+              def_delegators :@void, :licenses, :link_sets, :publishers, :triples
+            end
+
+            act.void = Umakadata::RDF::VoID.new(statements)
+          end
+        end
+      end
+    end
+    include VoID
+
+    module Syntax
+      # Check whether if the endpoint support graph keyword
+      #
+      # @return [true, false] true if the endpoint support graph keyword
+      def graph_keyword_supported?
+        graph_keyword_support.response&.status == 200
+      end
+
+      # Check whether if the endpoint support service keyword
+      #
+      # @return [true, false] true if the endpoint support service keyword
+      def service_keyword_supported?
+        service_keyword_support.response&.status == 200
+      end
+
+      # Execute query to check graph keyword support
+      #
+      # @return [Umakadata::Activity]
+      def graph_keyword_support
+        cache do
+          sparql.construct(%i[s p o]).where(%i[s p o]).graph(:g).limit(1).execute.tap do |act|
+            act.type = Activity::Type::GRAPH_KEYWORD_SUPPORT
+            act.comment = if (200..299).include?(act.response&.status)
+                            'The endpoint supports GRAPH keyword.'
+                          else
+                            'The endpoint does not support GRAPH keyword.'
+                          end
+          end
+        end
+      end
+
+      # Execute query to check service keyword support
+      #
+      # @return [Umakadata::Activity]
+      def service_keyword_support
+        cache do
+          sparql.query("CONSTRUCT { ?s ?p ?o . } WHERE { SERVICE <#{url}> { ?s ?p ?o . } } LIMIT 1").tap do |act|
+            act.type = Activity::Type::SERVICE_KEYWORD_SUPPORT
+            act.comment = if (200..299).include?(act.response&.status)
+                            'The endpoint supports SERVICE keyword.'
+                          else
+                            'The endpoint does not support SERVICE keyword.'
+                          end
+          end
+        end
+      end
+    end
+    include Syntax
   end
 end

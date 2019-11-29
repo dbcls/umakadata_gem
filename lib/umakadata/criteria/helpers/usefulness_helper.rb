@@ -1,4 +1,4 @@
-require 'umakadata/util/cacheable'
+require 'umakadata/concerns/cacheable'
 require 'umakadata/util/string'
 
 module Umakadata
@@ -10,7 +10,7 @@ module Umakadata
 
         # @return [Umakadata::Activity]
         def graphs(**options)
-          cache(:graphs, options) do
+          cache(key: options) do
             if endpoint.graph_keyword_supported?
               endpoint
                 .sparql
@@ -30,7 +30,7 @@ module Umakadata
         # @option options [String] :graph
         # @return [Umakadata::Activity]
         def classes(**options)
-          cache(:classes, options) do
+          cache(key: options) do
             g = options[:graph]
             buffer = ['PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>']
             buffer << 'SELECT DISTINCT ?c WHERE {'
@@ -52,7 +52,7 @@ module Umakadata
         # @option options [String] :graph
         # @return [Umakadata::Activity]
         def classes_having_instance(**options)
-          cache(:classes_having_instance, options) do
+          cache(key: options) do
             g = options[:graph]
             endpoint
               .sparql
@@ -88,7 +88,7 @@ module Umakadata
         # @option options [String] :graph
         # @return [Umakadata::Activity]
         def properties(**options)
-          cache(:properties, options) do
+          cache(key: options) do
             g = options[:graph]
             endpoint
               .sparql
@@ -108,7 +108,7 @@ module Umakadata
         # @option options [String] :graph
         # @return [Umakadata::Activity]
         def vocabulary_prefixes(**options)
-          cache(:vocabulary_prefixes, options) do
+          cache(key: options) do
             g = options[:graph]
             endpoint
               .sparql
@@ -123,7 +123,7 @@ module Umakadata
 
         # @return [Umakadata::Activity]
         def number_of_statements(**options)
-          cache(:number_of_statements, options) do
+          cache(key: options) do
             g = options[:graph]
             endpoint
               .sparql
@@ -141,7 +141,7 @@ module Umakadata
           return Array(endpoint.exclude_graph).any?(&:blank?) if graph.nil?
           return true if (list = endpoint.exclude_graph).present? && Array(list).include?(graph)
 
-          uri = RDF::URI(graph)
+          uri = ::RDF::URI(graph)
           return true unless uri.scheme&.match?(/https?/)
 
           false
@@ -151,8 +151,8 @@ module Umakadata
           lambda do |activity|
             activity.type = Activity::Type::GRAPHS
 
-            if (result = activity.result).is_a?(RDF::Query::Solutions)
-              uri, not_uri = result.dup.bindings.fetch(:g, []).partition { |g| g.is_a?(RDF::URI) }
+            if (result = activity.result).is_a?(::RDF::Query::Solutions)
+              uri, not_uri = result.dup.bindings.fetch(:g, []).partition { |g| g.is_a?(::RDF::URI) }
               exclude = uri.select { |g| excluded_graph?(g.value) }
 
               activity.result = uri - exclude # activity.result is no longer a RDF::Query::Solutions just an Array
@@ -232,7 +232,7 @@ module Umakadata
         def post_number_of_statements(graph = nil)
           lambda do |act|
             act.type = Activity::Type::NUMBER_OF_STATEMENTS
-            act.comment = if act.result.is_a?(RDF::Query::Solutions) && (c = act.result.map { |r| r.bindings[:count] }.first&.object)
+            act.comment = if act.result.is_a?(::RDF::Query::Solutions) && (c = act.result.map { |r| r.bindings[:count] }.first&.object)
                             "Count #{pluralize(c, 'triple')}"
                           else
                             'Failed to count the number of triples'

@@ -101,7 +101,7 @@ module Umakadata
       # @return [RDF::Enumerable, nil]
       def parse_rdf_serialization(**options)
         options = @options.merge(options)
-        return unless (reader = RDF::Reader.for(options))
+        return unless (reader = ::RDF::Reader.for(options))
 
         begin
           options = options.merge(validate: true, logger: ::Logger.new(nil))

@@ -1,4 +1,4 @@
-require 'umakadata/util/cacheable'
+require 'umakadata/concerns/cacheable'
 
 module Umakadata
   module Criteria
@@ -21,7 +21,7 @@ module Umakadata
         # @option options [true, false] :graph
         # @return [Umakadata::Activity]
         def check_alive(**options)
-          cache(:liveness, options) do
+          cache(key: options) do
             endpoint
               .sparql
               .construct(%i[s p o])

@@ -1,4 +1,4 @@
-require 'umakadata/util/cacheable'
+require 'umakadata/concerns/cacheable'
 require 'umakadata/util/string'
 
 module Umakadata
@@ -10,7 +10,7 @@ module Umakadata
 
         # @return [Umakadata::Activity]
         def non_http_uri_subject(**options)
-          cache(:non_http_uri_subject, options) do
+          cache(key: options) do
             endpoint
               .sparql
               .select(:s)
@@ -25,14 +25,14 @@ module Umakadata
 
         # @return [Umakadata::Activity]
         def check_link_to_other_uri(resource_uri)
-          cache(:check_link_to_other_uri, resource_uri) do
+          cache(key: resource_uri) do
             buffer = endpoint
                        .sparql
                        .select
                        .where
                        .tap { |x| x.graph(:g) if endpoint.graph_keyword_supported? }
                        .limit(1)
-                       .prefix(rdfs: RDF::Vocab::RDFS, owl: RDF::Vocab::OWL)
+                       .prefix(rdfs: ::RDF::Vocab::RDFS, owl: ::RDF::Vocab::OWL)
                        .to_s
 
             if resource_uri.uri.present?
@@ -61,7 +61,7 @@ module Umakadata
           lambda do |activity|
             activity.type = Activity::Type::NON_HTTP_URI_SUBJECT
 
-            activity.comment = if (r = activity.result).is_a?(RDF::Query::Solutions)
+            activity.comment = if (r = activity.result).is_a?(::RDF::Query::Solutions)
                                  if r.count.zero?
                                    'Non HTTP(S) URI are not found.'
                                  else
@@ -75,7 +75,7 @@ module Umakadata
           lambda do |activity|
             activity.type = Activity::Type::NON_HTTP_URI_SUBJECT
 
-            activity.comment = if (r = activity.result).is_a?(RDF::Query::Solutions)
+            activity.comment = if (r = activity.result).is_a?(::RDF::Query::Solutions)
                                  if r.count.zero?
                                    'Non HTTP(S) URI are not found.'
                                  else
@@ -89,7 +89,7 @@ module Umakadata
           lambda do |activity|
             activity.type = Activity::Type::LINK_TO_OTHER_URI
 
-            activity.comment = if (r = activity.result).is_a?(RDF::Query::Solutions)
+            activity.comment = if (r = activity.result).is_a?(::RDF::Query::Solutions)
                                  if r.count.positive?
                                    "#{r.first.bindings[:s]} has link to other URI."
                                  else

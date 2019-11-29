@@ -1,4 +1,4 @@
-require 'umakadata/util/cacheable'
+require 'umakadata/concerns/cacheable'
 
 module Umakadata
   module Criteria
@@ -36,7 +36,7 @@ module Umakadata
 
           uri = resource_uri.uri.presence || begin
             activities << (r = retrieve_uri(resource_uri))
-            r.result.is_a?(RDF::Query::Solutions) ? r.result&.first&.bindings&.dig(:s)&.value : nil
+            r.result.is_a?(::RDF::Query::Solutions) ? r.result&.first&.bindings&.dig(:s)&.value : nil
           end
 
           return activities if uri.blank?
@@ -62,7 +62,7 @@ module Umakadata
         def retrieve_uri(resource_uri)
           return if (f = resource_uri.filter).blank?
 
-          cache(:retrieve_uri, f) do
+          cache(key: f) do
             endpoint
               .sparql
               .select(:s)
@@ -73,7 +73,7 @@ module Umakadata
               .execute
               .tap do |act|
               act.type = Activity::Type::RETRIEVE_URI
-              act.comment = if act.result.is_a?(RDF::Query::Solutions) && act.result.size.positive?
+              act.comment = if act.result.is_a?(::RDF::Query::Solutions) && act.result.size.positive?
                               'An URI found by SPARQL query.'
                             else
                               'Failed to obtain URIs by SPARQL query.'

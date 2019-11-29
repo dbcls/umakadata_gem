@@ -1,7 +1,7 @@
 require 'faraday'
-require 'linkeddata'
-
 require 'faraday/response_ext'
+
+require 'linkeddata'
 require 'rdf/blank_node'
 require 'sparql/client/query_ext'
 
@@ -16,5 +16,6 @@ module Umakadata
   require 'umakadata/http'
   require 'umakadata/logger'
   require 'umakadata/models'
+  require 'umakadata/rdf'
   require 'umakadata/sparql'
 end

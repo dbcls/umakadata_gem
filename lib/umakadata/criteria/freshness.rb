@@ -40,16 +40,16 @@ module Umakadata
       private
 
       module Query
-        UPDATE_FROM_DESCRIPTION = RDF::Query.new do
-          pattern [:s, RDF.type, RDF::Vocab::VOID[:DatasetDescription]]
-          pattern [:s, RDF::Vocab::DC.modified, :date], optional: true
-          pattern [:s, RDF::Vocab::DC.issued, :date], optional: true
+        UPDATE_FROM_DESCRIPTION = ::RDF::Query.new do
+          pattern [:s, ::RDF.type, ::RDF::Vocab::VOID[:DatasetDescription]]
+          pattern [:s, ::RDF::Vocab::DC.modified, :date], optional: true
+          pattern [:s, ::RDF::Vocab::DC.issued, :date], optional: true
         end
 
-        UPDATE_FROM_DATASET = RDF::Query.new do
-          pattern [:s, RDF.type, RDF::Vocab::VOID[:Dataset]]
-          pattern [:s, RDF::Vocab::DC.modified, :date], optional: true
-          pattern [:s, RDF::Vocab::DC.issued, :date], optional: true
+        UPDATE_FROM_DATASET = ::RDF::Query.new do
+          pattern [:s, ::RDF.type, ::RDF::Vocab::VOID[:Dataset]]
+          pattern [:s, ::RDF::Vocab::DC.modified, :date], optional: true
+          pattern [:s, ::RDF::Vocab::DC.issued, :date], optional: true
         end
       end
 
@@ -71,7 +71,7 @@ module Umakadata
         statements = endpoint.send(method).result
         return [] unless statements.present?
 
-        dataset = RDF::Dataset.new(statements: statements)
+        dataset = ::RDF::Dataset.new(statements: statements)
 
         Array(dataset.query(Query::UPDATE_FROM_DESCRIPTION).bindings[:date])
           .concat(Array(dataset.query(Query::UPDATE_FROM_DATASET).bindings[:date]))

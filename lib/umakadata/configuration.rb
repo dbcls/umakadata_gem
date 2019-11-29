@@ -11,11 +11,6 @@ module Umakadata
   # @!attribute lov
   #   @return [String] an URL
   class Configuration
-    class << self
-      def configure(&block)
-        new(&block)
-      end
-    end
 
     DEFAULT_LOV_URL = 'https://lov.linkeddata.es/dataset/lov/api/v2/vocabulary/list'.freeze
 

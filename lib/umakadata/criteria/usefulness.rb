@@ -99,7 +99,7 @@ module Umakadata
             activities << number_of_statements unless excluded_graph?(nil)
 
             m.value = activities
-                        .filter { |act| act.type == Activity::Type::NUMBER_OF_STATEMENTS && act.result.is_a?(RDF::Query::Solutions) }
+                        .filter { |act| act.type == Activity::Type::NUMBER_OF_STATEMENTS && act.result.is_a?(::RDF::Query::Solutions) }
                         .inject(0) { |memo, act| memo + (act.result.map { |r| r.bindings[:count] }.first&.object || 0) }
             m.comment = "Count #{pluralize(m.value, 'triple')}."
           end
@@ -129,10 +129,10 @@ module Umakadata
 
         sum = 0
         activities.filter { |act| act.type == Activity::Type::CLASSES_HAVING_INSTANCE }.each do |act|
-          sum += 50 if act.result.is_a?(RDF::Query::Solutions) && act.result.size.positive?
+          sum += 50 if act.result.is_a?(::RDF::Query::Solutions) && act.result.size.positive?
         end
         activities.filter { |act| act.type == Activity::Type::LABELS_OF_CLASSES }.each do |act|
-          sum += 50 if act.result.is_a?(RDF::Query::Solutions) && act.result.size.positive?
+          sum += 50 if act.result.is_a?(::RDF::Query::Solutions) && act.result.size.positive?
         end
 
         ngraphs = (graphs ? graphs.result.size : 0) + (excluded_graph?(nil) ? 0 : 1)
@@ -143,7 +143,7 @@ module Umakadata
       def ontology_score(activities)
         prefixes = activities
                      .filter { |act| act.type == Activity::Type::VOCABULARY_PREFIXES }
-                     .map { |act| (r = act.result).is_a?(RDF::Query::Solutions) ? r.map { |x| x.bindings[:prefix].value } : [] }
+                     .map { |act| (r = act.result).is_a?(::RDF::Query::Solutions) ? r.map { |x| x.bindings[:prefix].value } : [] }
                      .flatten
                      .uniq
                      .reject { |x| VocabularyPrefix.exclude_patterns.find { |p| x.match?(p) } }

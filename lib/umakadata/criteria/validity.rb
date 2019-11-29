@@ -35,10 +35,10 @@ module Umakadata
         Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activity = non_http_uri_subject
 
-          m.value = (r = activity.result).is_a?(RDF::Query::Solutions) && r.count.zero?
+          m.value = (r = activity.result).is_a?(::RDF::Query::Solutions) && r.count.zero?
           m.comment = if m.value
                         'All subjects are URI or blank node.'
-                      elsif r.is_a?(RDF::Query::Solutions) && r.count.positive?
+                      elsif r.is_a?(::RDF::Query::Solutions) && r.count.positive?
                         'Some subjects are not HTTP(S) URI.'
                       else
                         'Failed to evaluate result.'
@@ -66,7 +66,7 @@ module Umakadata
             activities.push(check_link_to_other_uri(p))
           end
 
-          m.value = activities.any? { |act| (r = act.result).is_a?(RDF::Query::Solutions) && r.count.positive? }
+          m.value = activities.any? { |act| (r = act.result).is_a?(::RDF::Query::Solutions) && r.count.positive? }
           m.comment = "The endpoint #{m.value ? 'has' : 'does not have'} links to other URIs."
           m.activities = activities
         end

@@ -19,7 +19,7 @@ module Umakadata
         Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activity = endpoint.service_description
 
-          m.value = activity.result.is_a?(RDF::Enumerable) ? activity.response.body : nil
+          m.value = activity.result.is_a?(::RDF::Enumerable) ? activity.response.body : nil
           m.comment = if (200..299).include?(activity.response&.status) && m.value.present?
                         'The endpoint provides Service Description.'
                       else
@@ -39,7 +39,7 @@ module Umakadata
           via_http = (200..299).include?(activity.response&.status) && activity.result.present?
           in_sd = (sd = endpoint.service_description).respond_to?(:void_descriptions) && sd.void_descriptions.present?
 
-          m.value = (r = activity.result).is_a?(RDF::Enumerable) ? r.to_ttl : nil
+          m.value = (r = activity.result).is_a?(::RDF::Enumerable) ? r.to_ttl : nil
           m.comment = if via_http
                         'The endpoint provides VoID.'
                       elsif in_sd
