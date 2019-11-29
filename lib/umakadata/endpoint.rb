@@ -61,27 +61,27 @@ module Umakadata
 
     module Criteria
       def availability
-        @criteria[:availability] ||= Criteria::Availability.new(self)
+        @criteria[:availability] ||= Umakadata::Criteria::Availability.new(self)
       end
 
       def freshness
-        @criteria[:freshness] ||= Criteria::Freshness.new(self)
+        @criteria[:freshness] ||= Umakadata::Criteria::Freshness.new(self)
       end
 
       def operation
-        @criteria[:operation] ||= Criteria::Operation.new(self)
+        @criteria[:operation] ||= Umakadata::Criteria::Operation.new(self)
       end
 
       def performance
-        @criteria[:performance] ||= Criteria::Performance.new(self)
+        @criteria[:performance] ||= Umakadata::Criteria::Performance.new(self)
       end
 
       def usefulness
-        @criteria[:usefulness] ||= Criteria::Usefulness.new(self)
+        @criteria[:usefulness] ||= Umakadata::Criteria::Usefulness.new(self)
       end
 
       def validity
-        @criteria[:validity] ||= Criteria::Validity.new(self)
+        @criteria[:validity] ||= Umakadata::Criteria::Validity.new(self)
       end
     end
     include Criteria
