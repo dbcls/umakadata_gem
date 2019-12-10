@@ -9,6 +9,27 @@ module Umakadata
         include StringExt
 
         # @return [Umakadata::Activity]
+        def http_uri_subject(resource_uri)
+          cache(:http_uri_subject, resource_uri) do
+            buffer = endpoint
+                       .sparql
+                       .select
+                       .where
+                       .tap { |x| x.graph(:g) if endpoint.graph_keyword_supported? }
+                       .limit(1)
+                       .to_s
+
+            if resource_uri.uri.present?
+              buffer.sub!('{ }', "{ VALUES ?s { <#{resource_uri.uri}> } { ?s ?p ?o . } }")
+            else
+              buffer.sub!('{ }', "{ { ?s ?p ?o . } FILTER(#{resource_uri.filter}) }")
+            end
+
+            endpoint.sparql.query(buffer).tap(&post_http_uri_subject)
+          end
+        end
+
+        # @return [Umakadata::Activity]
         def non_http_uri_subject(**options)
           cache(key: options) do
             endpoint
@@ -17,7 +38,7 @@ module Umakadata
               .where(%i[s p o])
               .filter(filter_for_non_http_subjects)
               .tap { |x| x.graph(:g) if endpoint.graph_keyword_supported? }
-              .limit(1)
+              .limit(10)
               .execute
               .tap(&post_non_http_uri_subject)
           end
@@ -47,7 +68,10 @@ module Umakadata
 
         private
 
-        FILTER_HTTP_SUBJECTS = 'isURI(?s) && (STRSTARTS(str(?s), "http") || STRSTARTS(str(?s), "HTTP"))'.freeze
+        FILTER_HTTP_SUBJECTS = '!(STRSTARTS(str(?s), "http://www.openlinksw.com/") || '\
+                               'STRSTARTS(str(?s), "http://www.w3.org/") || '\
+                               'STRSTARTS(str(?s), "http://xmlns.com/")) && '\
+                               '(STRSTARTS(str(?s), "http") || STRSTARTS(str(?s), "HTTP"))'.freeze
 
         def filter_for_non_http_subjects
           if endpoint.graph_keyword_supported?
@@ -57,16 +81,25 @@ module Umakadata
           end
         end
 
+        def post_http_uri_subject
+          lambda do |activity|
+            activity.type = Activity::Type::RETRIEVE_URI
+            activity.comment = if (r = activity.result).is_a?(RDF::Query::Solutions) && r.count.positive?
+                                 'An URI found by SPARQL query.'
+                               else
+                                 'Failed to obtain URIs by SPARQL query.'
+                               end
+          end
+        end
+
         def post_non_http_uri_subject
           lambda do |activity|
             activity.type = Activity::Type::NON_HTTP_URI_SUBJECT
 
-            activity.comment = if (r = activity.result).is_a?(::RDF::Query::Solutions)
-                                 if r.count.zero?
-                                   'Non HTTP(S) URI are not found.'
-                                 else
-                                   'Non HTTP(S) URI are found.'
-                                 end
+            activity.comment = if (r = activity.result).is_a?(RDF::Query::Solutions)
+                                 "#{r.count} HTTP(S) #{'subject'.pluralize(r.count)} found."
+                               else
+                                 'No HTTP(S) subjects found.'
                                end
           end
         end

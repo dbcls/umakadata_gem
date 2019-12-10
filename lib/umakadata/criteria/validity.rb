@@ -33,17 +33,35 @@ module Umakadata
       # @return [Umakadata::Measurement]
       def http_uri
         Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
-          activity = non_http_uri_subject
+          activities = []
 
-          m.value = (r = activity.result).is_a?(::RDF::Query::Solutions) && r.count.zero?
-          m.comment = if m.value
-                        'All subjects are URI or blank node.'
-                      elsif r.is_a?(::RDF::Query::Solutions) && r.count.positive?
-                        'Some subjects are not HTTP(S) URI.'
-                      else
-                        'Failed to evaluate result.'
-                      end
-          m.activities = [activity]
+          if provide_useful_information&.value == true
+            m.value = true
+            m.comment = 'HTTP URI are found by checking `URI provides useful information?`'
+          else
+            endpoint.resource_uri.each do |p|
+              activities.push((activity = http_uri_subject(p)))
+              next unless (r = activity.result).is_a?(RDF::Query::Solutions) && r.count.positive?
+
+              m.value = true
+              m.comment = 'HTTP URI are found.'
+            end
+
+            if m.value == false
+              activities.push((activity = non_http_uri_subject))
+
+              m.value = (r = activity.result).is_a?(RDF::Query::Solutions) && r.count == 10
+              m.comment = if m.value
+                            'HTTP(S) URI are found.'
+                          elsif r.is_a?(RDF::Query::Solutions) && r.count.positive?
+                            'HTTP(S) URI are found but not enough to evaluate.'
+                          else
+                            'No HTTP(S) URIs found.'
+                          end
+            end
+          end
+
+          m.activities = activities
         end
       end
 
