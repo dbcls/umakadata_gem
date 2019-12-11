@@ -84,7 +84,7 @@ module Umakadata
         def post_http_uri_subject
           lambda do |activity|
             activity.type = Activity::Type::RETRIEVE_URI
-            activity.comment = if (r = activity.result).is_a?(RDF::Query::Solutions) && r.count.positive?
+            activity.comment = if (r = activity.result).is_a?(::RDF::Query::Solutions) && r.count.positive?
                                  'An URI found by SPARQL query.'
                                else
                                  'Failed to obtain URIs by SPARQL query.'
@@ -96,24 +96,10 @@ module Umakadata
           lambda do |activity|
             activity.type = Activity::Type::NON_HTTP_URI_SUBJECT
 
-            activity.comment = if (r = activity.result).is_a?(RDF::Query::Solutions)
+            activity.comment = if (r = activity.result).is_a?(::RDF::Query::Solutions) && r.count.positive?
                                  "#{r.count} HTTP(S) #{'subject'.pluralize(r.count)} found."
                                else
                                  'No HTTP(S) subjects found.'
-                               end
-          end
-        end
-
-        def post_check_subject_uri
-          lambda do |activity|
-            activity.type = Activity::Type::NON_HTTP_URI_SUBJECT
-
-            activity.comment = if (r = activity.result).is_a?(::RDF::Query::Solutions)
-                                 if r.count.zero?
-                                   'Non HTTP(S) URI are not found.'
-                                 else
-                                   'Non HTTP(S) URI are found.'
-                                 end
                                end
           end
         end

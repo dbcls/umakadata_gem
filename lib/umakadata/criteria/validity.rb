@@ -41,19 +41,19 @@ module Umakadata
           else
             endpoint.resource_uri.each do |p|
               activities.push((activity = http_uri_subject(p)))
-              next unless (r = activity.result).is_a?(RDF::Query::Solutions) && r.count.positive?
+              next unless (r = activity.result).is_a?(::RDF::Query::Solutions) && r.count.positive?
 
               m.value = true
               m.comment = 'HTTP URI are found.'
             end
 
-            if m.value == false
+            unless m.value
               activities.push((activity = non_http_uri_subject))
 
-              m.value = (r = activity.result).is_a?(RDF::Query::Solutions) && r.count == 10
+              m.value = (r = activity.result).is_a?(::RDF::Query::Solutions) && r.count == 10
               m.comment = if m.value
                             'HTTP(S) URI are found.'
-                          elsif r.is_a?(RDF::Query::Solutions) && r.count.positive?
+                          elsif r.is_a?(::RDF::Query::Solutions) && r.count.positive?
                             'HTTP(S) URI are found but not enough to evaluate.'
                           else
                             'No HTTP(S) URIs found.'
