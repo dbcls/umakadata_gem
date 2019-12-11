@@ -8,6 +8,9 @@ require 'umakadata'
 
 # (If you use this, don't forget to add pry to your Gemfile!)
 require 'pry'
+
+Umakadata::Crawler.config.logger = ::Logger.new(STDERR, level: ::Logger::DEBUG)
+
 Pry.start
 
 # require 'irb'
