@@ -70,8 +70,12 @@ module Umakadata
         content_negotiate(ResourceURI::NegotiationTypes::ANY, MEASUREMENT_NAMES[__method__]) do |m|
           m.name = MEASUREMENT_NAMES[__method__]
           m.value = m.activities.any? { |act| act.response&.status == 200 }
-          m.comment = "The endpoint #{m.value ? 'provides' : 'does not provide'} useful information "\
-                      'by looking up a URI.'
+          m.comment = if endpoint.resource_uri.blank?
+                        'The endpoint does not have indexed URI.'
+                      else
+                        "The endpoint #{m.value ? 'provides' : 'does not provide'} useful information "\
+                        'by looking up a URI.'
+                      end
         end
       end
 
@@ -85,7 +89,11 @@ module Umakadata
           end
 
           m.value = activities.any? { |act| (r = act.result).is_a?(::RDF::Query::Solutions) && r.count.positive? }
-          m.comment = "The endpoint #{m.value ? 'has' : 'does not have'} links to other URIs."
+          m.comment = if endpoint.resource_uri.blank?
+                        'The endpoint does not have indexed URI.'
+                      else
+                        "The endpoint #{m.value ? 'has' : 'does not have'} links to other URIs."
+                      end
           m.activities = activities
         end
       end
