@@ -1,5 +1,6 @@
 require 'date'
 require 'umakadata/criteria/base'
+require 'umakadata/rdf/vocabulary'
 
 module Umakadata
   module Criteria
@@ -40,17 +41,16 @@ module Umakadata
       private
 
       module Query
-        UPDATE_FROM_DESCRIPTION = ::RDF::Query.new do
-          pattern [:s, ::RDF.type, ::RDF::Vocab::VOID[:DatasetDescription]]
-          pattern [:s, ::RDF::Vocab::DC.modified, :date], optional: true
-          pattern [:s, ::RDF::Vocab::DC.issued, :date], optional: true
-        end
+        DATASET_TYPES = %W[<#{::RDF::Vocab::VOID[:Dataset]}>
+                           <#{::RDF::Vocab::VOID[:DatasetDescription]}>
+                           <#{RDF::Vocabulary::SSD[:Dataset]}>
+                           <#{RDF::Vocabulary::SSD[:Graph]}>].freeze
 
-        UPDATE_FROM_DATASET = ::RDF::Query.new do
-          pattern [:s, ::RDF.type, ::RDF::Vocab::VOID[:Dataset]]
-          pattern [:s, ::RDF::Vocab::DC.modified, :date], optional: true
-          pattern [:s, ::RDF::Vocab::DC.issued, :date], optional: true
-        end
+        UPDATE = SPARQL::Client::Query.select(:date)
+                   .where([:s, ::RDF.type, :type])
+                   .where([:s, :p, :date])
+                   .filter("?type IN (#{DATASET_TYPES.join(', ')})")
+                   .filter("?p IN (<#{::RDF::Vocab::DC.modified}>, <#{::RDF::Vocab::DC.issued}>)")
       end
 
       # @param [Symbol] method :void or :service_description
@@ -66,15 +66,14 @@ module Umakadata
       end
 
       # @param [Symbol] method :void or :service_description
-      # @return [Array<RDF::Literal>]
+      # @return [Array<RDF::Term>]
       def extract_update_date(method)
         statements = endpoint.send(method).result
         return [] unless statements.present?
 
         dataset = ::RDF::Dataset.new(statements: statements)
 
-        Array(dataset.query(Query::UPDATE_FROM_DESCRIPTION).bindings[:date])
-          .concat(Array(dataset.query(Query::UPDATE_FROM_DATASET).bindings[:date]))
+        dataset.query(::SPARQL::Grammar.parse(Query::UPDATE)).bindings[:date] || []
       end
     end
   end

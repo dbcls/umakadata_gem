@@ -4,57 +4,31 @@ module Umakadata
   module RDF
     class VoID
       module Query
-        PUBLISHERS = ::SPARQL::Algebra::Expression.parse(<<~EXP.gsub(/\n\s*/, ' '))
-          (filter
-            (in
-              ?type
-              <#{::RDF::Vocab::VOID[:Dataset]}>
-              <#{RDF::Vocabulary::SSD[:Dataset]}>
-              <#{RDF::Vocabulary::SSD[:Graph]}>
-            )
-            (join
-              (bgp (triple ?s <#{::RDF.type}> ?type))
-              (bgp (triple ?s <#{::RDF::Vocab::DC.publisher}> ?publisher))
-            )
-          )
-        EXP
+        PUBLISHERS = SPARQL::Client::Query.select(:publisher)
+                       .where([:s, ::RDF.type, RDF::Vocabulary::SSD[:Service]])
+                       .where([:s, RDF::Vocabulary::SSD[:endpoint], :endpoint])
+                       .where([:s, ::RDF::Vocab::DC.publisher, :publisher])
+                       .distinct
 
-        TRIPLES = ::SPARQL::Algebra::Expression.parse(<<~EXP.gsub(/\n\s*/, ' '))
-          (filter
-            (in
-              ?type
-              <#{::RDF::Vocab::VOID[:Dataset]}>
-              <#{RDF::Vocabulary::SSD[:Dataset]}>
-              <#{RDF::Vocabulary::SSD[:Graph]}>
-            )
-            (join
-              (bgp (triple ?s <#{::RDF.type}> ?type))
-              (bgp (triple ?s <#{::RDF::Vocab::VOID.triples}> ?triples))
-            )
-          )
-        EXP
+        DATASET_TYPES = %W[<#{::RDF::Vocab::VOID[:Dataset]}>
+                           <#{RDF::Vocabulary::SSD[:Dataset]}>
+                           <#{RDF::Vocabulary::SSD[:Graph]}>].freeze
 
-        LICENSES = ::SPARQL::Algebra::Expression.parse(<<~EXP.gsub(/\n\s*/, ' '))
-          (filter
-            (in
-              ?type
-              <#{::RDF::Vocab::VOID[:Dataset]}>
-              <#{RDF::Vocabulary::SSD[:Dataset]}>
-              <#{RDF::Vocabulary::SSD[:Graph]}>
-            )
-            (join
-              (bgp (triple ?s <#{::RDF.type}> ?type))
-              (bgp (triple ?s <#{::RDF::Vocab::DC.license}> ?license))
-            )
-          )
-        EXP
+        TRIPLES = SPARQL::Client::Query.select(:triples)
+                    .where([:s, ::RDF.type, :type])
+                    .where([:s, ::RDF::Vocab::VOID.triples, :triples])
+                    .filter("?type IN (#{DATASET_TYPES.join(', ')})")
 
-        LINK_SETS = ::SPARQL::Algebra::Expression.parse(<<~EXP.gsub(/\n\s*/, ' '))
-          (join
-            (bgp (triple ?s <#{::RDF.type}> <#{::RDF::Vocab::VOID[:Linkset]}>))
-            (bgp (triple ?s <#{::RDF::Vocab::VOID.target}> ?target))
-          )
-        EXP
+        LICENSES = SPARQL::Client::Query.select(:license)
+                     .where([:s, ::RDF.type, :type])
+                     .where([:s, ::RDF::Vocab::DC.license, :license])
+                     .filter("?type IN (#{DATASET_TYPES.join(', ')})")
+                     .distinct
+
+        LINK_SETS = SPARQL::Client::Query.select(:target)
+                      .where([:s, ::RDF.type, ::RDF::Vocab::VOID[:Linkset]])
+                      .where([:s, ::RDF::Vocab::VOID.target, :target])
+                      .distinct
       end
 
       attr_reader :dataset
@@ -65,22 +39,22 @@ module Umakadata
 
       # @return [Array<String>]
       def licenses
-        @dataset.query(Query::LICENSES).map { |x| x.bindings[:license].value }.uniq
+        @dataset.query(::SPARQL::Grammar.parse(Query::LICENSES)).map { |x| x.bindings[:license].value }
       end
 
       # @return [Array<String>]
       def link_sets
-        @dataset.query(Query::LINK_SETS).map { |x| x.bindings[:target].value }.uniq
+        @dataset.query(::SPARQL::Grammar.parse(Query::LINK_SETS)).map { |x| x.bindings[:target].value }
       end
 
       # @return [Integer]
       def triples
-        @dataset.query(Query::TRIPLES).map { |x| x.bindings[:triples].object }.sum
+        @dataset.query(::SPARQL::Grammar.parse(Query::TRIPLES)).map { |x| x.bindings[:triples].object }.sum
       end
 
       # @return [Array<String>]
       def publishers
-        @dataset.query(Query::PUBLISHERS).map { |x| x.bindings[:publisher].value }.uniq
+        @dataset.query(::SPARQL::Grammar.parse(Query::PUBLISHERS)).map { |x| x.bindings[:publisher].value }
       end
     end
   end
