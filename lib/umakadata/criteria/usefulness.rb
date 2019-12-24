@@ -31,7 +31,7 @@ module Umakadata
           if endpoint.graph_keyword_supported?
             activities << (grs = graphs)
 
-            grs.result.each do |g|
+            grs.result&.each do |g|
               activities.push(*metadata_on_graph(g)) unless excluded_graph?(g)
             end
           end
@@ -53,7 +53,7 @@ module Umakadata
           if endpoint.graph_keyword_supported?
             activities << (grs = graphs)
 
-            grs.result.each do |g|
+            grs.result&.each do |g|
               activities.push(*ontology_on_graph(g)) unless excluded_graph?(g)
             end
           end
@@ -91,7 +91,7 @@ module Umakadata
             if endpoint.graph_keyword_supported?
               activities << (grs = graphs)
 
-              grs.result.each do |g|
+              grs.result&.each do |g|
                 activities << number_of_statements(graph: g) unless excluded_graph?(g)
               end
             end
@@ -100,7 +100,7 @@ module Umakadata
 
             m.value = activities
                         .filter { |act| act.type == Activity::Type::NUMBER_OF_STATEMENTS && act.result.is_a?(::RDF::Query::Solutions) }
-                        .inject(0) { |memo, act| memo + (act.result.map { |r| r.bindings[:count] }.first&.object || 0) }
+                        .inject(0) { |memo, act| memo + (act.result&.map { |r| r.bindings[:count] }.first&.object || 0) }
             m.comment = "Count #{pluralize(m.value, 'triple')}."
           end
 
@@ -135,7 +135,7 @@ module Umakadata
           sum += 50 if act.result.is_a?(::RDF::Query::Solutions) && act.result.size.positive?
         end
 
-        ngraphs = (graphs ? graphs.result.size : 0) + (excluded_graph?(nil) ? 0 : 1)
+        ngraphs = (graphs ? graphs.result&.size : 0) + (excluded_graph?(nil) ? 0 : 1)
 
         ngraphs.positive? ? sum.to_f / ngraphs : 0
       end
@@ -161,7 +161,7 @@ module Umakadata
         activities = []
         activities << classes_having_instance(options)
         activities << (classes = classes(options))
-        activities << labels_of_classes(classes.result.map { |r| r.bindings[:c] }, options) if classes
+        activities << labels_of_classes(classes.result&.map { |r| r.bindings[:c] }, options) if classes
         activities.compact
       end
 
