@@ -165,6 +165,7 @@ module Umakadata
               act.comment = "Obtained VoID from #{act.response&.url || 'N/A'}"
             elsif (s = service_description.void_descriptions.statements).present?
               statements = s
+              act.result = s
               act.comment = 'Obtained VoID from ServiceDescription'
             end
 

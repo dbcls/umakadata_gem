@@ -39,7 +39,12 @@ module Umakadata
           via_http = (200..299).include?(activity.response&.status) && activity.result.present?
           in_sd = (sd = endpoint.service_description).respond_to?(:void_descriptions) && sd.void_descriptions.present?
 
-          m.value = (r = activity.result).is_a?(::RDF::Enumerable) ? r.to_ttl : nil
+          m.value = if in_sd
+                      sd.void_descriptions.to_ttl
+                    else
+                      (r = activity.result).is_a?(::RDF::Enumerable) && r.present? ? r.to_ttl : nil
+                    end
+
           m.comment = if via_http
                         'The endpoint provides VoID.'
                       elsif in_sd
