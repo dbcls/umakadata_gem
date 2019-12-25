@@ -44,6 +44,8 @@ module Umakadata
         end
       end
 
+      attr_reader :errors
+
       #
       # @param [String] data response body
       # @param [Hash{Symbol => Object}] options
@@ -103,11 +105,18 @@ module Umakadata
         options = @options.merge(options)
         return unless (reader = ::RDF::Reader.for(options))
 
+        io = StringIO.new
         begin
-          options = options.merge(validate: true, logger: ::Logger.new(nil))
-          reader.new(@data, options).to_a.tap { callback&.call(reader, nil) }
-        rescue StandardError
-          nil
+          options = options.merge(validate: true, logger: ::Logger.new(io, level: ::Logger::WARN, formatter: Logger::SimpleFormatter.new))
+          ret = reader.new(@data, options).to_a.tap { callback&.call(reader, nil) }
+        rescue
+          ret = nil
+        ensure
+          if (e = io.string).present?
+            (@errors ||= []) << "=== #{options[:content_type]} ===\n#{e}\n"
+          end
+
+          ret
         end
       end
 
