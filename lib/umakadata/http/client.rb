@@ -57,21 +57,30 @@ module Umakadata
       def query(method, path, body = nil, **headers)
         Activity.new do |act|
           t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+          parser = nil
           begin
             request(method, path, body, headers) do |req, res|
               act.request = Activity::Request.new(**req.to_env(connection).to_h)
               act.response = Activity::Response.new(**(res&.env&.to_h || {}))
             end
 
-            if (200..299).include?(act.response&.status)
-              act.result = ResponseParser.parse(act.response, **@options.fetch(:response_parser, {})) do |_, msg|
-                log(:warn, 'response_parser') { msg } if msg.present?
-              end
-            end
+            opts = {
+              base_uri: URI.parse(act.response.url).tap { |x| x.query = nil }.to_s,
+              content_type: act.response.headers.content_type,
+              callback: -> (_, msg) { log(:warn, 'response_parser') { msg } if msg.present? }
+            }.merge(@options.fetch(:response_parser, {}))
+
+            parser = ResponseParser.new(act.response.body, **opts)
+
+            act.result = parser.parse if (200..299).include?(act.response&.status)
           rescue StandardError
             sleep(1) # some servers refuse following connection without sleep
             act
           ensure
+            if (e = parser&.errors).present?
+              @warnings.concat(e)
+            end
             act.exceptions = @exceptions
             act.warnings = @warnings
             act.trace = @trace
