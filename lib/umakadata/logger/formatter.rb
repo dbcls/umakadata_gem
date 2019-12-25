@@ -16,6 +16,18 @@ module Umakadata
       end
     end
 
+    class SimpleFormatter < ::Logger::Formatter
+      FORMAT = "%5s -- %s: %s\n".freeze
+
+      def initialize
+        super
+      end
+
+      def call(severity, time, progname, msg)
+        format(FORMAT, severity, progname, msg2str(msg))
+      end
+    end
+
     DEFAULT_CONFIG = {
       logdev: STDERR,
       level: ::Logger::INFO,
