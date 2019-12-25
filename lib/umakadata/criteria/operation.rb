@@ -36,7 +36,7 @@ module Umakadata
         Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activity = endpoint.void
 
-          via_http = (200..299).include?(activity.response&.status) && activity.result.present?
+          via_http = (200..299).include?(activity.response&.status)
           in_sd = (sd = endpoint.service_description).respond_to?(:void_descriptions) && sd.void_descriptions.present?
 
           m.value = if in_sd
@@ -45,10 +45,12 @@ module Umakadata
                       (r = activity.result).is_a?(::RDF::Enumerable) && r.present? ? r.to_ttl : nil
                     end
 
-          m.comment = if via_http
+          m.comment = if via_http && activity.result.present?
                         'The endpoint provides VoID.'
                       elsif in_sd
                         'The endpoint provides VoID via Service Description.'
+                      elsif via_http && activity.result.blank?
+                        'The endpoint provides VoID, but errors occurred in parsing response.'
                       else
                         'The endpoint does not provide VoID.'
                       end
