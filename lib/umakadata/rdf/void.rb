@@ -5,8 +5,6 @@ module Umakadata
     class VoID
       module Query
         PUBLISHERS = SPARQL::Client::Query.select(:publisher)
-                       .where([:s, ::RDF.type, RDF::Vocabulary::SSD[:Service]])
-                       .where([:s, RDF::Vocabulary::SSD[:endpoint], :endpoint])
                        .where([:s, ::RDF::Vocab::DC.publisher, :publisher])
                        .distinct
 
@@ -33,8 +31,9 @@ module Umakadata
 
       attr_reader :dataset
 
-      def initialize(statements)
+      def initialize(statements, **options)
         @dataset = ::RDF::Dataset.new(statements: statements || [])
+        @endpoint = options[:endpoint]
       end
 
       # @return [Array<String>]
@@ -54,7 +53,10 @@ module Umakadata
 
       # @return [Array<String>]
       def publishers
-        @dataset.query(::SPARQL::Grammar.parse(Query::PUBLISHERS)).map { |x| x.bindings[:publisher].value }
+        query = Query::PUBLISHERS.clone
+        query = query.where([:s, ::RDF::Vocab::VOID.sparqlEndpoint, ::RDF::URI(@endpoint)]) if @endpoint
+
+        @dataset.query(::SPARQL::Grammar.parse(query)).map { |x| x.bindings[:publisher].value }
       end
     end
   end

@@ -176,7 +176,7 @@ module Umakadata
               def_delegators :@void, :licenses, :link_sets, :publishers, :triples
             end
 
-            act.void = Umakadata::RDF::VoID.new(statements)
+            act.void = Umakadata::RDF::VoID.new(statements, endpoint: url)
           end
         end
       end
