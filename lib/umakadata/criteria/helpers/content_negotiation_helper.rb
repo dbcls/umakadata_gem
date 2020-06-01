@@ -43,16 +43,17 @@ module Umakadata
 
           http_options = options.merge(response_parser: { strict: true })
 
-          activities << (Umakadata::HTTP::Client.new(uri, **http_options).get(uri, Accept: content_type).tap do |act|
-            return_type = act.response&.headers&.content_type
-            act.type = ResourceURI.activity_type_for(content_type)
-            act.comment = if (status = act.response.status) == 200
-                            "#{uri} returns 'Content-Type: #{return_type}' for content negotiation "\
-                            "by 'Accept: #{content_type}' in request header."
-                          else
-                            "#{uri} returns #{status || 'N/A'} #{act.response.reason_phrase || 'N/A'}"
-                          end
-          end)
+          activities << cache(key: [uri, content_type].join(':')) do
+            Umakadata::HTTP::Client.new(uri, **http_options).get(uri, Accept: content_type).tap do |act|
+              act.type = ResourceURI.activity_type_for(content_type)
+              act.comment = if (status = act.response.status) == 200
+                              "#{uri} returns 'Content-Type: #{act.response&.headers&.content_type}' "\
+                              "for content negotiation by 'Accept: #{content_type}' in request header."
+                            else
+                              "#{uri} returns #{status || 'N/A'} #{act.response.reason_phrase || 'N/A'}"
+                            end
+            end
+          end
 
           activities
         end
