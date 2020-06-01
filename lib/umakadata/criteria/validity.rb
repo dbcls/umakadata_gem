@@ -67,15 +67,30 @@ module Umakadata
 
       # @return [Umakadata::Measurement]
       def provide_useful_information
-        content_negotiate(ResourceURI::NegotiationTypes::ANY, MEASUREMENT_NAMES[__method__]) do |m|
-          m.name = MEASUREMENT_NAMES[__method__]
-          m.value = m.activities.any? { |act| act.response&.status == 200 }
-          m.comment = if endpoint.resource_uri.blank?
-                        'The endpoint does not have indexed URI.'
-                      else
-                        "The endpoint #{m.value ? 'provides' : 'does not provide'} useful information "\
-                        'by looking up a URI.'
-                      end
+        if endpoint.resource_uri.blank?
+          return Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
+            m.comment = 'The endpoint does not have indexed URI.'
+          end
+        end
+
+        negotiations = {
+          ResourceURI::NegotiationTypes::HTML => endpoint.usefulness.support_html_format,
+          ResourceURI::NegotiationTypes::TURTLE => endpoint.usefulness.support_rdfxml_format,
+          ResourceURI::NegotiationTypes::RDFXML => endpoint.usefulness.support_turtle_format
+        }
+
+        if (formats = negotiations.select { |_, v| v.value == true }).present?
+          Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
+            m.comment = 'The endpoint supports content negotiation for ' + formats.keys.to_sentence
+          end
+        elsif (formats = negotiations.select { |_, v| v.activities.any?(&body_not_empty?) }).present?
+          Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
+            m.comment = 'The endpoint returns some contents for ' + formats.keys.to_sentence
+          end
+        else
+          Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
+            m.comment = 'The endpoint does not provide useful information.'
+          end
         end
       end
 
@@ -154,6 +169,14 @@ module Umakadata
         else
           comments << "The length of the endpoint URL is more than #{l} characters. (+0)"
           0
+        end
+      end
+
+      def body_not_empty?
+        lambda do |act|
+          act.type.to_s.match?('content_negotiation_') &&
+            act.response&.status == 200 &&
+            act.response&.body&.size&.positive?
         end
       end
     end
