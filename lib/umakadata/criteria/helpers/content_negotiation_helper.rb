@@ -36,7 +36,7 @@ module Umakadata
 
           uri = resource_uri.uri.presence || begin
             activities << (r = retrieve_uri(resource_uri))
-            r.result.is_a?(::RDF::Query::Solutions) ? r.result.first&.bindings&.dig(:s)&.value : nil
+            r&.result.is_a?(::RDF::Query::Solutions) ? r.result.first&.bindings&.dig(:s)&.value : nil
           end
 
           return activities if uri.blank?

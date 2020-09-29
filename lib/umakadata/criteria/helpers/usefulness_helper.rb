@@ -161,7 +161,7 @@ module Umakadata
                 activity.comment += "\n- #{r.value} is omitted."
               end
               not_uri.each do |r|
-                activity.comment += "\n- #{r.value} is not URI."
+                activity.comment += "\n- #{r.respond_to?(:value) ? r.value : r} is not URI."
               end
             else
               activity.comment = 'No graphs found.'

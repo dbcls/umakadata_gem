@@ -10,7 +10,7 @@ module Umakadata
 
         # @return [Umakadata::Activity]
         def http_uri_subject(resource_uri)
-          cache(:http_uri_subject, resource_uri) do
+          cache(key: resource_uri) do
             buffer = endpoint
                        .sparql
                        .select
