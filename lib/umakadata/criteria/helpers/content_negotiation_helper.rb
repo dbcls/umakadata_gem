@@ -85,6 +85,8 @@ module Umakadata
 
         def negotiation_succeed?(type)
           lambda do |act|
+            next false unless act
+
             act.type.to_s.match?('content_negotiation_') &&
               act.response&.status == 200 &&
               act.response&.headers&.content_type.to_s.include?(type)
