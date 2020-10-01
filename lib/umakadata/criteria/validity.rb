@@ -81,14 +81,17 @@ module Umakadata
 
         if (formats = negotiations.select { |_, v| v.value == true }).present?
           Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
+            m.value = true
             m.comment = 'The endpoint supports content negotiation for ' + formats.keys.to_sentence
           end
         elsif (formats = negotiations.select { |_, v| v.activities.any?(&body_not_empty?) }).present?
           Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
+            m.value = true
             m.comment = 'The endpoint returns some contents for ' + formats.keys.to_sentence
           end
         else
           Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
+            m.value = false
             m.comment = 'The endpoint does not provide useful information.'
           end
         end
