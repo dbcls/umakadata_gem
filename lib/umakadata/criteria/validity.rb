@@ -73,21 +73,35 @@ module Umakadata
           end
         end
 
-        negotiations = {
-          ResourceURI::NegotiationTypes::HTML => endpoint.usefulness.support_html_format,
+        negotiations_rdf = {
           ResourceURI::NegotiationTypes::TURTLE => endpoint.usefulness.support_rdfxml_format,
           ResourceURI::NegotiationTypes::RDFXML => endpoint.usefulness.support_turtle_format
         }
 
-        if (formats = negotiations.select { |_, v| v.value == true }).present?
+        if (formats = negotiations_rdf.select { |_, v| v.value == true }).present?
           Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
             m.value = true
             m.comment = 'The endpoint supports content negotiation for ' + formats.keys.to_sentence
           end
-        elsif (formats = negotiations.select { |_, v| v.activities.any?(&body_not_empty?) }).present?
+        elsif (formats = negotiations_rdf.select { |_, v| v.activities.any?(&body_not_empty?) }).present?
           Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
             m.value = true
-            m.comment = 'The endpoint returns some contents for ' + formats.keys.to_sentence
+            m.comment = 'The endpoint returns some contents in ' + formats.keys.to_sentence +
+              ', but the content negotiation failed as the Content-type of the response contradicted the Accept header of the request. '\
+              'Please check the server settings of your SPARQL endpoint.'
+          end
+        elsif endpoint.usefulness.support_html_format.value
+          Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
+            m.value = true
+            m.comment = 'Content negotiation succeeded with text/html, but failed for text/turtle and application/rdf+xml. '\
+              'The content type of text/html is accepted, but RDF (text/turtle or application/rdf+xml) is preferred.'
+          end
+        elsif (endpoint.usefulness.support_html_format.activities.any?(&body_not_empty?)).present?
+          Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
+            m.value = true
+            m.comment = 'The endpoint returns some contents in ' + ResourceURI::NegotiationTypes::HTML +
+              ', but the content negotiation failed as the Content-type of the response contradicted the Accept header of the request. '\
+              'Please check the server settings of your SPARQL endpoint.'
           end
         else
           Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
