@@ -27,7 +27,7 @@ module Umakadata
             break if (status = activities.last&.response&.status) == 200
           end
 
-          m.value = status == 200
+          m.value = (200..299).include?(status)
           m.comment = case status
                       when 100..199, 300..499
                         'It is unknown whether the endpoint is alive or dead.'
