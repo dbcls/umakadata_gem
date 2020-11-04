@@ -26,7 +26,12 @@ module Umakadata
         LINK_SETS = SPARQL::Client::Query.select(:target)
                       .where([:s, ::RDF.type, ::RDF::Vocab::VOID[:Linkset]])
                       .where([:s, ::RDF::Vocab::VOID.target, :target])
+                      .union(SPARQL::Client::Query.select(:target)
+                               .where([:s, ::RDF.type, ::RDF::Vocab::VOID[:Linkset]])
+                               .where([:s, ::RDF::Vocab::VOID.objectsTarget, :target]))
                       .distinct
+                      .to_s
+                      .sub(/WHERE ({.+} UNION {.+})/, 'WHERE { \1 }') # workaround for SPARQL::Client::Query#union
       end
 
       attr_reader :dataset
