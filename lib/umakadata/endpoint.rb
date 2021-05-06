@@ -160,7 +160,7 @@ module Umakadata
             statements = []
             act.comment = "Failed to obtain VoID from #{act.response&.url || 'N/A'}"
 
-            if act.result.is_a?(::RDF::Enumerable)
+            if act.result.is_a?(::RDF::Enumerable) && act.result.count.positive?
               statements = act.result
               act.comment = "Obtained VoID from #{act.response&.url || 'N/A'}"
             elsif (s = service_description.void_descriptions.statements).present?

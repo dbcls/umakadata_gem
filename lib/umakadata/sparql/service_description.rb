@@ -8,28 +8,16 @@ module Umakadata
           pattern [:s, ::RDF.type, RDF::Vocabulary::SSD[:Service]]
           pattern [:s, RDF::Vocabulary::SSD[:supportedLanguage], :language]
         end
-
-        VOID_DESCRIPTION = ::SPARQL::Algebra::Expression.parse(<<~EXP.gsub(/\n\s*/, ' '))
-          (describe (?s)
-            (union
-              (union
-                (union
-                  (union
-                    (union
-                      (bgp (triple ?s <#{::RDF.type}> <#{RDF::Vocabulary::SSD[:Dataset]}>))
-                      (bgp (triple ?s <#{::RDF.type}> <#{RDF::Vocabulary::SSD[:Graph]}>))
-                    )
-                    (bgp (triple ?s <#{::RDF.type}> <#{::RDF::Vocab::VOID[:Dataset]}>))
-                  )
-                  (bgp (triple ?s <#{::RDF.type}> <#{::RDF::Vocab::VOID[:DatasetDescription]}>))
-                )
-                (bgp (triple ?s <#{::RDF.type}> <#{::RDF::Vocab::VOID[:Linkset]}>))
-              )
-              (bgp (triple ?s <#{::RDF.type}> <#{::RDF::Vocab::VOID[:TechnicalFeature]}>))
-            )
-          )
-        EXP
       end
+
+      VOID_DESCRIPTION_TYPES = [
+        RDF::Vocabulary::SSD[:Dataset],
+        RDF::Vocabulary::SSD[:Graph],
+        ::RDF::Vocab::VOID[:Dataset],
+        ::RDF::Vocab::VOID[:DatasetDescription],
+        ::RDF::Vocab::VOID[:Linkset],
+        ::RDF::Vocab::VOID[:TechnicalFeature]
+      ]
 
       attr_reader :dataset
 
@@ -46,7 +34,14 @@ module Umakadata
 
       # @return [RDF::Queryable]
       def void_descriptions
-        @void_descriptions ||= @dataset.query(Query::VOID_DESCRIPTION)
+        return @void_descriptions if @void_descriptions
+
+        subjects = @dataset.select { |st| st.predicate == ::RDF.type && VOID_DESCRIPTION_TYPES.include?(st.object) }
+                           .map(&:subject)
+
+        statements = @dataset.select { |st| subjects.include?(st.subject) }
+
+        @void_descriptions = ::RDF::Dataset.new(statements: statements || [])
       end
     end
   end
