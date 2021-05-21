@@ -31,10 +31,15 @@ module Umakadata
         criterion.measurements.each do |measurement|
           next unless alive
 
-          debug('Crawler') { "call #{criterion.class.name.demodulize}.#{measurement.name}" }
-          m = measurement.call
+          debug('Crawler.run') { "call #{criterion.class.name.demodulize}.#{measurement.name}" }
+          m = begin
+                measurement.call
+              rescue StandardError => e
+                error('Crawler.run') { ([e.message] + e.backtrace).join("\n") }
+                nil
+              end
 
-          alive = m.value if m.name == 'availability.alive'
+          alive = m.value if m&.name == 'availability.alive'
 
           yield m
         end
