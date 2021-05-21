@@ -191,9 +191,9 @@ module Umakadata
 
       def body_not_empty?
         lambda do |act|
-          act.type.to_s.match?('content_negotiation_') &&
-            act.response&.status == 200 &&
-            act.response&.body&.size&.positive?
+          act&.type.to_s.match?('content_negotiation_') &&
+            act&.response&.status == 200 &&
+            act&.response&.body&.size&.positive?
         end
       end
     end
