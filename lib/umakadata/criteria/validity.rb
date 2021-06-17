@@ -124,7 +124,7 @@ module Umakadata
           m.comment = if endpoint.resource_uri.blank?
                         'The endpoint does not have indexed URI.'
                       else
-                        "The endpoint #{m.value ? 'has' : 'does not have'} links to other URIs."
+                        "The endpoint #{m.value ? 'has' : 'does not have'} owl:sameAs or rdfs:seeAlso links to other URIs."
                       end
           m.activities = activities
         end
