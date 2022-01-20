@@ -19,7 +19,9 @@ module Umakadata
         Umakadata::Measurement.new(name: MEASUREMENT_NAMES[__method__]).safe do |m|
           activity = endpoint.service_description
 
-          m.value = (r = activity.result).is_a?(::RDF::Enumerable) && r.present? ? activity.response.body : nil
+          m.value = (r = activity.result).is_a?(::RDF::Enumerable) &&
+            r.any? { |stmt| stmt.predicate.to_s.start_with?('http://www.w3.org/ns/sparql-service-description#') } ?
+                      activity.response.body : nil
           m.comment = if (200..299).include?(activity.response&.status) && m.value.present?
                         'The endpoint provides Service Description.'
                       else
