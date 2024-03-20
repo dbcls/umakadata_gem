@@ -32,15 +32,24 @@ module Umakadata
         # @return [Umakadata::Activity]
         def non_http_uri_subject(**options)
           cache(key: options) do
-            endpoint
-              .sparql
-              .select(:s)
-              .where(%i[s p o])
-              .filter(filter_for_non_http_subjects)
-              .tap { |x| x.graph(:g) if endpoint.graph_keyword_supported? }
-              .limit(10)
-              .execute
-              .tap(&post_non_http_uri_subject)
+            filter_string = "!(#{SUBJECT_REJECT.map { |x| "STRSTARTS(str(?s), \"#{x}\")" }.join(' || ')}) && " \
+              "(#{SUBJECT_ACCEPT.map { |x| "STRSTARTS(str(?s), \"#{x}\")" }.join(' || ')})"
+
+            query = endpoint
+                      .sparql
+                      .select(:s)
+                      .where(%i[s p o])
+                      .tap { |x| x.graph(:g) if endpoint.graph_keyword_supported? }
+                      .filter(filter_string)
+                      .limit(10)
+                      .to_s
+
+            if endpoint.graph_keyword_supported?
+              query = query.sub('} LIMIT', 'FILTER(?g NOT IN (<http://www.openlinksw.com/schemas/virtrdf#>)) } LIMIT')
+            end
+
+            endpoint.query(query)
+                    .tap(&post_non_http_uri_subject)
           end
         end
 
@@ -68,18 +77,8 @@ module Umakadata
 
         private
 
-        FILTER_HTTP_SUBJECTS = '!(STRSTARTS(str(?s), "http://www.openlinksw.com/") || '\
-                               'STRSTARTS(str(?s), "http://www.w3.org/") || '\
-                               'STRSTARTS(str(?s), "http://xmlns.com/")) && '\
-                               '(STRSTARTS(str(?s), "http") || STRSTARTS(str(?s), "HTTP"))'.freeze
-
-        def filter_for_non_http_subjects
-          if endpoint.graph_keyword_supported?
-            FILTER_HTTP_SUBJECTS + ' && ?g NOT IN (<http://www.openlinksw.com/schemas/virtrdf#>)'
-          else
-            FILTER_HTTP_SUBJECTS
-          end
-        end
+        SUBJECT_REJECT = %w[http://www.openlinksw.com/ http://www.w3.org/ http://xmlns.com/]
+        SUBJECT_ACCEPT = %w[http HTTP]
 
         def post_http_uri_subject
           lambda do |activity|
