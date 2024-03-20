@@ -79,7 +79,7 @@ module Umakadata
             .distinct
             .where([:c, ::RDF::Vocab::RDFS.label, :label])
             .values(:c, *Array(classes))
-            .tap { |x| x.graph(g) if g }
+            .tap { |x| x.graph(:g) if endpoint.graph_keyword_supported? }
             .execute
             .tap(&post_labels_of_classes(g))
         end
@@ -193,15 +193,14 @@ module Umakadata
           end
         end
 
-        def post_labels_of_classes(graph = nil)
+        def post_labels_of_classes(_graph = nil)
           lambda do |act|
             act.type = Activity::Type::LABELS_OF_CLASSES
             act.comment = if act.result.present?
-                            "#{pluralize(act.result.count, 'label')} of classes found"
+                            "#{pluralize(act.result.count, 'label')} of classes found."
                           else
-                            'No labels of classes found'
+                            'No labels of classes found.'
                           end
-            act.comment << " on #{graph ? "graph <#{graph}>" : 'default graph'}."
           end
         end
 
