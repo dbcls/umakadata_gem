@@ -205,7 +205,7 @@ module Umakadata
         cache do
           sparql.construct(%i[s p o]).where(%i[s p o]).graph(:g).limit(1).execute.tap do |act|
             act.type = Activity::Type::GRAPH_KEYWORD_SUPPORT
-            act.comment = if (200..299).include?(act.response&.status)
+            act.comment = if (200..299).include?(act.response&.status) && act.result&.size&.positive?
                             'The endpoint supports GRAPH keyword.'
                           else
                             'The endpoint does not support GRAPH keyword.'
