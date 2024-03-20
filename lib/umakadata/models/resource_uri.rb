@@ -52,8 +52,8 @@ module Umakadata
 
     def regex
       conditions = []
-      conditions << %[REGEX(STR(?s), "^#{@allow}"#{', "i"' if @case_insensitive})] if @allow.present?
-      conditions << %[!REGEX(STR(?s), "^#{@deny}"#{', "i"' if @case_insensitive})] if @deny.present?
+      conditions << %[REGEX(STR(?s), "^#{@allow.gsub(/\\/) { '\\\\' }}"#{', "i"' if @case_insensitive})] if @allow.present?
+      conditions << %[!REGEX(STR(?s), "^#{@deny.gsub(/\\/) { '\\\\' }}"#{', "i"' if @case_insensitive})] if @deny.present?
       conditions.join(' && ').presence
     end
 

@@ -65,10 +65,12 @@ module Umakadata
                        .prefix(rdfs: ::RDF::Vocab::RDFS, owl: ::RDF::Vocab::OWL)
                        .to_s
 
-            if resource_uri.uri.present?
-              buffer.sub!('{ }', "{ VALUES ?s { <#{resource_uri.uri}> } { ?s owl:sameAs ?o . } UNION { ?s rdfs:seeAlso ?o . } }")
-            else
-              buffer.sub!('{ }', "{ { ?s owl:sameAs ?o . } UNION { ?s rdfs:seeAlso ?o . } FILTER(#{resource_uri.filter}) }")
+            buffer = buffer.sub('{ }') do
+              if resource_uri.uri.present?
+                "{ VALUES ?s { <#{resource_uri.uri}> } { ?s owl:sameAs ?o . } UNION { ?s rdfs:seeAlso ?o . } }"
+              else
+                "{ { ?s owl:sameAs ?o . } UNION { ?s rdfs:seeAlso ?o . } FILTER(#{resource_uri.filter}) }"
+              end
             end
 
             endpoint.sparql.query(buffer).tap(&post_check_link_to_other_uri)
