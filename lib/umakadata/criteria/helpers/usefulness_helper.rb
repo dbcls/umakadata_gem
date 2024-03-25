@@ -137,28 +137,23 @@ module Umakadata
 
         private
 
-        def excluded_graph?(graph)
-          return Array(endpoint.exclude_graph).any?(&:blank?) if graph.nil?
-          return true if (list = endpoint.exclude_graph).present? && Array(list).include?(graph)
-
-          uri = ::RDF::URI(graph)
-          return true unless uri.scheme&.match?(/https?/)
-
-          false
-        end
-
         def post_graphs
           lambda do |activity|
             activity.type = Activity::Type::GRAPHS
 
             if (result = activity.result).is_a?(::RDF::Query::Solutions)
               uri, not_uri = result.dup.bindings.fetch(:g, []).partition { |g| g.is_a?(::RDF::URI) }
-              exclude = uri.select { |g| excluded_graph?(g.value) }
 
-              activity.result = uri - exclude # activity.result is no longer a RDF::Query::Solutions just an Array
+              exclude = if (g = endpoint.graphs[:exclude]).present?
+                          uri.map(&:to_s) & g
+                        elsif (g = endpoint.graphs[:include]).present?
+                          uri.map(&:to_s) - g
+                        end
+
+              activity.result = uri.map(&:to_s) - exclude
               activity.comment = "#{pluralize(activity.result.count, 'graph')} found."
-              exclude.each do |r|
-                activity.comment += "\n- #{r.value} is omitted."
+              exclude.each do |g|
+                activity.comment += "\n- #{g} is omitted."
               end
               not_uri.each do |r|
                 activity.comment += "\n- #{r.respond_to?(:value) ? r.value : r} is not URI."

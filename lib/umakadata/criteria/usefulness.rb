@@ -32,11 +32,11 @@ module Umakadata
             activities << (grs = graphs)
 
             grs.result&.each do |g|
-              activities.push(*metadata_on_graph(g)) unless excluded_graph?(g)
+              activities.push(*metadata_on_graph(g))
             end
+          else
+            activities.push(*metadata_on_graph)
           end
-
-          activities.push(*metadata_on_graph) unless excluded_graph?(nil)
 
           m.value = (score = metadata_score(activities))
           m.comment = "Metadata score is #{score.round(1)}"
@@ -54,11 +54,11 @@ module Umakadata
             activities << (grs = graphs)
 
             grs.result&.each do |g|
-              activities.push(*ontology_on_graph(g)) unless excluded_graph?(g)
+              activities.push(*ontology_on_graph(g))
             end
+          else
+            activities.push(*ontology_on_graph)
           end
-
-          activities.push(*ontology_on_graph) unless excluded_graph?(nil)
 
           score, noe, nolov = ontology_score(activities)
 
@@ -92,11 +92,11 @@ module Umakadata
               activities << (grs = graphs)
 
               grs.result&.each do |g|
-                activities << number_of_statements(graph: g) unless excluded_graph?(g)
+                activities << number_of_statements(graph: g)
               end
+            else
+              activities << number_of_statements
             end
-
-            activities << number_of_statements unless excluded_graph?(nil)
 
             m.value = activities
                         .filter { |act| act.type == Activity::Type::NUMBER_OF_STATEMENTS && act.result.is_a?(::RDF::Query::Solutions) }
@@ -135,7 +135,7 @@ module Umakadata
           sum += 50 if act.result.is_a?(::RDF::Query::Solutions) && act.result.size.positive?
         end
 
-        ngraphs = (graphs ? graphs.result&.size : 0) + (excluded_graph?(nil) ? 0 : 1)
+        ngraphs = endpoint.graph_keyword_supported? ? graphs.result&.size || 0 : 1
 
         ngraphs.positive? ? sum.to_f / ngraphs : 0
       end

@@ -9,8 +9,8 @@ module Umakadata
   #   @return [String] the URL of the SPARQL endpoint
   # @!attribute [r] options
   #   @return [Hash]
-  # @!attribute [r] exclude_graph
-  #   @return [Array<String>]
+  # @!attribute [r] graphs
+  #   @return [Hash]
   # @!attribute [r] resource_uri
   #   @return [Array<ResourceURI>]
   class Endpoint
@@ -20,7 +20,7 @@ module Umakadata
 
     attr_reader :url
     attr_reader :options
-    attr_reader :exclude_graph
+    attr_reader :graphs
     attr_reader :resource_uri
     attr_reader :vocabulary_prefix_others
 
@@ -31,9 +31,9 @@ module Umakadata
     def initialize(url, **options)
       @url = url
       @options = options
-      @exclude_graph = Array(options.delete(:exclude_graph))
-      @resource_uri = Array(options.delete(:resource_uri))
-      @vocabulary_prefix_others = Array(options.delete(:vocabulary_prefix_others))
+      @graphs = options.delete(:graphs) || {}
+      @resource_uri = options.delete(:resource_uri) || []
+      @vocabulary_prefix_others = options.delete(:vocabulary_prefix_others) || []
       @criteria = {}
     end
 
