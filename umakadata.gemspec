@@ -23,7 +23,6 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_development_dependency 'awesome_print', '~> 1.8'
   spec.add_development_dependency 'bundler', '~> 1.17'
   spec.add_development_dependency 'pry-byebug', '~> 3.7'
   spec.add_development_dependency 'rake', '~> 13.0'
@@ -32,8 +31,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'yard', '~> 0.9.12'
 
   spec.add_dependency 'activesupport', '>= 5.2', '< 7.0'
-  spec.add_dependency 'faraday', '~> 0.15.4'
-  spec.add_dependency 'faraday_middleware', '~> 0.13.1'
+  spec.add_dependency 'faraday', '~> 1.10', '>= 1.10.3'
+  spec.add_dependency 'faraday_middleware', '~> 1.2'
   spec.add_dependency 'linkeddata', '3.2.0'
   spec.add_dependency 'sparql-client', '>= 3.1.1'
 end
