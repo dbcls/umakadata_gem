@@ -134,7 +134,7 @@ module Umakadata
       def_delegators :@entity, :headers, :body
 
       def initialize(**hash)
-        @entity = HTTPMessages.new(hash.fetch(:response_headers, {}), hash[:body])
+        @entity = HTTPMessages.new(hash.fetch(:response_headers, {}), hash[:response_body])
         @method = hash[:method]&.to_s&.upcase
         @url = hash[:url]&.to_s
         @status = hash[:status]

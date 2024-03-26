@@ -194,7 +194,7 @@ module Umakadata
 
           yield conn if block_given?
 
-          conn.use Faraday::Adapter::NetHttpPersistent do |http|
+          conn.adapter Faraday::Adapter::NetHttpPersistent do |http|
             http.keep_alive = @options.fetch(:keep_alive, 120)
           end
         end
