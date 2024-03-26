@@ -148,6 +148,8 @@ module Umakadata
                           uri.map(&:to_s) & g
                         elsif (g = endpoint.graphs[:include]).present?
                           uri.map(&:to_s) - g
+                        else
+                          []
                         end
 
               activity.result = uri.map(&:to_s) - exclude
