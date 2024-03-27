@@ -191,7 +191,14 @@ module Umakadata
       # @return [::SPARQL::Client::Query]
       def call_query_method(method, *args)
         client = self
-        result = ::SPARQL::Client::Query.send(method, *args)
+        args = args.dup
+        options = args.last.is_a?(Hash) ? args.pop : {}
+        result = case method
+                 when :ask
+                   ::SPARQL::Client::Query.send(method, **options)
+                 else
+                   ::SPARQL::Client::Query.send(method, *args, **options)
+                 end
 
         class << result
           self
