@@ -15,12 +15,12 @@ module Umakadata
         TRIPLES = SPARQL::Client::Query.select(:triples)
                     .where([:s, ::RDF.type, :type])
                     .where([:s, ::RDF::Vocab::VOID.triples, :triples])
-                    .filter("?type IN (#{DATASET_TYPES.join(', ')})")
+                    .filter(DATASET_TYPES.map { |x| "(?type = #{x})" }.join(' || '))
 
         LICENSES = SPARQL::Client::Query.select(:license)
                      .where([:s, ::RDF.type, :type])
                      .where([:s, ::RDF::Vocab::DC.license, :license])
-                     .filter("?type IN (#{DATASET_TYPES.join(', ')})")
+                     .filter(DATASET_TYPES.map { |x| "(?type = #{x})" }.join(' || '))
                      .distinct
 
         LINK_SETS = SPARQL::Client::Query.select(:target)

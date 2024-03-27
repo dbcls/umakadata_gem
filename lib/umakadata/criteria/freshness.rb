@@ -46,11 +46,14 @@ module Umakadata
                            <#{RDF::Vocabulary::SSD[:Dataset]}>
                            <#{RDF::Vocabulary::SSD[:Graph]}>].freeze
 
+        DATASET_PREDICATES = %W[<#{::RDF::Vocab::DC.modified}>
+                                <#{::RDF::Vocab::DC.issued}>].freeze
+
         UPDATE = SPARQL::Client::Query.select(:date)
                    .where([:s, ::RDF.type, :type])
                    .where([:s, :p, :date])
-                   .filter("?type IN (#{DATASET_TYPES.join(', ')})")
-                   .filter("?p IN (<#{::RDF::Vocab::DC.modified}>, <#{::RDF::Vocab::DC.issued}>)")
+                   .filter(DATASET_TYPES.map { |x| "(?type = #{x})" }.join(' || '))
+                   .filter(DATASET_PREDICATES.map { |x| "(?p = #{x})" }.join(' || '))
       end
 
       # @param [Symbol] method :void or :service_description
