@@ -188,14 +188,14 @@ module Umakadata
       #
       # @return [true, false] true if the endpoint support graph keyword
       def graph_keyword_supported?
-        graph_keyword_support.response&.status == 200
+        graph_keyword_support.success_and_result_present
       end
 
       # Check whether if the endpoint support service keyword
       #
       # @return [true, false] true if the endpoint support service keyword
       def service_keyword_supported?
-        service_keyword_support.response&.status == 200
+        service_keyword_support.success_and_result_present
       end
 
       # Execute query to check graph keyword support
@@ -205,7 +205,7 @@ module Umakadata
         cache do
           sparql.construct(%i[s p o]).where(%i[s p o]).graph(:g).limit(1).execute.tap do |act|
             act.type = Activity::Type::GRAPH_KEYWORD_SUPPORT
-            act.comment = if (200..299).include?(act.response&.status) && act.result&.size&.positive?
+            act.comment = if act.success_and_result_present
                             'The endpoint supports GRAPH keyword.'
                           else
                             'The endpoint does not support GRAPH keyword.'
@@ -221,7 +221,7 @@ module Umakadata
         cache do
           sparql.query("CONSTRUCT { ?s ?p ?o . } WHERE { SERVICE <#{url}> { ?s ?p ?o . } } LIMIT 1").tap do |act|
             act.type = Activity::Type::SERVICE_KEYWORD_SUPPORT
-            act.comment = if (200..299).include?(act.response&.status)
+            act.comment = if act.success_and_result_present
                             'The endpoint supports SERVICE keyword.'
                           else
                             'The endpoint does not support SERVICE keyword.'

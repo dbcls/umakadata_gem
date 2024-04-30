@@ -175,6 +175,10 @@ module Umakadata
       yield self if block_given?
     end
 
+    def success_and_result_present
+      (200..299).include?(response&.status) && result&.size&.positive?
+    end
+
     def to_h
       {
         name: @type,
