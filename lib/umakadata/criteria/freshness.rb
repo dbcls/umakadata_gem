@@ -44,7 +44,9 @@ module Umakadata
         DATASET_TYPES = %W[<#{::RDF::Vocab::VOID[:Dataset]}>
                            <#{::RDF::Vocab::VOID[:DatasetDescription]}>
                            <#{RDF::Vocabulary::SSD[:Dataset]}>
-                           <#{RDF::Vocabulary::SSD[:Graph]}>].freeze
+                           <#{RDF::Vocabulary::SSD[:Graph]}>
+                           <#{RDF::Vocabulary::SSD[:Service]}>
+                           <#{RDF::Vocabulary::SSD[:NamedGraph]}>].freeze
 
         DATASET_PREDICATES = %W[<#{::RDF::Vocab::DC.modified}>
                                 <#{::RDF::Vocab::DC.issued}>].freeze
