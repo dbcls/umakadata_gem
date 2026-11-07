@@ -41,6 +41,7 @@ module Umakadata
             buffer << 'UNION { [] rdfs:range ?c . }'
             buffer << 'UNION { ?c rdfs:subClassOf [] . }'
             buffer << 'UNION { [] rdfs:subClassOf ?c . }'
+            buffer << 'FILTER(isIRI(?c))'
             buffer << '}' if options[:graph]
             buffer << '} LIMIT 100'
 
@@ -70,7 +71,9 @@ module Umakadata
         # @option options [String] :graph
         # @return [Umakadata::Activity]
         def labels_of_classes(classes, **options)
-          return nil if Array(classes).empty?
+          # SPARQL 1.1 DataBlockValue does not allow blank nodes in VALUES
+          classes = Array(classes).select { |c| c.is_a?(::RDF::URI) }
+          return nil if classes.empty?
 
           g = options[:graph]
           endpoint
@@ -78,7 +81,7 @@ module Umakadata
             .select(:c, :label)
             .distinct
             .where([:c, ::RDF::Vocab::RDFS.label, :label])
-            .values(:c, *Array(classes))
+            .values(:c, *classes)
             .tap { |x| x.graph(:g) if endpoint.graph_keyword_supported? }
             .execute
             .tap(&post_labels_of_classes(g))
